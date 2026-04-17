@@ -148,8 +148,9 @@ def build_dashboard_html(payload: dict) -> str:
       --chart-text: #2a3b52;
       --chart-muted: #60738c;
       --tooltip-bg: rgba(12, 18, 32, 0.94);
-      --shadow: 0 10px 26px rgba(15, 23, 42, 0.10);
-      --shadow-soft: 0 6px 16px rgba(15, 23, 42, 0.08);
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+      --shadow-soft: 0 10px 26px rgba(15, 23, 42, 0.08);
+      --shadow-lift: 0 22px 52px rgba(15, 23, 42, 0.16);
       --focus-ring: 0 0 0 3px rgba(31, 79, 191, 0.16);
     }
 
@@ -193,8 +194,9 @@ def build_dashboard_html(payload: dict) -> str:
       --chart-text: #c7d7f2;
       --chart-muted: #8fa7c6;
       --tooltip-bg: rgba(2, 6, 23, 0.96);
-      --shadow: 0 12px 28px rgba(2, 6, 23, 0.45);
-      --shadow-soft: 0 6px 16px rgba(2, 6, 23, 0.35);
+      --shadow: 0 18px 42px rgba(2, 6, 23, 0.48);
+      --shadow-soft: 0 10px 26px rgba(2, 6, 23, 0.36);
+      --shadow-lift: 0 26px 58px rgba(2, 6, 23, 0.52);
       --focus-ring: 0 0 0 3px rgba(110, 168, 255, 0.18);
     }
 
@@ -221,9 +223,9 @@ def build_dashboard_html(payload: dict) -> str:
 
     .container {
       width: min(1520px, 95vw);
-      margin: 20px auto 56px;
+      margin: 24px auto 64px;
       display: grid;
-      gap: 18px;
+      gap: 20px;
     }
 
     .panel {
@@ -231,7 +233,28 @@ def build_dashboard_html(payload: dict) -> str:
       border: 1px solid var(--line);
       border-radius: 18px;
       box-shadow: var(--shadow);
-      padding: 20px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0));
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    body[data-theme="dark"] .panel::before {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+    }
+
+    .panel > * {
+      position: relative;
+      z-index: 1;
     }
 
     .header-panel {
@@ -251,6 +274,16 @@ def build_dashboard_html(payload: dict) -> str:
       height: 380px;
       border-radius: 999px;
       background: radial-gradient(circle, rgba(31, 79, 191, 0.13), transparent 65%);
+      pointer-events: none;
+    }
+
+    .header-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(255,255,255,0.10), transparent 36%),
+        radial-gradient(circle at 78% 22%, rgba(255,255,255,0.12), transparent 20%);
       pointer-events: none;
     }
 
@@ -343,9 +376,9 @@ def build_dashboard_html(payload: dict) -> str:
       border: 1px solid var(--line);
       border-radius: 16px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
-      padding: 18px;
+      padding: 20px;
       display: grid;
-      gap: 12px;
+      gap: 14px;
       box-shadow: var(--shadow-soft);
     }
 
@@ -365,7 +398,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .rule-grid {
       display: grid;
-      gap: 8px;
+      gap: 10px;
     }
 
     .rule-chip {
@@ -416,11 +449,14 @@ def build_dashboard_html(payload: dict) -> str:
       cursor: pointer;
       white-space: nowrap;
       backdrop-filter: blur(8px);
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
     }
 
     .theme-btn:hover,
     .print-btn:hover {
       background: var(--panel-soft);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-soft);
     }
 
     body[data-theme="dark"] .theme-btn,
@@ -447,6 +483,7 @@ def build_dashboard_html(payload: dict) -> str:
       gap: 14px;
       position: relative;
       z-index: 1;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
     }
 
     body[data-theme="dark"] .filters-shell {
@@ -492,12 +529,27 @@ def build_dashboard_html(payload: dict) -> str:
       align-items: end;
     }
 
+    .filter-group {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.50), rgba(255,255,255,0.16));
+      box-shadow: var(--shadow-soft);
+    }
+
+    body[data-theme="dark"] .filter-group {
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.04));
+    }
+
     .filter-group label {
-      display: block;
       font-size: 12px;
       color: var(--sub);
-      margin-bottom: 6px;
-      font-weight: 600;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     input[type="date"], select {
@@ -508,6 +560,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 13px;
       background: var(--control-bg);
       color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.34);
       transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
     }
 
@@ -518,7 +571,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .btn {
       border: 1px solid var(--control-border);
-      background: var(--panel);
+      background: linear-gradient(180deg, var(--panel), var(--panel-soft));
       color: var(--ink);
       border-radius: 999px;
       padding: 9px 14px;
@@ -526,9 +579,14 @@ def build_dashboard_html(payload: dict) -> str:
       font-weight: 700;
       cursor: pointer;
       box-shadow: var(--shadow-soft);
+      transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
     }
 
-    .btn:hover { background: var(--control-bg); }
+    .btn:hover {
+      background: var(--control-bg);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
 
     .summary-strip {
       display: grid;
@@ -546,6 +604,7 @@ def build_dashboard_html(payload: dict) -> str:
       overflow: hidden;
       display: grid;
       gap: 8px;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
     }
 
     .summary-card::before {
@@ -611,6 +670,11 @@ def build_dashboard_html(payload: dict) -> str:
       color: var(--ink);
     }
 
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lift);
+    }
+
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(7, minmax(145px, 1fr));
@@ -628,6 +692,7 @@ def build_dashboard_html(payload: dict) -> str:
       gap: 6px;
       position: relative;
       overflow: hidden;
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
     }
 
     .kpi-card::before {
@@ -659,12 +724,66 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 12px;
       color: var(--sub);
       font-weight: 700;
-      margin-bottom: 4px;
       text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .kpi-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .kpi-label-wrap {
+      display: grid;
+      gap: 2px;
+    }
+
+    .kpi-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+      white-space: nowrap;
+    }
+
+    .kpi-state.good {
+      background: var(--good-soft);
+      color: var(--good);
+    }
+
+    .kpi-state.warn {
+      background: var(--warn-soft);
+      color: #b26a00;
+    }
+
+    .kpi-state.bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    body[data-theme="dark"] .kpi-state.warn {
+      color: var(--warn);
+    }
+
+    .kpi-state-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
     }
 
     .kpi-value {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 800;
       line-height: 1.1;
       color: var(--ink);
@@ -677,6 +796,11 @@ def build_dashboard_html(payload: dict) -> str:
     .kpi-delta.negative { color: var(--bad); }
     .kpi-delta.neutral { color: var(--sub); }
     .kpi-note { font-size: 11px; color: var(--sub); margin-top: 2px; line-height: 1.35; }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lift);
+    }
 
     .section-head {
       display: flex;
@@ -725,6 +849,7 @@ def build_dashboard_html(payload: dict) -> str:
       grid-template-rows: auto auto 1fr;
       gap: 8px;
       box-shadow: var(--shadow-soft);
+      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
     }
 
     .chart-card.primary { border-color: rgba(31, 79, 191, 0.18); }
@@ -750,6 +875,17 @@ def build_dashboard_html(payload: dict) -> str:
       border: 1px solid var(--chip-border);
     }
 
+    .chart-card.primary .chart-tag {
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+      border-color: rgba(31, 79, 191, 0.20);
+    }
+
+    .chart-card.diagnostic .chart-tag {
+      background: rgba(96, 115, 140, 0.12);
+      color: var(--chart-text);
+    }
+
     .chart-title {
       font-size: 15px;
       font-weight: 700;
@@ -769,6 +905,17 @@ def build_dashboard_html(payload: dict) -> str:
       width: 100%;
       height: 272px;
       position: relative;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top left, rgba(31, 79, 191, 0.08), transparent 30%),
+        linear-gradient(180deg, var(--panel-soft), var(--panel));
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .chart-surface canvas {
+      border-radius: 10px;
     }
 
     .chart-empty {
@@ -786,9 +933,10 @@ def build_dashboard_html(payload: dict) -> str:
     .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 14px;
       max-height: 264px;
-      background: var(--panel);
+      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.30);
     }
 
     table {
@@ -813,18 +961,33 @@ def build_dashboard_html(payload: dict) -> str:
       top: 0;
       z-index: 1;
       user-select: none;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     tr:hover td { background: var(--table-row-hover); }
 
     tbody tr:nth-child(even) td { background: var(--panel-soft); }
 
+    td:first-child {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .risk-priority {
+      display: grid;
+      justify-items: start;
+      gap: 8px;
+    }
+
     .risk-score {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-width: 48px;
-      padding: 6px 8px;
+      min-width: 56px;
+      padding: 7px 10px;
       border-radius: 999px;
       font-weight: 800;
       background: var(--panel-soft);
@@ -872,12 +1035,19 @@ def build_dashboard_html(payload: dict) -> str:
       padding: 14px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       line-height: 1.45;
+      transition: transform 160ms ease, box-shadow 160ms ease;
     }
 
     .foot-block strong {
       display: block;
       margin-bottom: 4px;
       color: var(--ink);
+    }
+
+    .foot-block:hover,
+    .chart-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lift);
     }
 
     .tooltip {
@@ -2029,12 +2199,21 @@ def build_dashboard_html(payload: dict) -> str:
         const deltaClass = !Number.isFinite(card.delta)
           ? 'kpi-delta neutral'
           : (card.delta >= 0 ? 'kpi-delta positive' : 'kpi-delta negative');
+        const tone = card.tone || 'warn';
+        const toneLabel = tone === 'good' ? 'Strong' : (tone === 'bad' ? 'Risk' : 'Watch');
 
         const el = document.createElement('div');
         el.className = 'kpi-card';
-        el.dataset.tone = card.tone || 'warn';
+        el.dataset.tone = tone;
         el.innerHTML = `
-          <div class="kpi-label">${card.label}</div>
+          <div class="kpi-top">
+            <div class="kpi-label-wrap">
+              <div class="kpi-label">${card.label}</div>
+            </div>
+            <div class="kpi-state ${tone}">
+              <span class="kpi-state-dot"></span>${toneLabel}
+            </div>
+          </div>
           <div class="kpi-value">${card.value}</div>
           <div class="${deltaClass}">${card.deltaText}</div>
           <div class="kpi-note">${card.note}</div>
@@ -2114,8 +2293,10 @@ def build_dashboard_html(payload: dict) -> str:
               <td>${r.riskInterpretation}</td>
               <td>${r.recommendedAction}</td>
               <td>
-                <div class="risk-score">${fmtNum(r.priorityScore, 1)}</div>
-                <div style="margin-top:6px;"><span class="risk-badge ${r.priorityBand}">${r.priorityBand}</span></div>
+                <div class="risk-priority">
+                  <div class="risk-score">${fmtNum(r.priorityScore, 1)}</div>
+                  <span class="risk-badge ${r.priorityBand}">${r.priorityBand}</span>
+                </div>
               </td>
             </tr>
           `).join('')}
