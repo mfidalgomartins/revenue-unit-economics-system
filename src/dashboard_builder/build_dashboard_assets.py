@@ -110,24 +110,32 @@ def build_dashboard_html(payload: dict) -> str:
   <style>
     :root {
       color-scheme: light;
-      --bg: #f3f5f9;
+      --bg: #edf2f7;
       --panel: #ffffff;
-      --panel-soft: #f8fafc;
-      --ink: #0b1220;
-      --sub: #4a5b76;
-      --line: #d7dde7;
-      --line-soft: #e7ecf3;
+      --panel-soft: #f7f9fc;
+      --panel-tint: #f2f6fb;
+      --ink: #08111f;
+      --sub: #4d5d76;
+      --line: #d5dde8;
+      --line-soft: #e8edf4;
       --brand: #1f4fbf;
+      --brand-strong: #143983;
+      --brand-soft: rgba(31, 79, 191, 0.10);
       --good: #0f9d58;
       --bad: #c62828;
       --warn: #b26a00;
+      --good-soft: rgba(15, 157, 88, 0.12);
+      --bad-soft: rgba(198, 40, 40, 0.10);
+      --warn-soft: rgba(178, 106, 0, 0.12);
       --rev: #0b4f6c;
       --cost: #bf3b2f;
       --margin: #1f9d89;
       --accent: #e7a100;
       --bar: #2f3b5a;
-      --header-grad-a: #ffffff;
-      --header-grad-b: #eef2f9;
+      --header-grad-a: #fefefe;
+      --header-grad-b: #edf3fb;
+      --hero-ink: #08111f;
+      --hero-sub: #53657f;
       --chip-bg: #eef2f9;
       --chip-border: #c8d3ea;
       --chip-ink: #2b3b63;
@@ -142,6 +150,7 @@ def build_dashboard_html(payload: dict) -> str:
       --tooltip-bg: rgba(12, 18, 32, 0.94);
       --shadow: 0 10px 26px rgba(15, 23, 42, 0.10);
       --shadow-soft: 0 6px 16px rgba(15, 23, 42, 0.08);
+      --focus-ring: 0 0 0 3px rgba(31, 79, 191, 0.16);
     }
 
     body[data-theme="dark"] {
@@ -149,14 +158,20 @@ def build_dashboard_html(payload: dict) -> str:
       --bg: #071425;
       --panel: #0d1b31;
       --panel-soft: #112544;
+      --panel-tint: #10233f;
       --ink: #e6eefb;
       --sub: #a8bddc;
       --line: #1e3658;
       --line-soft: #274166;
       --brand: #6ea8ff;
+      --brand-strong: #9fc3ff;
+      --brand-soft: rgba(110, 168, 255, 0.14);
       --good: #4ade80;
       --bad: #fb7185;
       --warn: #facc15;
+      --good-soft: rgba(74, 222, 128, 0.16);
+      --bad-soft: rgba(251, 113, 133, 0.16);
+      --warn-soft: rgba(250, 204, 21, 0.14);
       --rev: #8bd4ff;
       --cost: #f8a29a;
       --margin: #6ee7cf;
@@ -164,6 +179,8 @@ def build_dashboard_html(payload: dict) -> str:
       --bar: #9db9ff;
       --header-grad-a: #0d1b31;
       --header-grad-b: #132647;
+      --hero-ink: #eef5ff;
+      --hero-sub: #abc0dd;
       --chip-bg: #142948;
       --chip-border: #2a4a76;
       --chip-ink: #d7e6ff;
@@ -178,59 +195,117 @@ def build_dashboard_html(payload: dict) -> str:
       --tooltip-bg: rgba(2, 6, 23, 0.96);
       --shadow: 0 12px 28px rgba(2, 6, 23, 0.45);
       --shadow-soft: 0 6px 16px rgba(2, 6, 23, 0.35);
+      --focus-ring: 0 0 0 3px rgba(110, 168, 255, 0.18);
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Avenir Next", "SF Pro Display", "Segoe UI Variable", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-      background: var(--bg);
+      font-family: "Avenir Next", "Segoe UI Variable", "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(31, 79, 191, 0.10), transparent 24%),
+        radial-gradient(circle at top right, rgba(231, 161, 0, 0.08), transparent 18%),
+        linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0) 22%),
+        var(--bg);
       color: var(--ink);
       transition: background 180ms ease, color 180ms ease;
     }
 
+    body[data-theme="dark"] {
+      background:
+        radial-gradient(circle at top left, rgba(110, 168, 255, 0.10), transparent 24%),
+        radial-gradient(circle at top right, rgba(250, 204, 21, 0.08), transparent 18%),
+        linear-gradient(180deg, rgba(19, 38, 71, 0.38), rgba(19, 38, 71, 0) 22%),
+        var(--bg);
+    }
+
     .container {
-      width: min(1480px, 94vw);
-      margin: 26px auto 56px;
+      width: min(1520px, 95vw);
+      margin: 20px auto 56px;
       display: grid;
-      gap: 16px;
+      gap: 18px;
     }
 
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 18px;
       box-shadow: var(--shadow);
-      padding: 18px;
+      padding: 20px;
     }
 
     .header-panel {
       display: grid;
-      gap: 16px;
+      gap: 20px;
       background: linear-gradient(145deg, var(--header-grad-a), var(--header-grad-b));
-      padding: 20px;
+      padding: 22px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .header-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -8% -28% auto;
+      width: 380px;
+      height: 380px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(31, 79, 191, 0.13), transparent 65%);
+      pointer-events: none;
     }
 
     .header-top {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 16px;
       align-items: flex-start;
       flex-wrap: wrap;
     }
 
+    .header-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.95fr);
+      gap: 18px;
+      align-items: stretch;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-copy {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
     h1 {
       margin: 0;
-      font-size: 30px;
-      line-height: 1.15;
-      color: var(--ink);
+      font-size: 34px;
+      line-height: 1.05;
+      color: var(--hero-ink);
+      letter-spacing: -0.03em;
     }
 
     .subtitle {
-      margin-top: 4px;
-      color: var(--sub);
-      font-size: 15px;
-      max-width: 900px;
+      margin-top: 2px;
+      color: var(--hero-sub);
+      font-size: 16px;
+      line-height: 1.5;
+      max-width: 860px;
     }
 
     .header-tools {
@@ -238,6 +313,78 @@ def build_dashboard_html(payload: dict) -> str:
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
+    }
+
+    .signal-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .signal-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid var(--chip-border);
+      color: var(--chip-ink);
+      font-size: 12px;
+      font-weight: 700;
+      backdrop-filter: blur(8px);
+    }
+
+    body[data-theme="dark"] .signal-pill {
+      background: rgba(13, 27, 49, 0.78);
+    }
+
+    .decision-brief {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .decision-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--sub);
+    }
+
+    .decision-text {
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .rule-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .rule-chip {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--panel-soft);
+      font-size: 12px;
+      line-height: 1.35;
+      color: var(--chart-text);
+    }
+
+    .rule-chip strong {
+      color: var(--ink);
+      font-size: 12px;
     }
 
     .print-coverage {
@@ -260,14 +407,15 @@ def build_dashboard_html(payload: dict) -> str:
     .theme-btn,
     .print-btn {
       border: 1px solid var(--chip-border);
-      background: var(--panel);
+      background: rgba(255, 255, 255, 0.72);
       color: var(--ink);
       border-radius: 999px;
-      padding: 6px 11px;
+      padding: 8px 13px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
+      backdrop-filter: blur(8px);
     }
 
     .theme-btn:hover,
@@ -275,10 +423,72 @@ def build_dashboard_html(payload: dict) -> str:
       background: var(--panel-soft);
     }
 
+    body[data-theme="dark"] .theme-btn,
+    body[data-theme="dark"] .print-btn {
+      background: rgba(13, 27, 49, 0.82);
+    }
+
+    .theme-btn:focus-visible,
+    .print-btn:focus-visible,
+    .btn:focus-visible,
+    input[type="date"]:focus-visible,
+    select:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+
+    .filters-shell {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.66);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    body[data-theme="dark"] .filters-shell {
+      background: rgba(13, 27, 49, 0.72);
+    }
+
+    .filters-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filters-title {
+      margin: 0 0 4px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--sub);
+    }
+
+    .filters-note {
+      margin: 0;
+      max-width: 760px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--chart-text);
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     .filter-grid {
       display: grid;
       grid-template-columns: repeat(6, minmax(150px, 1fr));
-      gap: 12px;
+      gap: 14px;
       align-items: end;
     }
 
@@ -293,52 +503,49 @@ def build_dashboard_html(payload: dict) -> str:
     input[type="date"], select {
       width: 100%;
       border: 1px solid var(--control-border);
-      border-radius: 8px;
-      padding: 8px 9px;
+      border-radius: 12px;
+      padding: 10px 11px;
       font-size: 13px;
       background: var(--control-bg);
       color: var(--ink);
+      transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
     }
 
     select[multiple] {
-      min-height: 96px;
-      padding: 6px 8px;
-    }
-
-    .filter-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
+      min-height: 112px;
+      padding: 8px 10px;
     }
 
     .btn {
       border: 1px solid var(--control-border);
-      background: var(--panel-soft);
+      background: var(--panel);
       color: var(--ink);
-      border-radius: 8px;
-      padding: 8px 12px;
+      border-radius: 999px;
+      padding: 9px 14px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
+      box-shadow: var(--shadow-soft);
     }
 
     .btn:hover { background: var(--control-bg); }
 
     .summary-strip {
       display: grid;
-      grid-template-columns: repeat(4, minmax(200px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 14px;
     }
 
     .summary-card {
       border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 12px 14px;
-      background: var(--panel);
+      border-radius: 16px;
+      padding: 14px 16px 16px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       box-shadow: var(--shadow-soft);
       position: relative;
       overflow: hidden;
+      display: grid;
+      gap: 8px;
     }
 
     .summary-card::before {
@@ -352,36 +559,100 @@ def build_dashboard_html(payload: dict) -> str:
       opacity: 0.85;
     }
 
+    .summary-card[data-tone="good"]::before { background: linear-gradient(90deg, var(--good), var(--brand)); }
+    .summary-card[data-tone="warn"]::before { background: linear-gradient(90deg, var(--warn), var(--accent)); }
+    .summary-card[data-tone="bad"]::before { background: linear-gradient(90deg, var(--bad), var(--accent)); }
+
+    .summary-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
     .summary-title {
       font-size: 12px;
       color: var(--sub);
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.3px;
-      margin-bottom: 6px;
+    }
+
+    .summary-badge {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: var(--brand-soft);
+      color: var(--brand-strong);
+    }
+
+    .summary-badge.good {
+      color: var(--good);
+      background: var(--good-soft);
+    }
+
+    .summary-badge.warn {
+      color: var(--warn);
+      background: var(--warn-soft);
+    }
+
+    .summary-badge.bad {
+      color: var(--bad);
+      background: var(--bad-soft);
     }
 
     .summary-text {
-      font-size: 13px;
-      line-height: 1.4;
+      font-size: 14px;
+      line-height: 1.5;
       color: var(--ink);
     }
 
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(7, minmax(135px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(7, minmax(145px, 1fr));
+      gap: 12px;
     }
 
     .kpi-card {
       border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 12px 12px;
-      background: var(--panel);
-      min-height: 116px;
+      border-radius: 16px;
+      padding: 14px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
+      min-height: 132px;
       box-shadow: var(--shadow-soft);
       display: grid;
-      gap: 4px;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand), rgba(255,255,255,0));
+      opacity: 0.88;
+    }
+
+    .kpi-card[data-tone="good"] {
+      border-color: rgba(15, 157, 88, 0.22);
+      background: linear-gradient(180deg, var(--panel), var(--good-soft));
+    }
+
+    .kpi-card[data-tone="warn"] {
+      border-color: rgba(178, 106, 0, 0.24);
+      background: linear-gradient(180deg, var(--panel), var(--warn-soft));
+    }
+
+    .kpi-card[data-tone="bad"] {
+      border-color: rgba(198, 40, 40, 0.20);
+      background: linear-gradient(180deg, var(--panel), var(--bad-soft));
     }
 
     .kpi-label {
@@ -393,36 +664,38 @@ def build_dashboard_html(payload: dict) -> str:
     }
 
     .kpi-value {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 800;
       line-height: 1.1;
       color: var(--ink);
       margin-bottom: 2px;
+      letter-spacing: -0.03em;
     }
 
     .kpi-delta { font-size: 12px; font-weight: 700; }
     .kpi-delta.positive { color: var(--good); }
     .kpi-delta.negative { color: var(--bad); }
     .kpi-delta.neutral { color: var(--sub); }
-    .kpi-note { font-size: 11px; color: var(--sub); margin-top: 2px; line-height: 1.25; }
+    .kpi-note { font-size: 11px; color: var(--sub); margin-top: 2px; line-height: 1.35; }
 
     .section-head {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 10px;
+      margin-bottom: 14px;
       gap: 12px;
     }
 
     .section-head h2 {
       margin: 0;
-      font-size: 20px;
+      font-size: 22px;
       color: var(--ink);
+      letter-spacing: -0.02em;
     }
 
     .section-head p {
       margin: 0;
-      font-size: 12px;
+      font-size: 13px;
       color: var(--sub);
     }
 
@@ -444,38 +717,63 @@ def build_dashboard_html(payload: dict) -> str:
 
     .chart-card {
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--panel);
-      padding: 12px;
-      min-height: 340px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
+      padding: 14px;
+      min-height: 350px;
       display: grid;
       grid-template-rows: auto auto 1fr;
-      gap: 6px;
+      gap: 8px;
       box-shadow: var(--shadow-soft);
     }
 
+    .chart-card.primary { border-color: rgba(31, 79, 191, 0.18); }
+    .chart-card.diagnostic { border-color: rgba(47, 59, 90, 0.18); }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .chart-tag {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--chip-bg);
+      color: var(--chip-ink);
+      border: 1px solid var(--chip-border);
+    }
+
     .chart-title {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--ink);
       margin: 0;
+      line-height: 1.35;
     }
 
     .chart-subtitle {
       margin: 0;
       font-size: 12px;
       color: var(--sub);
+      line-height: 1.4;
     }
 
     .chart-surface {
       width: 100%;
-      height: 260px;
+      height: 272px;
       position: relative;
     }
 
     .chart-empty {
       width: 100%;
-      height: 260px;
+      height: 272px;
       display: grid;
       place-items: center;
       color: var(--chart-muted);
@@ -488,8 +786,9 @@ def build_dashboard_html(payload: dict) -> str:
     .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 12px;
       max-height: 264px;
+      background: var(--panel);
     }
 
     table {
@@ -500,7 +799,7 @@ def build_dashboard_html(payload: dict) -> str:
     }
 
     th, td {
-      padding: 8px 9px;
+      padding: 10px 11px;
       border-bottom: 1px solid var(--line-soft);
       text-align: left;
       vertical-align: top;
@@ -518,9 +817,50 @@ def build_dashboard_html(payload: dict) -> str:
 
     tr:hover td { background: var(--table-row-hover); }
 
+    tbody tr:nth-child(even) td { background: var(--panel-soft); }
+
+    .risk-score {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      padding: 6px 8px;
+      border-radius: 999px;
+      font-weight: 800;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .risk-badge.high {
+      color: var(--bad);
+      background: var(--bad-soft);
+    }
+
+    .risk-badge.medium {
+      color: var(--warn);
+      background: var(--warn-soft);
+    }
+
+    .risk-badge.low {
+      color: var(--good);
+      background: var(--good-soft);
+    }
+
     .footer-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
       gap: 12px;
       font-size: 12px;
       color: var(--chart-text);
@@ -528,10 +868,10 @@ def build_dashboard_html(payload: dict) -> str:
 
     .foot-block {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
-      background: var(--panel);
-      line-height: 1.35;
+      border-radius: 12px;
+      padding: 14px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
+      line-height: 1.45;
     }
 
     .foot-block strong {
@@ -559,6 +899,7 @@ def build_dashboard_html(payload: dict) -> str:
       .kpi-grid { grid-template-columns: repeat(4, minmax(130px, 1fr)); }
       .summary-strip { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
       .filter-grid { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+      .header-layout { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 900px) {
@@ -572,6 +913,8 @@ def build_dashboard_html(payload: dict) -> str:
       .filter-grid { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr; }
       .header-tools { width: 100%; justify-content: flex-start; }
+      .filters-top { flex-direction: column; }
+      h1 { font-size: 28px; }
     }
 
     @media print {
@@ -595,10 +938,13 @@ def build_dashboard_html(payload: dict) -> str:
       }
       .theme-btn,
       .print-btn,
-      .filter-grid,
       .filter-actions,
       .meta-chip {
         display: none !important;
+      }
+      .filters-shell {
+        border: 1px solid #d1d5db;
+        background: #ffffff;
       }
       .print-coverage { display: block; }
       .chart-card,
@@ -617,6 +963,10 @@ def build_dashboard_html(payload: dict) -> str:
       .table-wrap {
         max-height: none;
       }
+      .signal-pill,
+      .decision-brief {
+        break-inside: avoid;
+      }
     }
   </style>
 </head>
@@ -624,11 +974,6 @@ def build_dashboard_html(payload: dict) -> str:
   <div class="container">
     <section class="panel header-panel">
       <div class="header-top">
-        <div>
-          <h1 id="dashboard-title">Executive Growth Quality Dashboard</h1>
-          <div class="subtitle" id="dashboard-subtitle"></div>
-          <div class="print-coverage" id="coverage-print"></div>
-        </div>
         <div class="header-tools">
           <button class="theme-btn" id="btn-theme" type="button" aria-label="Toggle theme"></button>
           <button class="print-btn" id="btn-print" type="button" aria-label="Print dashboard">Print</button>
@@ -636,33 +981,70 @@ def build_dashboard_html(payload: dict) -> str:
         </div>
       </div>
 
-      <div class="filter-grid">
-        <div class="filter-group">
-          <label for="filter-start">Date Start</label>
-          <input id="filter-start" type="date" />
+      <div class="header-layout">
+        <div class="header-copy">
+          <div class="eyebrow">Executive Decision System</div>
+          <div>
+            <h1 id="dashboard-title">Executive Growth Quality Dashboard</h1>
+            <div class="subtitle" id="dashboard-subtitle"></div>
+            <div class="print-coverage" id="coverage-print"></div>
+          </div>
+          <div class="signal-row">
+            <div class="signal-pill">Growth quality over top-line optics</div>
+            <div class="signal-pill">Channel efficiency and payback focus</div>
+            <div class="signal-pill">Cohort durability and margin discipline</div>
+          </div>
         </div>
-        <div class="filter-group">
-          <label for="filter-end">Date End</label>
-          <input id="filter-end" type="date" />
-        </div>
-        <div class="filter-group">
-          <label for="filter-segment">Segment (multi-select)</label>
-          <select id="filter-segment" multiple></select>
-        </div>
-        <div class="filter-group">
-          <label for="filter-region">Region (multi-select)</label>
-          <select id="filter-region" multiple></select>
-        </div>
-        <div class="filter-group">
-          <label for="filter-channel">Acquisition Channel (multi-select)</label>
-          <select id="filter-channel" multiple></select>
-        </div>
-        <div class="filter-group">
-          <label for="filter-product">Product Type (multi-select)</label>
-          <select id="filter-product" multiple></select>
+
+        <aside class="decision-brief">
+          <div class="decision-title">What this view should help decide</div>
+          <div class="decision-text">
+            Read the KPI row first, then test where growth quality breaks across channels, cohorts, regions, and segment mix before reallocating budget or changing commercial focus.
+          </div>
+          <div class="rule-grid">
+            <div class="rule-chip"><strong>Scale threshold</strong><span>LTV/CAC at or above 3.0</span></div>
+            <div class="rule-chip"><strong>Capital discipline</strong><span>Payback at or below 12 months</span></div>
+            <div class="rule-chip"><strong>Primary risk lens</strong><span>Margin deterioration, weak retention, expensive acquisition</span></div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="filters-shell">
+        <div class="filters-top">
+          <div>
+            <p class="filters-title">Decision Filters</p>
+            <p class="filters-note">Adjust scope by period and commercial slice. KPI cards, charts, and ranked risks stay synchronized so the dashboard remains decision-consistent.</p>
+          </div>
           <div class="filter-actions">
             <button class="btn" id="btn-select-all">Select All</button>
             <button class="btn" id="btn-reset">Reset</button>
+          </div>
+        </div>
+
+        <div class="filter-grid">
+          <div class="filter-group">
+            <label for="filter-start">Start Date</label>
+            <input id="filter-start" type="date" />
+          </div>
+          <div class="filter-group">
+            <label for="filter-end">End Date</label>
+            <input id="filter-end" type="date" />
+          </div>
+          <div class="filter-group">
+            <label for="filter-segment">Segment</label>
+            <select id="filter-segment" multiple></select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-region">Region</label>
+            <select id="filter-region" multiple></select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-channel">Acquisition Channel</label>
+            <select id="filter-channel" multiple></select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-product">Product Type</label>
+            <select id="filter-product" multiple></select>
           </div>
         </div>
       </div>
@@ -687,31 +1069,46 @@ def build_dashboard_html(payload: dict) -> str:
     <section class="panel">
       <div class="section-head">
         <h2>Primary Analysis</h2>
-        <p>Core sustainability diagnostics for growth, margin quality, retention, and channel economics.</p>
+        <p>Read these first to decide whether growth is scaling with defensible economics.</p>
       </div>
       <div class="chart-grid-primary">
-        <div class="chart-card">
-          <h3 class="chart-title">Revenue momentum across the selected window</h3>
+        <div class="chart-card primary">
+          <div class="chart-head">
+            <h3 class="chart-title">Revenue momentum across the selected window</h3>
+            <span class="chart-tag">Primary</span>
+          </div>
           <p class="chart-subtitle">Monthly total revenue</p>
           <div id="chart-revenue" class="chart-surface"></div>
         </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Contribution margin trend (quality signal)</h3>
+        <div class="chart-card primary">
+          <div class="chart-head">
+            <h3 class="chart-title">Contribution margin trend (quality signal)</h3>
+            <span class="chart-tag">Primary</span>
+          </div>
           <p class="chart-subtitle">Monthly contribution margin</p>
           <div id="chart-margin" class="chart-surface"></div>
         </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Revenue vs cost to expose leverage pressure</h3>
+        <div class="chart-card primary">
+          <div class="chart-head">
+            <h3 class="chart-title">Revenue vs cost to expose leverage pressure</h3>
+            <span class="chart-tag">Primary</span>
+          </div>
           <p class="chart-subtitle">Monthly revenue and cost trend</p>
           <div id="chart-revenue-cost" class="chart-surface"></div>
         </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Cohort revenue retention decay</h3>
+        <div class="chart-card primary">
+          <div class="chart-head">
+            <h3 class="chart-title">Cohort revenue retention decay</h3>
+            <span class="chart-tag">Primary</span>
+          </div>
           <p class="chart-subtitle">Median retention by months since signup</p>
           <div id="chart-cohort-retention" class="chart-surface"></div>
         </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Unit economics by channel (LTV vs CAC)</h3>
+        <div class="chart-card primary">
+          <div class="chart-head">
+            <h3 class="chart-title">Unit economics by channel (LTV vs CAC)</h3>
+            <span class="chart-tag">Primary</span>
+          </div>
           <p class="chart-subtitle">Average LTV versus CAC</p>
           <div id="chart-ltv-cac" class="chart-surface"></div>
         </div>
@@ -721,26 +1118,38 @@ def build_dashboard_html(payload: dict) -> str:
     <section class="panel">
       <div class="section-head">
         <h2>Diagnostic Section</h2>
-        <p>Profitability and commercial mix diagnostics for targeted intervention.</p>
+        <p>Use these cuts to localize the pockets where economics weaken first.</p>
       </div>
       <div class="chart-grid-diagnostic">
-        <div class="chart-card">
-          <h3 class="chart-title">Contribution margin by segment</h3>
+        <div class="chart-card diagnostic">
+          <div class="chart-head">
+            <h3 class="chart-title">Contribution margin by segment</h3>
+            <span class="chart-tag">Diagnostic</span>
+          </div>
           <p class="chart-subtitle">Concentration of margin dollars</p>
           <div id="chart-segment-margin" class="chart-surface"></div>
         </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Average revenue per transaction</h3>
+        <div class="chart-card diagnostic">
+          <div class="chart-head">
+            <h3 class="chart-title">Average revenue per transaction</h3>
+            <span class="chart-tag">Diagnostic</span>
+          </div>
           <p class="chart-subtitle">Ticket size differences by segment</p>
           <div id="chart-arpt-segment" class="chart-surface"></div>
         </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Customer revenue concentration</h3>
+        <div class="chart-card diagnostic">
+          <div class="chart-head">
+            <h3 class="chart-title">Customer revenue concentration</h3>
+            <span class="chart-tag">Diagnostic</span>
+          </div>
           <p class="chart-subtitle">Distribution of revenue by customer</p>
           <div id="chart-revenue-distribution" class="chart-surface"></div>
         </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Regional profitability comparison</h3>
+        <div class="chart-card diagnostic">
+          <div class="chart-head">
+            <h3 class="chart-title">Regional profitability comparison</h3>
+            <span class="chart-tag">Diagnostic</span>
+          </div>
           <p class="chart-subtitle">Sortable table for margin quality by region</p>
           <div class="table-wrap">
             <table id="region-table"></table>
@@ -752,7 +1161,7 @@ def build_dashboard_html(payload: dict) -> str:
     <section class="panel">
       <div class="section-head">
         <h2>Risk / Priority Ranking</h2>
-        <p>Top ranked concerns based on unit economics, margin weakness, and cohort deterioration.</p>
+        <p>Ranked issues translate the analysis into where management attention should go next.</p>
       </div>
       <div class="table-wrap" style="max-height:none;">
         <table id="risk-table"></table>
@@ -762,14 +1171,16 @@ def build_dashboard_html(payload: dict) -> str:
     <section class="panel">
       <div class="footer-grid">
         <div class="foot-block">
-          <strong>How To Read</strong>
-          This view balances growth pace with profitability quality, retention durability, and acquisition efficiency.
-          Use it to decide where to scale confidently and where to intervene.
+          <strong>How to read this dashboard</strong>
+          Start with the KPI pulse, then test whether channel efficiency and cohort durability support the growth you are seeing. The ranking table is the action shortlist.
         </div>
         <div class="foot-block">
-          <strong>Scope Caveat</strong>
-          Insights are based on synthetic data and observed in-window performance.
-          Treat results as directional decision support rather than forward-looking forecast precision.
+          <strong>Method caveat</strong>
+          Results are based on synthetic data and observed in-window economics. Treat the scenario outputs as bounded policy simulations, not as forecast-grade financial guidance.
+        </div>
+        <div class="foot-block">
+          <strong>Decision discipline</strong>
+          Use the dashboard to decide where to scale, hold, or intervene. Do not treat isolated KPI improvements as sufficient if payback and retention are deteriorating.
         </div>
       </div>
     </section>
@@ -1532,6 +1943,11 @@ def build_dashboard_html(payload: dict) -> str:
 
     function computeRiskRows(unitRows, segmentRows, cohortDecayRows) {
       const rows = [];
+      const priorityBand = (score) => {
+        if (score >= 95) return 'high';
+        if (score >= 70) return 'medium';
+        return 'low';
+      };
 
       unitRows
         .filter(r => Number.isFinite(r.ltvToCac))
@@ -1550,6 +1966,7 @@ def build_dashboard_html(payload: dict) -> str:
               ? 'Reduce budget share and tighten bid/creative efficiency tests.'
               : 'Run CAC reduction plan before scaling spend.',
             priorityScore: score,
+            priorityBand: priorityBand(score),
           });
         });
 
@@ -1565,6 +1982,7 @@ def build_dashboard_html(payload: dict) -> str:
             riskInterpretation: 'Low margin rate weakens growth quality as segment scales.',
             recommendedAction: 'Improve packaging, pricing discipline, and service delivery cost controls.',
             priorityScore: score,
+            priorityBand: priorityBand(score),
           });
         });
 
@@ -1579,6 +1997,7 @@ def build_dashboard_html(payload: dict) -> str:
             riskInterpretation: 'Fast cohort decay implies dependence on constant new acquisition.',
             recommendedAction: 'Strengthen early lifecycle activation and expansion motions for this cohort profile.',
             priorityScore: score,
+            priorityBand: priorityBand(score),
           });
         });
 
@@ -1591,7 +2010,14 @@ def build_dashboard_html(payload: dict) -> str:
       insights.forEach(item => {
         const card = document.createElement('div');
         card.className = 'summary-card';
-        card.innerHTML = `<div class="summary-title">${item.title}</div><div class="summary-text">${item.text}</div>`;
+        card.dataset.tone = item.tone || 'warn';
+        card.innerHTML = `
+          <div class="summary-head">
+            <div class="summary-title">${item.title}</div>
+            <div class="summary-badge ${item.tone || 'warn'}">${item.badge || 'Signal'}</div>
+          </div>
+          <div class="summary-text">${item.text}</div>
+        `;
         wrap.appendChild(card);
       });
     }
@@ -1606,6 +2032,7 @@ def build_dashboard_html(payload: dict) -> str:
 
         const el = document.createElement('div');
         el.className = 'kpi-card';
+        el.dataset.tone = card.tone || 'warn';
         el.innerHTML = `
           <div class="kpi-label">${card.label}</div>
           <div class="kpi-value">${card.value}</div>
@@ -1686,7 +2113,10 @@ def build_dashboard_html(payload: dict) -> str:
               <td>${r.metricValues}</td>
               <td>${r.riskInterpretation}</td>
               <td>${r.recommendedAction}</td>
-              <td>${fmtNum(r.priorityScore, 1)}</td>
+              <td>
+                <div class="risk-score">${fmtNum(r.priorityScore, 1)}</div>
+                <div style="margin-top:6px;"><span class="risk-badge ${r.priorityBand}">${r.priorityBand}</span></div>
+              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -1762,6 +2192,7 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.revenue, priorSnap.revenue) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.revenue, priorSnap.revenue))} vs prior`
             : 'No prior-period baseline',
           note: `Scope revenue from ${startDate} to ${endDate}`,
+          tone: Number.isFinite(growthRate) ? (growthRate > 0 ? 'good' : 'bad') : 'warn',
         },
         {
           label: 'Contribution Margin',
@@ -1771,6 +2202,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.margin, priorSnap.margin) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.margin, priorSnap.margin))} vs prior`
             : 'No prior-period baseline',
           note: `Margin rate ${fmtPct(curSnap.marginPct)}`,
+          tone: Number.isFinite(curSnap.marginPct)
+            ? (curSnap.marginPct >= 0.30 ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
+            : 'warn',
         },
         {
           label: 'Growth Rate',
@@ -1786,6 +2220,7 @@ def build_dashboard_html(payload: dict) -> str:
           note: growthMethod === 'prior_period'
             ? 'Period-over-period top-line growth'
             : 'Fallback growth estimate within selected scope',
+          tone: Number.isFinite(growthRate) ? (growthRate > 0.05 ? 'good' : (growthRate >= 0 ? 'warn' : 'bad')) : 'warn',
         },
         {
           label: 'CAC',
@@ -1795,6 +2230,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.CAC, priorSnap.CAC) <= 0 ? '▲' : '▼'} ${fmtPct(Math.abs(delta(curSnap.CAC, priorSnap.CAC)))} efficiency move`
             : 'No prior-period baseline',
           note: `${fmtNum(curSnap.acquiredCount, 0)} acquired customers in scope`,
+          tone: Number.isFinite(delta(curSnap.CAC, priorSnap.CAC))
+            ? (delta(curSnap.CAC, priorSnap.CAC) <= 0 ? 'good' : 'bad')
+            : 'warn',
         },
         {
           label: 'Average LTV',
@@ -1804,6 +2242,7 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.avgLTV, priorSnap.avgLTV) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.avgLTV, priorSnap.avgLTV))} vs prior`
             : 'No prior-period baseline',
           note: 'Observed contribution margin per acquired customer',
+          tone: Number.isFinite(curSnap.avgLTV) ? (curSnap.avgLTV > curSnap.CAC ? 'good' : 'warn') : 'warn',
         },
         {
           label: 'LTV / CAC',
@@ -1813,6 +2252,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.ltvToCac, priorSnap.ltvToCac) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.ltvToCac, priorSnap.ltvToCac))} vs prior`
             : 'No prior-period baseline',
           note: `Higher is better; threshold target >= ${fmtNum(EFF_THRESH.ltv_cac_target, 1)}`,
+          tone: Number.isFinite(curSnap.ltvToCac)
+            ? (curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target ? 'good' : (curSnap.ltvToCac >= EFF_THRESH.ineff_ltv_cac ? 'warn' : 'bad'))
+            : 'warn',
         },
         {
           label: 'Approx. Payback',
@@ -1822,6 +2264,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.payback, priorSnap.payback) <= 0 ? '▲' : '▼'} ${fmtPct(Math.abs(delta(curSnap.payback, priorSnap.payback)))} vs prior`
             : 'No prior-period baseline',
           note: 'Estimated CAC recovery period in months',
+          tone: Number.isFinite(curSnap.payback)
+            ? (curSnap.payback <= EFF_THRESH.payback_target_months ? 'good' : (curSnap.payback <= EFF_THRESH.ineff_payback_months ? 'warn' : 'bad'))
+            : 'warn',
         },
       ];
       renderKpis(kpis);
@@ -1888,20 +2333,28 @@ def build_dashboard_html(payload: dict) -> str:
       const insights = [
         {
           title: 'Growth vs Margin Quality',
-          text: `Revenue changed ${fmtPct(growthRate)} vs prior period while margin rate sits at ${fmtPct(curSnap.marginPct)}.`
+          badge: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30 ? 'Healthy' : 'Watch',
+          tone: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30 ? 'good' : 'warn',
+          text: `Revenue changed ${fmtPct(growthRate)} vs prior period while margin rate sits at ${fmtPct(curSnap.marginPct)}. This is the first test of whether scale is creating value or just volume.`
         },
         {
           title: 'Channel Efficiency Risk',
+          badge: inefficient.length ? 'Action' : 'Contained',
+          tone: inefficient.length ? 'bad' : 'good',
           text: inefficient.length
             ? `Inefficient channels detected: ${inefficient.join(', ')} (LTV/CAC < ${fmtNum(EFF_THRESH.ineff_ltv_cac, 1)} or payback > ${fmtNum(EFF_THRESH.ineff_payback_months, 0)} months).`
             : 'No channels flagged as inefficient under current filters.'
         },
         {
           title: 'Cohort Durability',
-          text: `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12.`
+          badge: m6 && Number.isFinite(m6.medianRevenueRetention) && m6.medianRevenueRetention >= 0.75 ? 'Stable' : 'Decay',
+          tone: m6 && Number.isFinite(m6.medianRevenueRetention) && m6.medianRevenueRetention >= 0.75 ? 'good' : 'bad',
+          text: `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12. Early decay here creates dependence on continual acquisition.`
         },
         {
           title: 'Profitability Concentration',
+          badge: weakestSegment && Number.isFinite(weakestSegment.marginPct) && weakestSegment.marginPct < 0.25 ? 'Fragile' : 'Concentrated',
+          tone: weakestSegment && Number.isFinite(weakestSegment.marginPct) && weakestSegment.marginPct < 0.25 ? 'bad' : 'warn',
           text: weakestSegment
             ? `${weakestSegment.segment} is the weakest-margin segment at ${fmtPct(weakestSegment.marginPct)}; top decile customers contribute ${fmtPct(revenueShareTop10)} of revenue.`
             : 'Segment profitability view unavailable for current filters.'
