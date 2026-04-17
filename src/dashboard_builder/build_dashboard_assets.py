@@ -223,9 +223,9 @@ def build_dashboard_html(payload: dict) -> str:
 
     .container {
       width: min(1520px, 95vw);
-      margin: 24px auto 64px;
+      margin: 20px auto 56px;
       display: grid;
-      gap: 20px;
+      gap: 18px;
     }
 
     .panel {
@@ -259,9 +259,9 @@ def build_dashboard_html(payload: dict) -> str:
 
     .header-panel {
       display: grid;
-      gap: 20px;
+      gap: 16px;
       background: linear-gradient(145deg, var(--header-grad-a), var(--header-grad-b));
-      padding: 22px;
+      padding: 18px;
       overflow: hidden;
       position: relative;
     }
@@ -297,8 +297,8 @@ def build_dashboard_html(payload: dict) -> str:
 
     .header-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.95fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, 2fr) minmax(280px, 0.86fr);
+      gap: 14px;
       align-items: stretch;
       position: relative;
       z-index: 1;
@@ -327,7 +327,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     h1 {
       margin: 0;
-      font-size: 34px;
+      font-size: 30px;
       line-height: 1.05;
       color: var(--hero-ink);
       letter-spacing: -0.03em;
@@ -336,9 +336,9 @@ def build_dashboard_html(payload: dict) -> str:
     .subtitle {
       margin-top: 2px;
       color: var(--hero-sub);
-      font-size: 16px;
-      line-height: 1.5;
-      max-width: 860px;
+      font-size: 15px;
+      line-height: 1.45;
+      max-width: 780px;
     }
 
     .header-tools {
@@ -350,20 +350,20 @@ def build_dashboard_html(payload: dict) -> str:
 
     .signal-row {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
-      margin-top: 4px;
+      margin-top: 2px;
     }
 
     .signal-pill {
       display: inline-flex;
       align-items: center;
-      padding: 8px 12px;
+      padding: 7px 10px;
       border-radius: 999px;
       background: rgba(255, 255, 255, 0.55);
       border: 1px solid var(--chip-border);
       color: var(--chip-ink);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       backdrop-filter: blur(8px);
     }
@@ -376,9 +376,9 @@ def build_dashboard_html(payload: dict) -> str:
       border: 1px solid var(--line);
       border-radius: 16px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
-      padding: 20px;
+      padding: 16px;
       display: grid;
-      gap: 14px;
+      gap: 10px;
       box-shadow: var(--shadow-soft);
     }
 
@@ -392,8 +392,8 @@ def build_dashboard_html(payload: dict) -> str:
 
     .decision-text {
       color: var(--ink);
-      font-size: 14px;
-      line-height: 1.5;
+      font-size: 13px;
+      line-height: 1.45;
     }
 
     .rule-grid {
@@ -404,13 +404,13 @@ def build_dashboard_html(payload: dict) -> str:
     .rule-chip {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       align-items: center;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border-radius: 12px;
       border: 1px solid var(--line);
       background: var(--panel-soft);
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.35;
       color: var(--chart-text);
     }
@@ -478,9 +478,9 @@ def build_dashboard_html(payload: dict) -> str:
       border-radius: 16px;
       background: rgba(255, 255, 255, 0.66);
       backdrop-filter: blur(10px);
-      padding: 16px;
+      padding: 14px;
       display: grid;
-      gap: 14px;
+      gap: 12px;
       position: relative;
       z-index: 1;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
@@ -520,6 +520,34 @@ def build_dashboard_html(payload: dict) -> str:
       gap: 8px;
       align-items: center;
       flex-wrap: wrap;
+    }
+
+    .filters-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filters-summary:empty {
+      display: none;
+    }
+
+    .filters-summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--chip-border);
+      background: var(--chip-bg);
+      color: var(--chip-ink);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .filters-shell.compact .filters-body {
+      display: none;
     }
 
     .filter-grid {
@@ -806,8 +834,9 @@ def build_dashboard_html(payload: dict) -> str:
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .section-head h2 {
@@ -826,7 +855,7 @@ def build_dashboard_html(payload: dict) -> str:
     .chart-grid-primary {
       display: grid;
       grid-template-columns: repeat(2, minmax(300px, 1fr));
-      gap: 12px;
+      gap: 14px;
     }
 
     .chart-grid-primary .chart-card:nth-child(5) {
@@ -836,7 +865,7 @@ def build_dashboard_html(payload: dict) -> str:
     .chart-grid-diagnostic {
       display: grid;
       grid-template-columns: repeat(2, minmax(300px, 1fr));
-      gap: 12px;
+      gap: 14px;
     }
 
     .chart-card {
@@ -844,7 +873,7 @@ def build_dashboard_html(payload: dict) -> str:
       border-radius: 16px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       padding: 14px;
-      min-height: 350px;
+      min-height: 330px;
       display: grid;
       grid-template-rows: auto auto 1fr;
       gap: 8px;
@@ -903,7 +932,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .chart-surface {
       width: 100%;
-      height: 272px;
+      height: 250px;
       position: relative;
       border-radius: 14px;
       border: 1px solid var(--line);
@@ -920,7 +949,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .chart-empty {
       width: 100%;
-      height: 272px;
+      height: 250px;
       display: grid;
       place-items: center;
       color: var(--chart-muted);
@@ -980,6 +1009,10 @@ def build_dashboard_html(payload: dict) -> str:
       display: grid;
       justify-items: start;
       gap: 8px;
+    }
+
+    .table-wrap.expanded {
+      max-height: none;
     }
 
     .risk-score {
@@ -1084,7 +1117,9 @@ def build_dashboard_html(payload: dict) -> str:
       .footer-grid { grid-template-columns: 1fr; }
       .header-tools { width: 100%; justify-content: flex-start; }
       .filters-top { flex-direction: column; }
-      h1 { font-size: 28px; }
+      h1 { font-size: 26px; }
+      .signal-row { display: none; }
+      .chart-head { flex-direction: column; align-items: flex-start; }
     }
 
     @media print {
@@ -1186,12 +1221,15 @@ def build_dashboard_html(payload: dict) -> str:
             <p class="filters-note">Adjust scope by period and commercial slice. KPI cards, charts, and ranked risks stay synchronized so the dashboard remains decision-consistent.</p>
           </div>
           <div class="filter-actions">
+            <button class="btn" id="btn-toggle-filters" type="button" aria-expanded="true">Hide Filters</button>
             <button class="btn" id="btn-select-all">Select All</button>
             <button class="btn" id="btn-reset">Reset</button>
           </div>
         </div>
+        <div class="filters-summary" id="filters-summary"></div>
 
-        <div class="filter-grid">
+        <div class="filters-body" id="filters-body">
+          <div class="filter-grid">
           <div class="filter-group">
             <label for="filter-start">Start Date</label>
             <input id="filter-start" type="date" />
@@ -1215,6 +1253,7 @@ def build_dashboard_html(payload: dict) -> str:
           <div class="filter-group">
             <label for="filter-product">Product Type</label>
             <select id="filter-product" multiple></select>
+          </div>
           </div>
         </div>
       </div>
@@ -1333,7 +1372,7 @@ def build_dashboard_html(payload: dict) -> str:
         <h2>Risk / Priority Ranking</h2>
         <p>Ranked issues translate the analysis into where management attention should go next.</p>
       </div>
-      <div class="table-wrap" style="max-height:none;">
+      <div class="table-wrap expanded">
         <table id="risk-table"></table>
       </div>
     </section>
@@ -1377,10 +1416,12 @@ def build_dashboard_html(payload: dict) -> str:
       cohort_base: 55.0
     };
     const THEME_KEY = 'exec_dashboard_theme';
+    const FILTERS_COLLAPSED_KEY = 'exec_dashboard_filters_collapsed';
 
     const state = {
       regionSort: { key: 'marginPct', dir: 'desc' },
       riskSort: { key: 'priorityScore', dir: 'desc' },
+      filtersCollapsed: false,
     };
 
     const tooltipEl = document.getElementById('tooltip');
@@ -1430,6 +1471,47 @@ def build_dashboard_html(payload: dict) -> str:
       window.localStorage.setItem(THEME_KEY, next);
       applyTheme(next);
       computeAndRender();
+    }
+
+    function resolveFiltersCollapsed() {
+      const saved = window.localStorage.getItem(FILTERS_COLLAPSED_KEY);
+      if (saved === 'true') return true;
+      if (saved === 'false') return false;
+      return window.innerWidth >= 1180;
+    }
+
+    function setFiltersCollapsed(collapsed, persist = true) {
+      state.filtersCollapsed = !!collapsed;
+      const shell = document.querySelector('.filters-shell');
+      const btn = document.getElementById('btn-toggle-filters');
+      if (shell) shell.classList.toggle('compact', state.filtersCollapsed);
+      if (btn) {
+        btn.textContent = state.filtersCollapsed ? 'Show Filters' : 'Hide Filters';
+        btn.setAttribute('aria-expanded', state.filtersCollapsed ? 'false' : 'true');
+      }
+      if (persist) {
+        window.localStorage.setItem(FILTERS_COLLAPSED_KEY, state.filtersCollapsed ? 'true' : 'false');
+      }
+    }
+
+    function summarizeSelectedValues(set, allValues, label) {
+      const selected = allValues.filter(v => set.has(v));
+      if (selected.length === allValues.length) return `${label}: All`;
+      if (selected.length === 1) return `${label}: ${selected[0]}`;
+      return `${label}: ${selected.length} selected`;
+    }
+
+    function renderFilterSummary(startDate, endDate, selected) {
+      const wrap = document.getElementById('filters-summary');
+      if (!wrap) return;
+      const chips = [
+        `Window: ${startDate} to ${endDate}`,
+        summarizeSelectedValues(selected.segments, DASHBOARD_DATA.meta.values.segments, 'Segment'),
+        summarizeSelectedValues(selected.regions, DASHBOARD_DATA.meta.values.regions, 'Region'),
+        summarizeSelectedValues(selected.channels, DASHBOARD_DATA.meta.values.acquisition_channels, 'Channel'),
+        summarizeSelectedValues(selected.products, DASHBOARD_DATA.meta.values.product_types, 'Product'),
+      ];
+      wrap.innerHTML = chips.map(text => `<span class="filters-summary-chip">${text}</span>`).join('');
     }
 
     function fmtCurrency(value) {
@@ -2224,6 +2306,23 @@ def build_dashboard_html(payload: dict) -> str:
 
     function renderRegionTable(rows) {
       const table = document.getElementById('region-table');
+      if (!rows.length) {
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Revenue</th>
+              <th>Cost</th>
+              <th>Contribution Margin</th>
+              <th>Margin %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5">No regional profitability view is available for the current filter scope.</td></tr>
+          </tbody>
+        `;
+        return;
+      }
       const sorted = [...rows].sort((a, b) => {
         const k = state.regionSort.key;
         const dir = state.regionSort.dir === 'asc' ? 1 : -1;
@@ -2269,6 +2368,23 @@ def build_dashboard_html(payload: dict) -> str:
 
     function renderRiskTable(rows) {
       const table = document.getElementById('risk-table');
+      if (!rows.length) {
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Entity</th>
+              <th>Metric Values</th>
+              <th>Risk Interpretation</th>
+              <th>Recommended Action</th>
+              <th>Priority Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5">No ranked risks are available for the current filter scope.</td></tr>
+          </tbody>
+        `;
+        return;
+      }
       const sorted = [...rows].sort((a, b) => {
         const k = state.riskSort.key;
         const dir = state.riskSort.dir === 'asc' ? 1 : -1;
@@ -2327,6 +2443,7 @@ def build_dashboard_html(payload: dict) -> str:
         channels: getSelectedSet('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels),
         products: getSelectedSet('filter-product', DASHBOARD_DATA.meta.values.product_types),
       };
+      renderFilterSummary(startDate, endDate, selected);
 
       const current = applyFilters(startDate, endDate, selected);
 
@@ -2571,6 +2688,7 @@ def build_dashboard_html(payload: dict) -> str:
       populateMultiSelect('filter-region', DASHBOARD_DATA.meta.values.regions);
       populateMultiSelect('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels);
       populateMultiSelect('filter-product', DASHBOARD_DATA.meta.values.product_types);
+      setFiltersCollapsed(resolveFiltersCollapsed(), false);
 
       document.getElementById('filter-start').value = DASHBOARD_DATA.meta.coverage_start;
       document.getElementById('filter-end').value = DASHBOARD_DATA.meta.coverage_end;
@@ -2595,11 +2713,18 @@ def build_dashboard_html(payload: dict) -> str:
       });
 
       document.getElementById('btn-reset').addEventListener('click', resetFilters);
+      document.getElementById('btn-toggle-filters').addEventListener('click', () => {
+        setFiltersCollapsed(!state.filtersCollapsed);
+      });
       document.getElementById('btn-theme').addEventListener('click', toggleTheme);
       document.getElementById('btn-print').addEventListener('click', () => window.print());
 
       computeAndRender();
-      window.addEventListener('resize', () => computeAndRender());
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => computeAndRender(), 120);
+      });
 
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       mediaQuery.addEventListener('change', (event) => {
