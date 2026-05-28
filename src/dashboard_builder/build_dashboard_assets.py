@@ -1328,7 +1328,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     <section class="panel">
       <div class="section-head">
-        <h2>Executive Summary Signals</h2>
+        <h2>Executive Summary</h2>
         <p id="summary-context"></p>
       </div>
       <div class="summary-strip" id="summary-strip"></div>
@@ -1336,7 +1336,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     <section class="panel">
       <div class="section-head">
-        <h2>KPI Pulse</h2>
+        <h2>Headline KPIs</h2>
         <p>Values are filter-aware and benchmarked against the immediately prior period of equal length.</p>
       </div>
       <div class="kpi-grid" id="kpi-grid"></div>
@@ -1398,7 +1398,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     <section class="panel">
       <div class="section-head">
-        <h2>Diagnostic Section</h2>
+        <h2>Diagnostics</h2>
         <p>Use these cuts to localize the pockets where economics weaken first.</p>
       </div>
       <div class="chart-grid-diagnostic">
@@ -1445,7 +1445,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     <section class="panel">
       <div class="section-head">
-        <h2>Risk / Priority Ranking</h2>
+        <h2>Risk Ranking</h2>
         <p>Ranked issues translate the analysis into where management attention should go next.</p>
       </div>
       <div class="table-wrap expanded">
