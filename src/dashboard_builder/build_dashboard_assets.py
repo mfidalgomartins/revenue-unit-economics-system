@@ -108,1287 +108,679 @@ def build_dashboard_html(payload: dict) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Growth Quality Dashboard</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
     :root {
       color-scheme: light;
-      --bg: #f3f6fa;
-      --panel: #ffffff;
-      --panel-soft: #f7f9fc;
-      --panel-tint: #f2f6fb;
-      --ink: #08111f;
-      --sub: #4d5d76;
-      --line: #d5dde8;
-      --line-soft: #e8edf4;
-      --brand: #1f4fbf;
-      --brand-strong: #143983;
-      --brand-soft: rgba(31, 79, 191, 0.10);
-      --good: #0f9d58;
-      --bad: #c62828;
-      --warn: #b26a00;
-      --good-soft: rgba(15, 157, 88, 0.12);
-      --bad-soft: rgba(198, 40, 40, 0.10);
-      --warn-soft: rgba(178, 106, 0, 0.12);
-      --rev: #0b4f6c;
-      --cost: #bf3b2f;
-      --margin: #1f9d89;
-      --accent: #e7a100;
-      --bar: #2f3b5a;
-      --header-grad-a: #fefefe;
-      --header-grad-b: #edf3fb;
-      --hero-ink: #08111f;
-      --hero-sub: #53657f;
-      --chip-bg: #eef2f9;
-      --chip-border: #c8d3ea;
-      --chip-ink: #2b3b63;
-      --control-bg: #ffffff;
-      --control-border: #c9d3e2;
-      --table-head-bg: #f5f7fb;
-      --table-row-hover: #f2f5fb;
-      --chart-grid: #e2e8f0;
-      --chart-axis: #8fa1b8;
-      --chart-text: #2a3b52;
-      --chart-muted: #60738c;
-      --tooltip-bg: rgba(12, 18, 32, 0.94);
-      --shadow: 0 10px 28px rgba(15, 23, 42, 0.10);
-      --shadow-soft: 0 6px 18px rgba(15, 23, 42, 0.07);
-      --shadow-lift: 0 14px 34px rgba(15, 23, 42, 0.14);
-      --focus-ring: 0 0 0 3px rgba(31, 79, 191, 0.16);
+      --bg: #ffffff;
+      --surface: #ffffff;
+      --surface-2: #fafafa;
+      --surface-3: #f4f4f5;
+      --hairline: #ececec;
+      --hairline-strong: #d4d4d4;
+      --ink: #0a0a0a;
+      --ink-2: #262626;
+      --muted: #737373;
+      --subtle: #a3a3a3;
+      --accent: #1d4ed8;
+      --positive: #15803d;
+      --negative: #b91c1c;
+      --warning: #b45309;
+
+      /* Chart palette — used by JS via getComputedStyle. Restrained: ink + muted. */
+      --rev: #0a0a0a;
+      --cost: #a3a3a3;
+      --margin: #15803d;
+      --bar: #0a0a0a;
+      --good: #15803d;
+      --bad: #b91c1c;
+      --warn: #b45309;
+      --chart-grid: #f0f0f0;
+      --chart-axis: #a3a3a3;
+      --chart-text: #404040;
+      --chart-muted: #737373;
+      --tooltip-bg: #0a0a0a;
+      --tooltip-ink: #fafafa;
+      --focus-ring: 0 0 0 3px rgba(29, 78, 216, 0.18);
     }
 
     body[data-theme="dark"] {
       color-scheme: dark;
-      --bg: #071425;
-      --panel: #0d1b31;
-      --panel-soft: #112544;
-      --panel-tint: #10233f;
-      --ink: #e6eefb;
-      --sub: #a8bddc;
-      --line: #1e3658;
-      --line-soft: #274166;
-      --brand: #6ea8ff;
-      --brand-strong: #9fc3ff;
-      --brand-soft: rgba(110, 168, 255, 0.14);
+      --bg: #0a0a0a;
+      --surface: #0a0a0a;
+      --surface-2: #111111;
+      --surface-3: #1a1a1a;
+      --hairline: #1f1f1f;
+      --hairline-strong: #2a2a2a;
+      --ink: #fafafa;
+      --ink-2: #e5e5e5;
+      --muted: #a3a3a3;
+      --subtle: #525252;
+      --accent: #60a5fa;
+      --positive: #4ade80;
+      --negative: #f87171;
+      --warning: #fbbf24;
+
+      --rev: #fafafa;
+      --cost: #525252;
+      --margin: #4ade80;
+      --bar: #fafafa;
       --good: #4ade80;
-      --bad: #fb7185;
-      --warn: #facc15;
-      --good-soft: rgba(74, 222, 128, 0.16);
-      --bad-soft: rgba(251, 113, 133, 0.16);
-      --warn-soft: rgba(250, 204, 21, 0.14);
-      --rev: #8bd4ff;
-      --cost: #f8a29a;
-      --margin: #6ee7cf;
-      --accent: #facc15;
-      --bar: #9db9ff;
-      --header-grad-a: #0d1b31;
-      --header-grad-b: #132647;
-      --hero-ink: #eef5ff;
-      --hero-sub: #abc0dd;
-      --chip-bg: #142948;
-      --chip-border: #2a4a76;
-      --chip-ink: #d7e6ff;
-      --control-bg: #132646;
-      --control-border: #2c4b77;
-      --table-head-bg: #132646;
-      --table-row-hover: #132a4a;
-      --chart-grid: #2b4569;
-      --chart-axis: #6f8fb5;
-      --chart-text: #c7d7f2;
-      --chart-muted: #8fa7c6;
-      --tooltip-bg: rgba(2, 6, 23, 0.96);
-      --shadow: 0 18px 42px rgba(2, 6, 23, 0.48);
-      --shadow-soft: 0 10px 26px rgba(2, 6, 23, 0.36);
-      --shadow-lift: 0 26px 58px rgba(2, 6, 23, 0.52);
-      --focus-ring: 0 0 0 3px rgba(110, 168, 255, 0.18);
+      --bad: #f87171;
+      --warn: #fbbf24;
+      --chart-grid: #1f1f1f;
+      --chart-axis: #525252;
+      --chart-text: #d4d4d4;
+      --chart-muted: #a3a3a3;
+      --tooltip-bg: #fafafa;
+      --tooltip-ink: #0a0a0a;
+      --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.22);
     }
 
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      font-family: "Avenir Next", "Segoe UI Variable", "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-feature-settings: 'ss01', 'cv11';
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
       background: var(--bg);
       color: var(--ink);
-      transition: background 180ms ease, color 180ms ease;
-    }
-
-    body[data-theme="dark"] {
-      background: var(--bg);
-    }
-
-    .container {
-      width: min(1520px, 95vw);
-      margin: 20px auto 56px;
-      display: grid;
-      gap: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: background 160ms ease, color 160ms ease;
     }
 
     .skip-link {
       position: absolute;
-      left: 16px;
-      top: 12px;
-      z-index: 10000;
-      transform: translateY(-140%);
-      background: var(--ink);
-      color: var(--panel);
-      border-radius: 8px;
-      padding: 10px 12px;
-      font-size: 13px;
-      font-weight: 800;
+      left: -9999px;
     }
-
     .skip-link:focus {
-      transform: translateY(0);
-      outline: 3px solid var(--brand);
-      outline-offset: 2px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      padding: 22px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .panel::before {
-      content: "";
-      position: absolute;
-      inset: 0 0 auto 0;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0));
-      opacity: 0.7;
-      pointer-events: none;
-    }
-
-    body[data-theme="dark"] .panel::before {
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
-    }
-
-    .panel > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .header-panel {
-      display: grid;
-      gap: 16px;
-      background: linear-gradient(145deg, var(--header-grad-a), var(--header-grad-b));
-      padding: 18px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .header-panel::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, rgba(255,255,255,0.10), transparent 36%);
-      pointer-events: none;
-    }
-
-    .header-top {
-      display: flex;
-      justify-content: flex-end;
-      gap: 16px;
-      align-items: flex-start;
-      flex-wrap: wrap;
-    }
-
-    .header-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(280px, 0.86fr);
-      gap: 14px;
-      align-items: stretch;
-      position: relative;
-      z-index: 1;
-    }
-
-    .header-copy {
-      display: grid;
-      gap: 10px;
-      align-content: start;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      width: fit-content;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: var(--brand-soft);
-      color: var(--brand-strong);
+      left: 16px;
+      top: 16px;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 8px 12px;
+      border-radius: 4px;
+      z-index: 10000;
       font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
     }
 
-    h1 {
-      margin: 0;
-      font-size: 30px;
-      line-height: 1.05;
-      color: var(--hero-ink);
-      letter-spacing: -0.03em;
+    .container {
+      width: min(1320px, 92vw);
+      margin: 0 auto;
+      padding: 48px 0 80px;
     }
 
-    .subtitle {
-      margin-top: 2px;
-      color: var(--hero-sub);
-      font-size: 15px;
-      line-height: 1.45;
-      max-width: 780px;
-    }
-
-    .header-tools {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .signal-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 2px;
-    }
-
-    .signal-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.55);
-      border: 1px solid var(--chip-border);
-      color: var(--chip-ink);
-      font-size: 11px;
-      font-weight: 700;
-      backdrop-filter: blur(8px);
-    }
-
-    body[data-theme="dark"] .signal-pill {
-      background: rgba(13, 27, 49, 0.78);
-    }
-
-    .decision-brief {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
-      padding: 16px;
-      display: grid;
-      gap: 10px;
-      box-shadow: var(--shadow-soft);
-    }
-
-    .decision-title {
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      color: var(--sub);
-    }
-
-    .decision-text {
-      color: var(--ink);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .rule-grid {
-      display: grid;
-      gap: 10px;
-    }
-
-    .rule-chip {
+    /* MASTHEAD ----------------------------------------------------- */
+    .masthead {
       display: flex;
       justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--hairline);
+      margin-bottom: 28px;
+    }
+    .masthead-title {
+      display: grid;
+      gap: 6px;
+      max-width: 720px;
+    }
+    .masthead h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.022em;
+      color: var(--ink);
+      line-height: 1.15;
+    }
+    .masthead .lede {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .masthead-tools {
+      display: flex;
       gap: 10px;
       align-items: center;
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: var(--panel-soft);
-      font-size: 11px;
-      line-height: 1.35;
-      color: var(--chart-text);
+      flex-shrink: 0;
     }
-
-    .rule-chip strong {
-      color: var(--ink);
+    .tool-meta {
       font-size: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
     }
-
-    .print-coverage {
-      display: none;
-      margin-top: 6px;
+    .tool-btn {
+      font-family: inherit;
+      background: var(--surface);
+      border: 1px solid var(--hairline-strong);
+      color: var(--ink-2);
+      border-radius: 6px;
+      padding: 7px 12px;
       font-size: 12px;
-      color: var(--sub);
-    }
-
-    .meta-chip {
-      background: var(--chip-bg);
-      border: 1px solid var(--chip-border);
-      color: var(--chip-ink);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .theme-btn,
-    .print-btn {
-      border: 1px solid var(--chip-border);
-      background: rgba(255, 255, 255, 0.72);
-      color: var(--ink);
-      border-radius: 999px;
-      padding: 8px 13px;
-      font-size: 12px;
-      font-weight: 700;
+      font-weight: 500;
       cursor: pointer;
-      white-space: nowrap;
-      backdrop-filter: blur(8px);
-      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
     }
-
-    .theme-btn:hover,
-    .print-btn:hover {
-      background: var(--panel-soft);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-soft);
+    .tool-btn:hover {
+      background: var(--surface-2);
+      border-color: var(--ink-2);
+      color: var(--ink);
     }
-
-    body[data-theme="dark"] .theme-btn,
-    body[data-theme="dark"] .print-btn {
-      background: rgba(13, 27, 49, 0.82);
-    }
-
-    .theme-btn:focus-visible,
-    .print-btn:focus-visible,
-    .btn:focus-visible,
+    .tool-btn:focus-visible,
     input[type="date"]:focus-visible,
     select:focus-visible {
       outline: none;
       box-shadow: var(--focus-ring);
+      border-color: var(--accent);
     }
 
-    .filters-shell {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.66);
-      backdrop-filter: blur(10px);
-      padding: 14px;
-      display: grid;
-      gap: 12px;
-      position: relative;
-      z-index: 1;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
-    }
-
-    body[data-theme="dark"] .filters-shell {
-      background: rgba(13, 27, 49, 0.72);
-    }
-
-    .filters-top {
+    /* FILTERS ------------------------------------------------------ */
+    .filters {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
       flex-wrap: wrap;
-    }
-
-    .filters-title {
-      margin: 0 0 4px;
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--sub);
-    }
-
-    .filters-note {
-      margin: 0;
-      max-width: 760px;
-      font-size: 13px;
-      line-height: 1.5;
-      color: var(--chart-text);
-    }
-
-    .filter-actions {
-      display: flex;
-      gap: 8px;
+      gap: 14px 18px;
       align-items: center;
-      flex-wrap: wrap;
+      padding: 16px 0 28px;
+      border-bottom: 1px solid var(--hairline);
+      margin-bottom: 36px;
     }
-
-    .filters-summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .filters-summary:empty {
-      display: none;
-    }
-
-    .filters-summary-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--chip-border);
-      background: var(--chip-bg);
-      color: var(--chip-ink);
-      font-size: 11px;
-      font-weight: 700;
-      line-height: 1;
-    }
-
-    .filters-shell.compact .filters-body {
-      display: none;
-    }
-
-    .filter-grid {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(150px, 1fr));
-      gap: 14px;
-      align-items: end;
-    }
-
     .filter-group {
-      display: grid;
-      gap: 8px;
-      align-content: start;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,0.50), rgba(255,255,255,0.16));
-      box-shadow: var(--shadow-soft);
+      display: inline-flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 130px;
     }
-
-    body[data-theme="dark"] .filter-group {
-      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.04));
-    }
-
     .filter-group label {
-      font-size: 12px;
-      color: var(--sub);
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    input[type="date"], select {
-      width: 100%;
-      border: 1px solid var(--control-border);
-      border-radius: 8px;
-      padding: 10px 11px;
-      font-size: 13px;
-      background: var(--control-bg);
-      color: var(--ink);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.34);
-      transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
-    }
-
-    select[multiple] {
-      min-height: 112px;
-      padding: 8px 10px;
-    }
-
-    .btn {
-      border: 1px solid var(--control-border);
-      background: linear-gradient(180deg, var(--panel), var(--panel-soft));
-      color: var(--ink);
-      border-radius: 999px;
-      padding: 9px 14px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: var(--shadow-soft);
-      transition: transform 140ms ease, background 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
-    }
-
-    .btn:hover {
-      background: var(--control-bg);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
-
-    .summary-strip {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(220px, 1fr));
-      gap: 14px;
-    }
-
-    .summary-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px 16px 16px;
-      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
-      box-shadow: var(--shadow-soft);
-      position: relative;
-      overflow: hidden;
-      display: grid;
-      gap: 8px;
-      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-    }
-
-    .summary-card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 4px;
-      width: 100%;
-      background: linear-gradient(90deg, var(--brand), var(--accent));
-      opacity: 0.85;
-    }
-
-    .summary-card[data-tone="good"]::before { background: linear-gradient(90deg, var(--good), var(--brand)); }
-    .summary-card[data-tone="warn"]::before { background: linear-gradient(90deg, var(--warn), var(--accent)); }
-    .summary-card[data-tone="bad"]::before { background: linear-gradient(90deg, var(--bad), var(--accent)); }
-
-    .summary-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-    }
-
-    .summary-title {
-      font-size: 12px;
-      color: var(--sub);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .summary-badge {
-      flex: 0 0 auto;
-      padding: 5px 8px;
-      border-radius: 999px;
       font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      background: var(--brand-soft);
-      color: var(--brand-strong);
-    }
-
-    .summary-badge.good {
-      color: var(--good);
-      background: var(--good-soft);
-    }
-
-    .summary-badge.warn {
-      color: var(--warn);
-      background: var(--warn-soft);
-    }
-
-    .summary-badge.bad {
-      color: var(--bad);
-      background: var(--bad-soft);
-    }
-
-    .summary-text {
-      font-size: 14px;
-      line-height: 1.5;
-      color: var(--ink);
-    }
-
-    .summary-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lift);
-    }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(145px, 1fr));
-      gap: 12px;
-    }
-
-    .kpi-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
-      min-height: 132px;
-      box-shadow: var(--shadow-soft);
-      display: grid;
-      gap: 6px;
-      position: relative;
-      overflow: hidden;
-      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-    }
-
-    .kpi-card::before {
-      content: "";
-      position: absolute;
-      inset: 0 auto auto 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, var(--brand), rgba(255,255,255,0));
-      opacity: 0.88;
-    }
-
-    .kpi-card[data-tone="good"] {
-      border-color: rgba(15, 157, 88, 0.22);
-      background: linear-gradient(180deg, var(--panel), var(--good-soft));
-    }
-
-    .kpi-card[data-tone="warn"] {
-      border-color: rgba(178, 106, 0, 0.24);
-      background: linear-gradient(180deg, var(--panel), var(--warn-soft));
-    }
-
-    .kpi-card[data-tone="bad"] {
-      border-color: rgba(198, 40, 40, 0.20);
-      background: linear-gradient(180deg, var(--panel), var(--bad-soft));
-    }
-
-    .kpi-label {
-      font-size: 12px;
-      color: var(--sub);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .kpi-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-    }
-
-    .kpi-label-wrap {
-      display: grid;
-      gap: 2px;
-    }
-
-    .kpi-state {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      background: var(--brand-soft);
-      color: var(--brand-strong);
-      white-space: nowrap;
-    }
-
-    .kpi-state.good {
-      background: var(--good-soft);
-      color: var(--good);
-    }
-
-    .kpi-state.warn {
-      background: var(--warn-soft);
-      color: #b26a00;
-    }
-
-    .kpi-state.bad {
-      background: var(--bad-soft);
-      color: var(--bad);
-    }
-
-    body[data-theme="dark"] .kpi-state.warn {
-      color: var(--warn);
-    }
-
-    .kpi-state-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: currentColor;
-      box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
-    }
-
-    .kpi-value {
-      font-size: 30px;
-      font-weight: 800;
-      line-height: 1.1;
-      color: var(--ink);
-      margin-bottom: 2px;
-      letter-spacing: -0.03em;
-    }
-
-    .kpi-delta { font-size: 12px; font-weight: 700; }
-    .kpi-delta.positive { color: var(--good); }
-    .kpi-delta.negative { color: var(--bad); }
-    .kpi-delta.neutral { color: var(--sub); }
-    .kpi-note { font-size: 11px; color: var(--sub); margin-top: 2px; line-height: 1.35; }
-    .kpi-action {
-      margin-top: 2px;
-      padding-top: 7px;
-      border-top: 1px solid var(--line-soft);
-      color: var(--chart-text);
-      font-size: 11px;
-      line-height: 1.35;
-      font-weight: 700;
-    }
-
-    .decision-command {
-      display: grid;
-      grid-template-columns: minmax(280px, 1.1fr) repeat(3, minmax(180px, 0.75fr));
-      gap: 10px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .command-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      padding: 14px;
-      box-shadow: var(--shadow-soft);
-      display: grid;
-      gap: 8px;
-      min-height: 116px;
-    }
-
-    .command-card.primary {
-      border-left: 5px solid var(--warn);
-      background: linear-gradient(180deg, var(--panel), var(--warn-soft));
-    }
-
-    .command-label {
-      color: var(--sub);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .command-value {
-      color: var(--ink);
-      font-size: 18px;
-      line-height: 1.25;
-      font-weight: 800;
-    }
-
-    .command-copy {
-      color: var(--chart-text);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .kpi-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lift);
-    }
-
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 12px;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .section-head h2 {
-      margin: 0;
-      font-size: 22px;
-      color: var(--ink);
-      letter-spacing: -0.02em;
-    }
-
-    .section-head p {
-      margin: 0;
-      font-size: 13px;
-      color: var(--sub);
-    }
-
-    .chart-grid-primary {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(300px, 1fr));
-      gap: 14px;
-    }
-
-    .chart-grid-primary .chart-card:nth-child(5) {
-      grid-column: span 2;
-    }
-
-    .chart-grid-diagnostic {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(300px, 1fr));
-      gap: 14px;
-    }
-
-    .chart-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
-      padding: 14px;
-      min-height: 330px;
-      display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      gap: 8px;
-      box-shadow: var(--shadow-soft);
-      transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
-    }
-
-    .chart-card.primary { border-color: rgba(31, 79, 191, 0.18); }
-    .chart-card.diagnostic { border-color: rgba(47, 59, 90, 0.18); }
-
-    .chart-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: flex-start;
-    }
-
-    .chart-tag {
-      flex: 0 0 auto;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      background: var(--chip-bg);
-      color: var(--chip-ink);
-      border: 1px solid var(--chip-border);
-    }
-
-    .chart-card.primary .chart-tag {
-      background: var(--brand-soft);
-      color: var(--brand-strong);
-      border-color: rgba(31, 79, 191, 0.20);
-    }
-
-    .chart-card.diagnostic .chart-tag {
-      background: rgba(96, 115, 140, 0.12);
-      color: var(--chart-text);
-    }
-
-    .chart-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--ink);
-      margin: 0;
-      line-height: 1.35;
-    }
-
-    .chart-subtitle {
-      margin: 0;
-      font-size: 12px;
-      color: var(--sub);
-      line-height: 1.4;
-    }
-
-    .chart-surface {
-      width: 100%;
-      height: 250px;
-      position: relative;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background:
-        linear-gradient(180deg, var(--panel-soft), var(--panel));
-      padding: 10px;
-      overflow: hidden;
-    }
-
-    .chart-surface canvas {
-      border-radius: 10px;
-    }
-
-    .chart-insight {
-      min-height: 38px;
-      border-top: 1px solid var(--line-soft);
-      padding-top: 8px;
-      color: var(--chart-text);
-      font-size: 12px;
-      line-height: 1.45;
-      font-weight: 650;
-    }
-
-    .chart-empty {
-      width: 100%;
-      height: 250px;
-      display: grid;
-      place-items: center;
-      color: var(--chart-muted);
-      font-size: 13px;
-      border: 1px dashed var(--control-border);
-      border-radius: 8px;
-      background: var(--panel-soft);
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      max-height: 264px;
-      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.30);
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: 12px;
-      background: var(--panel);
-    }
-
-    th, td {
-      padding: 10px 11px;
-      border-bottom: 1px solid var(--line-soft);
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: var(--table-head-bg);
-      color: var(--chart-text);
-      cursor: pointer;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      user-select: none;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    tr:hover td { background: var(--table-row-hover); }
-
-    tbody tr:nth-child(even) td { background: var(--panel-soft); }
-
-    td:first-child {
-      font-weight: 700;
-      color: var(--ink);
-    }
-
-    .risk-priority {
-      display: grid;
-      justify-items: start;
-      gap: 8px;
-    }
-
-    .table-wrap.expanded {
-      max-height: none;
-    }
-
-    .risk-score {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 56px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-weight: 800;
-      background: var(--panel-soft);
-      border: 1px solid var(--line);
-      color: var(--ink);
-    }
-
-    .risk-badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 800;
+      font-weight: 500;
+      color: var(--muted);
       letter-spacing: 0.05em;
       text-transform: uppercase;
     }
-
-    .risk-badge.high {
-      color: var(--bad);
-      background: var(--bad-soft);
-    }
-
-    .risk-badge.medium {
-      color: var(--warn);
-      background: var(--warn-soft);
-    }
-
-    .risk-badge.low {
-      color: var(--good);
-      background: var(--good-soft);
-    }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(220px, 1fr));
-      gap: 12px;
-      font-size: 12px;
-      color: var(--chart-text);
-    }
-
-    .foot-block {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px;
-      background: linear-gradient(180deg, var(--panel), var(--panel-tint));
-      line-height: 1.45;
-      transition: transform 160ms ease, box-shadow 160ms ease;
-    }
-
-    .foot-block strong {
-      display: block;
-      margin-bottom: 4px;
+    input[type="date"], select {
+      font-family: inherit;
+      background: var(--surface);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 13px;
       color: var(--ink);
+      transition: border-color 120ms ease;
+    }
+    input[type="date"]:hover, select:hover { border-color: var(--ink-2); }
+    select[multiple] {
+      min-height: 34px;
+      max-height: 100px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .filter-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    #btn-toggle-filters { display: none; }
+
+    /* KPI BAND ----------------------------------------------------- */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      border-top: 1px solid var(--hairline);
+      border-bottom: 1px solid var(--hairline);
+      margin-bottom: 36px;
+    }
+    .kpi-card {
+      padding: 22px 22px 24px;
+      border-right: 1px solid var(--hairline);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+    .kpi-card:last-child { border-right: none; }
+    .kpi-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .kpi-value {
+      font-family: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 30px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: -0.028em;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      word-break: break-word;
+    }
+    .kpi-delta {
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+    .kpi-delta.positive { color: var(--positive); }
+    .kpi-delta.negative { color: var(--negative); }
+
+    /* DECISION STRIP ---------------------------------------------- */
+    .decision {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      background: var(--surface);
+      margin-bottom: 48px;
+      overflow: hidden;
+    }
+    .decision .cell {
+      padding: 18px 22px 20px;
+      border-right: 1px solid var(--hairline);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .decision .cell:last-child { border-right: none; }
+    .decision .cell.lead { background: var(--surface-2); }
+    .decision .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+    }
+    .decision .value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .decision .copy {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
     }
 
-    .foot-block:hover,
-    .chart-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lift);
+    /* SECTION ------------------------------------------------------ */
+    .section { margin-bottom: 56px; }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .section-head .sub {
+      font-size: 12px;
+      color: var(--muted);
     }
 
+    /* SUMMARY STRIP — narrative signals --------------------------- */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      background: var(--surface);
+      overflow: hidden;
+    }
+    .summary-card {
+      padding: 18px 22px 20px;
+      border-right: 1px solid var(--hairline);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .summary-card:last-child { border-right: none; }
+    .summary-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .summary-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+    }
+    .summary-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .summary-badge.good { color: var(--positive); }
+    .summary-badge.warn { color: var(--warning); }
+    .summary-badge.bad  { color: var(--negative); }
+    .summary-text {
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.55;
+    }
+
+    /* CHARTS ------------------------------------------------------- */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .chart-card {
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 20px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .chart-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+    }
+    .chart-subtitle {
+      margin: 0 0 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .chart-surface {
+      width: 100%;
+      height: 240px;
+      position: relative;
+    }
+    .chart-surface canvas, .chart-surface svg {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .chart-insight {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--hairline);
+      font-size: 12px;
+      color: var(--ink-2);
+      line-height: 1.55;
+      min-height: 30px;
+      font-variant-numeric: tabular-nums;
+    }
+    .chart-card.span-2 { grid-column: span 2; }
+    .chart-empty {
+      width: 100%;
+      height: 240px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      border: 1px dashed var(--hairline-strong);
+      border-radius: 6px;
+    }
+
+    /* TABLES ------------------------------------------------------- */
+    .table-wrap {
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .chart-card .table-wrap {
+      border: none;
+      border-radius: 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--hairline);
+    }
+    th {
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      user-select: none;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    th:hover { color: var(--ink); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface-2); }
+    td {
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-2);
+      vertical-align: middle;
+    }
+    td:first-child {
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .table-wrap.expanded { max-height: none; }
+
+    .risk-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+    }
+    .risk-badge.high   { color: var(--negative); background: rgba(185, 28, 28, 0.08); }
+    .risk-badge.medium { color: var(--warning);  background: rgba(180, 83, 9, 0.08); }
+    .risk-badge.low    { color: var(--positive); background: rgba(21, 128, 61, 0.08); }
+    body[data-theme="dark"] .risk-badge.high   { background: rgba(248, 113, 113, 0.14); }
+    body[data-theme="dark"] .risk-badge.medium { background: rgba(251, 191, 36, 0.14); }
+    body[data-theme="dark"] .risk-badge.low    { background: rgba(74, 222, 128, 0.14); }
+    .risk-score {
+      display: inline-block;
+      min-width: 36px;
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-weight: 500;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    .risk-priority { display: flex; flex-direction: column; gap: 6px; }
+
+    /* FOOTNOTE ----------------------------------------------------- */
+    .footnote {
+      font-size: 12px;
+      color: var(--muted);
+      padding-top: 28px;
+      border-top: 1px solid var(--hairline);
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+    .footnote code {
+      font-family: 'Geist Mono', monospace;
+      font-size: 11.5px;
+      background: var(--surface-2);
+      padding: 1px 6px;
+      border-radius: 3px;
+      color: var(--ink-2);
+    }
+
+    /* TOOLTIP ------------------------------------------------------ */
     .tooltip {
       position: fixed;
       pointer-events: none;
       background: var(--tooltip-bg);
-      color: #fff;
+      color: var(--tooltip-ink);
       font-size: 12px;
-      border-radius: 6px;
-      padding: 6px 8px;
+      font-family: 'Geist Mono', ui-monospace, monospace;
+      border-radius: 4px;
+      padding: 7px 10px;
       z-index: 9999;
       display: none;
       max-width: 320px;
-      line-height: 1.3;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      line-height: 1.45;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+      font-variant-numeric: tabular-nums;
     }
 
-    @media (max-width: 1280px) {
-      .kpi-grid { grid-template-columns: repeat(4, minmax(130px, 1fr)); }
-      .summary-strip { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
-      .filter-grid { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
-      .header-layout { grid-template-columns: 1fr; }
-      .decision-command { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
+    /* RESPONSIVE --------------------------------------------------- */
+    @media (max-width: 1180px) {
+      .kpi-row { grid-template-columns: repeat(3, 1fr); }
+      .kpi-card:nth-child(3n) { border-right: none; }
+      .kpi-card:nth-child(n+4) { border-top: 1px solid var(--hairline); }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-card:nth-child(2n) { border-right: none; }
+      .summary-card:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+      .decision { grid-template-columns: 1fr 1fr; }
+      .decision .cell:nth-child(2n) { border-right: none; }
+      .decision .cell:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+    }
+    @media (max-width: 860px) {
+      .container { padding: 32px 0 64px; }
+      .masthead { flex-direction: column; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .kpi-card:nth-child(2n) { border-right: none; }
+      .kpi-card:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-card { border-right: none; }
+      .summary-card + .summary-card { border-top: 1px solid var(--hairline); }
+      .decision { grid-template-columns: 1fr; }
+      .decision .cell { border-right: none; }
+      .decision .cell + .cell { border-top: 1px solid var(--hairline); }
+      .chart-grid { grid-template-columns: 1fr; }
+      .chart-card.span-2 { grid-column: span 1; }
+      .filter-group { min-width: 0; flex: 1 1 calc(50% - 9px); }
     }
 
-    @media (max-width: 900px) {
-      .chart-grid-primary,
-      .chart-grid-diagnostic {
-        grid-template-columns: 1fr;
-      }
-      .chart-grid-primary .chart-card:nth-child(5) { grid-column: span 1; }
-      .kpi-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
-      .summary-strip { grid-template-columns: 1fr; }
-      .filter-grid { grid-template-columns: 1fr; }
-      .footer-grid { grid-template-columns: 1fr; }
-      .decision-command { grid-template-columns: 1fr; }
-      .header-tools { width: 100%; justify-content: flex-start; }
-      .filters-top { flex-direction: column; }
-      h1 { font-size: 26px; }
-      .signal-row { display: none; }
-      .chart-head { flex-direction: column; align-items: flex-start; }
-    }
-
+    /* PRINT -------------------------------------------------------- */
     @media print {
       :root { color-scheme: light; }
-      body {
-        background: #ffffff;
-        color: #111827;
-      }
-      .container {
-        width: 100%;
-        margin: 0;
-        gap: 12px;
-      }
-      .panel {
+      body { background: #ffffff; color: #0a0a0a; }
+      .filters, .tool-btn, .masthead-tools { display: none !important; }
+      .container { width: 100%; padding: 16px; }
+      .chart-card, .kpi-card, .summary-card, .table-wrap, .decision {
         box-shadow: none;
-        border: 1px solid #d1d5db;
         page-break-inside: avoid;
       }
-      .header-panel {
-        background: #ffffff;
-      }
-      .theme-btn,
-      .print-btn,
-      .filter-actions,
-      .meta-chip {
-        display: none !important;
-      }
-      .filters-shell {
-        border: 1px solid #d1d5db;
-        background: #ffffff;
-      }
-      .print-coverage { display: block; }
-      .chart-card,
-      .kpi-card,
-      .summary-card,
-      .foot-block {
-        box-shadow: none;
-      }
-      .tooltip {
-        display: none !important;
-      }
-      .chart-surface,
-      .chart-empty {
-        height: 220px;
-      }
-      .table-wrap {
-        max-height: none;
-      }
-      .signal-pill,
-      .decision-brief {
-        break-inside: avoid;
-      }
+      .tooltip { display: none !important; }
     }
   </style>
 </head>
 <body>
-  <a class="skip-link" href="#main-content">Skip to dashboard content</a>
+  <a class="skip-link" href="#main-content">Skip to dashboard</a>
   <main class="container" id="main-content">
-    <section class="panel header-panel">
-      <div class="header-top">
-        <div class="header-tools">
-          <button class="theme-btn" id="btn-theme" type="button" aria-label="Toggle theme"></button>
-          <button class="print-btn" id="btn-print" type="button" aria-label="Print dashboard">Print</button>
-          <div class="meta-chip" id="coverage-chip"></div>
-        </div>
+
+    <header class="masthead">
+      <div class="masthead-title">
+        <h1 id="dashboard-title">Growth Quality Dashboard</h1>
+        <p class="lede" id="dashboard-subtitle"></p>
       </div>
-
-      <div class="header-layout">
-        <div class="header-copy">
-          <div class="eyebrow">Executive Decision System</div>
-          <div>
-            <h1 id="dashboard-title">Growth Quality Dashboard</h1>
-            <div class="subtitle" id="dashboard-subtitle"></div>
-            <div class="print-coverage" id="coverage-print"></div>
-          </div>
-          <div class="signal-row">
-            <div class="signal-pill">Growth quality over top-line optics</div>
-            <div class="signal-pill">Channel efficiency and payback focus</div>
-            <div class="signal-pill">Cohort durability and margin discipline</div>
-          </div>
-        </div>
-
-        <aside class="decision-brief">
-          <div class="decision-title">What this view should help decide</div>
-          <div class="decision-text">
-            Read the KPI row first, then test where growth quality breaks across channels, cohorts, regions, and segment mix before reallocating budget or changing commercial focus.
-          </div>
-          <div class="rule-grid">
-            <div class="rule-chip"><strong>Scale threshold</strong><span>LTV/CAC at or above 3.0</span></div>
-            <div class="rule-chip"><strong>Capital discipline</strong><span>Payback at or below 12 months</span></div>
-            <div class="rule-chip"><strong>Primary risk lens</strong><span>Margin deterioration, weak retention, expensive acquisition</span></div>
-          </div>
-        </aside>
+      <div class="masthead-tools">
+        <span class="tool-meta" id="coverage-chip"></span>
+        <button class="tool-btn" id="btn-theme" type="button" aria-label="Toggle theme"></button>
+        <button class="tool-btn" id="btn-print" type="button">Print</button>
       </div>
+    </header>
 
-      <div class="decision-command" id="decision-command" aria-live="polite"></div>
-
-      <div class="filters-shell">
-        <div class="filters-top">
-          <div>
-            <p class="filters-title">Filters</p>
-            <p class="filters-note">Scope by period and commercial slice. KPIs, charts, and rankings update together.</p>
-          </div>
-          <div class="filter-actions">
-            <button class="btn" id="btn-toggle-filters" type="button" aria-expanded="true">Hide Filters</button>
-            <button class="btn" id="btn-select-all" type="button">Select All</button>
-            <button class="btn" id="btn-reset" type="button">Reset</button>
-          </div>
-        </div>
-        <div class="filters-summary" id="filters-summary"></div>
-
-        <div class="filters-body" id="filters-body">
-          <div class="filter-grid">
-          <div class="filter-group">
-            <label for="filter-start">Start Date</label>
-            <input id="filter-start" type="date" />
-          </div>
-          <div class="filter-group">
-            <label for="filter-end">End Date</label>
-            <input id="filter-end" type="date" />
-          </div>
-          <div class="filter-group">
-            <label for="filter-segment">Segment</label>
-            <select id="filter-segment" multiple></select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-region">Region</label>
-            <select id="filter-region" multiple></select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-channel">Acquisition Channel</label>
-            <select id="filter-channel" multiple></select>
-          </div>
-          <div class="filter-group">
-            <label for="filter-product">Product Type</label>
-            <select id="filter-product" multiple></select>
-          </div>
-          </div>
-        </div>
+    <div class="filters" id="filters-bar">
+      <div class="filter-group">
+        <label for="filter-start">From</label>
+        <input id="filter-start" type="date" />
       </div>
+      <div class="filter-group">
+        <label for="filter-end">To</label>
+        <input id="filter-end" type="date" />
+      </div>
+      <div class="filter-group">
+        <label for="filter-segment">Segment</label>
+        <select id="filter-segment" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-region">Region</label>
+        <select id="filter-region" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-channel">Channel</label>
+        <select id="filter-channel" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-product">Product</label>
+        <select id="filter-product" multiple></select>
+      </div>
+      <div class="filter-actions">
+        <span class="tool-meta" id="filters-summary"></span>
+        <button class="tool-btn" id="btn-reset" type="button">Reset</button>
+        <button class="tool-btn" id="btn-select-all" type="button" style="display:none"></button>
+        <button class="tool-btn" id="btn-toggle-filters" type="button" style="display:none" aria-expanded="true"></button>
+      </div>
+    </div>
+
+    <div class="kpi-row" id="kpi-grid"></div>
+
+    <div class="decision" id="decision-command" aria-live="polite"></div>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Headline signals</h2>
+        <span class="sub" id="summary-context"></span>
+      </div>
+      <div class="summary-grid" id="summary-strip"></div>
     </section>
 
-    <section class="panel">
+    <section class="section">
       <div class="section-head">
-        <h2>Executive Summary</h2>
-        <p id="summary-context"></p>
+        <h2>Primary analysis</h2>
+        <span class="sub">Revenue, margin, cost trajectory, cohort decay, channel efficiency.</span>
       </div>
-      <div class="summary-strip" id="summary-strip"></div>
-    </section>
-
-    <section class="panel">
-      <div class="section-head">
-        <h2>Headline KPIs</h2>
-        <p>Values are filter-aware and benchmarked against the immediately prior period of equal length.</p>
-      </div>
-      <div class="kpi-grid" id="kpi-grid"></div>
-    </section>
-
-    <section class="panel">
-      <div class="section-head">
-        <h2>Primary Analysis</h2>
-        <p>Read these first to decide whether growth is scaling with defensible economics.</p>
-      </div>
-      <div class="chart-grid-primary">
-        <div class="chart-card primary">
-          <div class="chart-head">
-            <h3 class="chart-title">Is revenue momentum real or just period noise?</h3>
-            <span class="chart-tag">Primary</span>
-          </div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3 class="chart-title">Is revenue momentum real?</h3>
           <p class="chart-subtitle">Monthly total revenue, filter-aware.</p>
           <div id="chart-revenue" class="chart-surface"></div>
           <div id="insight-revenue" class="chart-insight"></div>
         </div>
-        <div class="chart-card primary">
-          <div class="chart-head">
-            <h3 class="chart-title">Is growth converting into contribution margin?</h3>
-            <span class="chart-tag">Primary</span>
-          </div>
-          <p class="chart-subtitle">Monthly contribution margin dollars.</p>
+        <div class="chart-card">
+          <h3 class="chart-title">Is growth converting into margin?</h3>
+          <p class="chart-subtitle">Monthly contribution margin in dollars.</p>
           <div id="chart-margin" class="chart-surface"></div>
           <div id="insight-margin" class="chart-insight"></div>
         </div>
-        <div class="chart-card primary">
-          <div class="chart-head">
-            <h3 class="chart-title">Are costs scaling faster than revenue?</h3>
-            <span class="chart-tag">Primary</span>
-          </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Are costs scaling faster than revenue?</h3>
           <p class="chart-subtitle">Monthly revenue compared with direct cost.</p>
           <div id="chart-revenue-cost" class="chart-surface"></div>
           <div id="insight-revenue-cost" class="chart-insight"></div>
         </div>
-        <div class="chart-card primary">
-          <div class="chart-head">
-            <h3 class="chart-title">How quickly do cohorts decay after signup?</h3>
-            <span class="chart-tag">Primary</span>
-          </div>
+        <div class="chart-card">
+          <h3 class="chart-title">How fast do cohorts decay?</h3>
           <p class="chart-subtitle">Median revenue retention by months since signup.</p>
           <div id="chart-cohort-retention" class="chart-surface"></div>
           <div id="insight-cohort-retention" class="chart-insight"></div>
         </div>
-        <div class="chart-card primary">
-          <div class="chart-head">
-            <h3 class="chart-title">Which acquisition channels deserve budget?</h3>
-            <span class="chart-tag">Primary</span>
-          </div>
+        <div class="chart-card span-2">
+          <h3 class="chart-title">Which acquisition channels deserve budget?</h3>
           <p class="chart-subtitle">Average LTV versus CAC, with efficiency thresholds.</p>
           <div id="chart-ltv-cac" class="chart-surface"></div>
           <div id="insight-ltv-cac" class="chart-insight"></div>
@@ -1396,45 +788,33 @@ def build_dashboard_html(payload: dict) -> str:
       </div>
     </section>
 
-    <section class="panel">
+    <section class="section">
       <div class="section-head">
         <h2>Diagnostics</h2>
-        <p>Use these cuts to localize the pockets where economics weaken first.</p>
+        <span class="sub">Localise where economics break first.</span>
       </div>
-      <div class="chart-grid-diagnostic">
-        <div class="chart-card diagnostic">
-          <div class="chart-head">
-            <h3 class="chart-title">Which segment contributes the most margin?</h3>
-            <span class="chart-tag">Diagnostic</span>
-          </div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3 class="chart-title">Which segment contributes the most margin?</h3>
           <p class="chart-subtitle">Contribution margin dollars by segment.</p>
           <div id="chart-segment-margin" class="chart-surface"></div>
           <div id="insight-segment-margin" class="chart-insight"></div>
         </div>
-        <div class="chart-card diagnostic">
-          <div class="chart-head">
-            <h3 class="chart-title">Where is monetization strongest per transaction?</h3>
-            <span class="chart-tag">Diagnostic</span>
-          </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Where is monetisation strongest per transaction?</h3>
           <p class="chart-subtitle">Average revenue per transaction by segment.</p>
           <div id="chart-arpt-segment" class="chart-surface"></div>
           <div id="insight-arpt-segment" class="chart-insight"></div>
         </div>
-        <div class="chart-card diagnostic">
-          <div class="chart-head">
-            <h3 class="chart-title">Is revenue concentrated in a small customer base?</h3>
-            <span class="chart-tag">Diagnostic</span>
-          </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Is revenue concentrated in few customers?</h3>
           <p class="chart-subtitle">Customer revenue distribution, clipped at P99.</p>
           <div id="chart-revenue-distribution" class="chart-surface"></div>
           <div id="insight-revenue-distribution" class="chart-insight"></div>
         </div>
-        <div class="chart-card diagnostic">
-          <div class="chart-head">
-            <h3 class="chart-title">Which regions dilute profitability?</h3>
-            <span class="chart-tag">Diagnostic</span>
-          </div>
-          <p class="chart-subtitle">Sortable table for margin quality by region</p>
+        <div class="chart-card">
+          <h3 class="chart-title">Which regions dilute profitability?</h3>
+          <p class="chart-subtitle">Margin quality and revenue by region.</p>
           <div class="table-wrap">
             <table id="region-table"></table>
           </div>
@@ -1443,32 +823,20 @@ def build_dashboard_html(payload: dict) -> str:
       </div>
     </section>
 
-    <section class="panel">
+    <section class="section">
       <div class="section-head">
-        <h2>Risk Ranking</h2>
-        <p>Ranked issues translate the analysis into where management attention should go next.</p>
+        <h2>Risk ranking</h2>
+        <span class="sub">Where management attention should go next.</span>
       </div>
       <div class="table-wrap expanded">
         <table id="risk-table"></table>
       </div>
     </section>
 
-    <section class="panel">
-      <div class="footer-grid">
-        <div class="foot-block">
-          <strong>How to read this dashboard</strong>
-          Start with the KPI pulse, then test whether channel efficiency and cohort durability support the growth you are seeing. The ranking table is the action shortlist.
-        </div>
-        <div class="foot-block">
-          <strong>Method caveat</strong>
-          Results are based on synthetic data and observed in-window economics. Treat the scenario outputs as bounded policy simulations, not as forecast-grade financial guidance.
-        </div>
-        <div class="foot-block">
-          <strong>Decision discipline</strong>
-          Use the dashboard to decide where to scale, hold, or intervene. Do not treat isolated KPI improvements as sufficient if payback and retention are deteriorating.
-        </div>
-      </div>
-    </section>
+    <div class="footnote">
+      Synthetic data. The pipeline demonstrates method, not market truth. Full methodology and validation in
+      <code>outputs/reports/decision_brief.md</code> and <code>outputs/reports/pre_delivery_validation_report.md</code>.
+    </div>
   </main>
 
   <div class="tooltip" id="tooltip"></div>
@@ -1572,22 +940,22 @@ def build_dashboard_html(payload: dict) -> str:
 
     function summarizeSelectedValues(set, allValues, label) {
       const selected = allValues.filter(v => set.has(v));
-      if (selected.length === allValues.length) return `${label}: All`;
+      if (selected.length === allValues.length) return null;
+      if (selected.length === 0) return `${label}: none`;
       if (selected.length === 1) return `${label}: ${selected[0]}`;
-      return `${label}: ${selected.length} selected`;
+      return `${label}: ${selected.length}`;
     }
 
     function renderFilterSummary(startDate, endDate, selected) {
       const wrap = document.getElementById('filters-summary');
       if (!wrap) return;
-      const chips = [
-        `Window: ${startDate} to ${endDate}`,
+      const parts = [
         summarizeSelectedValues(selected.segments, DASHBOARD_DATA.meta.values.segments, 'Segment'),
         summarizeSelectedValues(selected.regions, DASHBOARD_DATA.meta.values.regions, 'Region'),
         summarizeSelectedValues(selected.channels, DASHBOARD_DATA.meta.values.acquisition_channels, 'Channel'),
         summarizeSelectedValues(selected.products, DASHBOARD_DATA.meta.values.product_types, 'Product'),
-      ];
-      wrap.innerHTML = chips.map(text => `<span class="filters-summary-chip">${text}</span>`).join('');
+      ].filter(Boolean);
+      wrap.textContent = parts.length ? parts.join(' · ') : '';
     }
 
     function fmtCurrency(value) {
@@ -1985,9 +1353,11 @@ def build_dashboard_html(payload: dict) -> str:
         const opt = document.createElement('option');
         opt.value = v;
         opt.textContent = v;
-        opt.selected = true;
+        // Leave unselected by default — empty selection is treated as "all".
+        opt.selected = false;
         select.appendChild(opt);
       });
+      select.size = Math.min(3, values.length);
     }
 
     function getSelectedSet(id, allValues) {
@@ -2339,7 +1709,7 @@ def build_dashboard_html(payload: dict) -> str:
         card.innerHTML = `
           <div class="summary-head">
             <div class="summary-title">${item.title}</div>
-            <div class="summary-badge ${item.tone || 'warn'}">${item.badge || 'Signal'}</div>
+            <div class="summary-badge ${item.tone || 'warn'}">${item.badge || ''}</div>
           </div>
           <div class="summary-text">${item.text}</div>
         `;
@@ -2352,27 +1722,15 @@ def build_dashboard_html(payload: dict) -> str:
       wrap.innerHTML = '';
       cards.forEach(card => {
         const deltaClass = !Number.isFinite(card.delta)
-          ? 'kpi-delta neutral'
+          ? 'kpi-delta'
           : (card.delta >= 0 ? 'kpi-delta positive' : 'kpi-delta negative');
-        const tone = card.tone || 'warn';
-        const toneLabel = tone === 'good' ? 'Strong' : (tone === 'bad' ? 'Risk' : 'Watch');
-
         const el = document.createElement('div');
         el.className = 'kpi-card';
-        el.dataset.tone = tone;
+        el.dataset.tone = card.tone || 'warn';
         el.innerHTML = `
-          <div class="kpi-top">
-            <div class="kpi-label-wrap">
-              <div class="kpi-label">${card.label}</div>
-            </div>
-            <div class="kpi-state ${tone}">
-              <span class="kpi-state-dot"></span>${toneLabel}
-            </div>
-          </div>
+          <div class="kpi-label">${card.label}</div>
           <div class="kpi-value">${card.value}</div>
           <div class="${deltaClass}">${card.deltaText}</div>
-          <div class="kpi-note">${card.note}</div>
-          <div class="kpi-action">${card.action}</div>
         `;
         wrap.appendChild(el);
       });
@@ -2381,25 +1739,25 @@ def build_dashboard_html(payload: dict) -> str:
     function renderDecisionCommand(command) {
       const wrap = document.getElementById('decision-command');
       wrap.innerHTML = `
-        <div class="command-card primary">
-          <div class="command-label">Decision now</div>
-          <div class="command-value">${command.decision}</div>
-          <div class="command-copy">${command.decisionText}</div>
+        <div class="cell lead">
+          <div class="label">Decision now</div>
+          <div class="value">${command.decision}</div>
+          <div class="copy">${command.decisionText}</div>
         </div>
-        <div class="command-card">
-          <div class="command-label">Scale</div>
-          <div class="command-value">${command.scale}</div>
-          <div class="command-copy">${command.scaleText}</div>
+        <div class="cell">
+          <div class="label">Scale</div>
+          <div class="value">${command.scale}</div>
+          <div class="copy">${command.scaleText}</div>
         </div>
-        <div class="command-card">
-          <div class="command-label">Intervene</div>
-          <div class="command-value">${command.intervene}</div>
-          <div class="command-copy">${command.interveneText}</div>
+        <div class="cell">
+          <div class="label">Intervene</div>
+          <div class="value">${command.intervene}</div>
+          <div class="copy">${command.interveneText}</div>
         </div>
-        <div class="command-card">
-          <div class="command-label">Operational impact</div>
-          <div class="command-value">${command.impact}</div>
-          <div class="command-copy">${command.impactText}</div>
+        <div class="cell">
+          <div class="label">Impact</div>
+          <div class="value">${command.impact}</div>
+          <div class="copy">${command.impactText}</div>
         </div>
       `;
     }
@@ -2585,109 +1943,74 @@ def build_dashboard_html(payload: dict) -> str:
         : NaN;
 
       const delta = (cur, prev) => (Number.isFinite(prev) && prev !== 0 ? (cur / prev) - 1 : NaN);
+      const arrow = d => (d >= 0 ? '▲' : '▼');
+      const deltaPct = (cur, prev) => {
+        const d = delta(cur, prev);
+        return Number.isFinite(d) ? `${arrow(d)} ${fmtPct(Math.abs(d))} vs prior` : '—';
+      };
+      const deltaPp = (cur, prev) => {
+        if (!Number.isFinite(cur) || !Number.isFinite(prev)) return '—';
+        const d = cur - prev;
+        return `${arrow(d)} ${(Math.abs(d) * 100).toFixed(1)}pp vs prior`;
+      };
+      const deltaAbs = (cur, prev, fmt) => {
+        if (!Number.isFinite(cur) || !Number.isFinite(prev)) return '—';
+        const d = cur - prev;
+        return `${arrow(-d)} ${fmt(Math.abs(d))} vs prior`;
+      };
 
       const kpis = [
         {
-          label: 'Total Revenue',
+          label: 'Revenue',
           value: fmtCurrency(curSnap.revenue),
           delta: delta(curSnap.revenue, priorSnap.revenue),
-          deltaText: Number.isFinite(delta(curSnap.revenue, priorSnap.revenue))
-            ? `${delta(curSnap.revenue, priorSnap.revenue) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.revenue, priorSnap.revenue))} vs prior`
-            : 'No prior-period baseline',
-          note: `Scope revenue from ${startDate} to ${endDate}`,
-          action: Number.isFinite(growthRate) && growthRate > 0
-            ? 'Use margin and payback to decide if this growth can be scaled.'
-            : 'Treat this as a revenue warning; inspect channel and cohort drivers before adding spend.',
+          deltaText: deltaPct(curSnap.revenue, priorSnap.revenue),
           tone: Number.isFinite(growthRate) ? (growthRate > 0 ? 'good' : 'bad') : 'warn',
         },
         {
           label: 'Contribution Margin',
           value: fmtCurrency(curSnap.margin),
           delta: delta(curSnap.margin, priorSnap.margin),
-          deltaText: Number.isFinite(delta(curSnap.margin, priorSnap.margin))
-            ? `${delta(curSnap.margin, priorSnap.margin) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.margin, priorSnap.margin))} vs prior`
-            : 'No prior-period baseline',
-          note: `Margin rate ${fmtPct(curSnap.marginPct)}`,
-          action: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30
-            ? 'Margin is above the quality floor; keep watching cost growth.'
-            : 'Margin is thin; prioritize pricing, packaging, and delivery cost review.',
+          deltaText: deltaPct(curSnap.margin, priorSnap.margin),
           tone: Number.isFinite(curSnap.marginPct)
             ? (curSnap.marginPct >= 0.30 ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
             : 'warn',
         },
         {
-          label: 'Growth Rate',
-          value: fmtPct(growthRate),
-          delta: growthMethod === 'prior_period' && Number.isFinite(growthRate) && Number.isFinite(priorGrowthRate)
-            ? (growthRate - priorGrowthRate)
-            : NaN,
-          deltaText: growthMethod === 'prior_period' && Number.isFinite(growthRate) && Number.isFinite(priorGrowthRate)
-            ? `${growthRate - priorGrowthRate >= 0 ? '▲' : '▼'} ${(Math.abs(growthRate - priorGrowthRate) * 100).toFixed(1)}pp trend shift`
-            : (growthMethod === 'first_vs_last_month'
-              ? 'Fallback: first vs last month in selected range'
-              : 'No baseline available'),
-          note: growthMethod === 'prior_period'
-            ? 'Period-over-period top-line growth'
-            : 'Fallback growth estimate within selected scope',
-          action: Number.isFinite(growthRate) && growthRate > 0.05
-            ? 'Growth is meaningful; validate that incremental volume is not coming from weak channels.'
-            : 'Growth is weak or unavailable; use decomposition and segment cuts to find the blocker.',
-          tone: Number.isFinite(growthRate) ? (growthRate > 0.05 ? 'good' : (growthRate >= 0 ? 'warn' : 'bad')) : 'warn',
+          label: 'Margin %',
+          value: fmtPct(curSnap.marginPct),
+          delta: Number.isFinite(curSnap.marginPct) && Number.isFinite(priorSnap.marginPct)
+            ? curSnap.marginPct - priorSnap.marginPct : NaN,
+          deltaText: deltaPp(curSnap.marginPct, priorSnap.marginPct),
+          tone: Number.isFinite(curSnap.marginPct)
+            ? (curSnap.marginPct >= 0.30 ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
+            : 'warn',
         },
         {
           label: 'CAC',
           value: fmtCurrency(curSnap.CAC),
-          delta: delta(curSnap.CAC, priorSnap.CAC),
-          deltaText: Number.isFinite(delta(curSnap.CAC, priorSnap.CAC))
-            ? `${delta(curSnap.CAC, priorSnap.CAC) <= 0 ? '▲' : '▼'} ${fmtPct(Math.abs(delta(curSnap.CAC, priorSnap.CAC)))} efficiency move`
-            : 'No prior-period baseline',
-          note: `${fmtNum(curSnap.acquiredCount, 0)} acquired customers in scope`,
-          action: Number.isFinite(curSnap.CAC) && Number.isFinite(priorSnap.CAC) && curSnap.CAC <= priorSnap.CAC
-            ? 'Acquisition efficiency improved; protect this before increasing spend.'
-            : 'CAC is rising or lacks a baseline; review paid mix and bid discipline.',
+          delta: Number.isFinite(curSnap.CAC) && Number.isFinite(priorSnap.CAC)
+            ? -(delta(curSnap.CAC, priorSnap.CAC)) : NaN,
+          deltaText: deltaPct(curSnap.CAC, priorSnap.CAC).replace(/[▲▼]/, m => m === '▲' ? '▼' : '▲'),
           tone: Number.isFinite(delta(curSnap.CAC, priorSnap.CAC))
             ? (delta(curSnap.CAC, priorSnap.CAC) <= 0 ? 'good' : 'bad')
             : 'warn',
         },
         {
-          label: 'Average LTV',
-          value: fmtCurrency(curSnap.avgLTV),
-          delta: delta(curSnap.avgLTV, priorSnap.avgLTV),
-          deltaText: Number.isFinite(delta(curSnap.avgLTV, priorSnap.avgLTV))
-            ? `${delta(curSnap.avgLTV, priorSnap.avgLTV) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.avgLTV, priorSnap.avgLTV))} vs prior`
-            : 'No prior-period baseline',
-          note: 'Observed contribution margin per acquired customer',
-          action: Number.isFinite(curSnap.avgLTV) && Number.isFinite(curSnap.CAC) && curSnap.avgLTV > curSnap.CAC
-            ? 'Customer value covers acquisition cost; confirm payback timing.'
-            : 'Observed value is not covering CAC; restrict scaling until economics recover.',
-          tone: Number.isFinite(curSnap.avgLTV) ? (curSnap.avgLTV > curSnap.CAC ? 'good' : 'warn') : 'warn',
-        },
-        {
           label: 'LTV / CAC',
           value: fmtNum(curSnap.ltvToCac, 2),
           delta: delta(curSnap.ltvToCac, priorSnap.ltvToCac),
-          deltaText: Number.isFinite(delta(curSnap.ltvToCac, priorSnap.ltvToCac))
-            ? `${delta(curSnap.ltvToCac, priorSnap.ltvToCac) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.ltvToCac, priorSnap.ltvToCac))} vs prior`
-            : 'No prior-period baseline',
-          note: `Higher is better; threshold target >= ${fmtNum(EFF_THRESH.ltv_cac_target, 1)}`,
-          action: Number.isFinite(curSnap.ltvToCac) && curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target
-            ? 'Clears the scale threshold; use channel ranking to allocate budget.'
-            : 'Below scale threshold; hold broad spend and improve unit economics first.',
+          deltaText: deltaPct(curSnap.ltvToCac, priorSnap.ltvToCac),
           tone: Number.isFinite(curSnap.ltvToCac)
             ? (curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target ? 'good' : (curSnap.ltvToCac >= EFF_THRESH.ineff_ltv_cac ? 'warn' : 'bad'))
             : 'warn',
         },
         {
-          label: 'Approx. Payback',
-          value: Number.isFinite(curSnap.payback) ? fmtNum(curSnap.payback, 1) + 'm' : 'n/a',
-          delta: delta(curSnap.payback, priorSnap.payback),
-          deltaText: Number.isFinite(delta(curSnap.payback, priorSnap.payback))
-            ? `${delta(curSnap.payback, priorSnap.payback) <= 0 ? '▲' : '▼'} ${fmtPct(Math.abs(delta(curSnap.payback, priorSnap.payback)))} vs prior`
-            : 'No prior-period baseline',
-          note: 'Estimated CAC recovery period in months',
-          action: Number.isFinite(curSnap.payback) && curSnap.payback <= EFF_THRESH.payback_target_months
-            ? 'Capital recovery is acceptable; preserve retention assumptions.'
-            : 'Payback breaches the guardrail; cut or repair slow-recovery acquisition.',
+          label: 'Payback',
+          value: Number.isFinite(curSnap.payback) ? fmtNum(curSnap.payback, 1) + 'm' : '—',
+          delta: Number.isFinite(curSnap.payback) && Number.isFinite(priorSnap.payback)
+            ? -(curSnap.payback - priorSnap.payback) : NaN,
+          deltaText: deltaAbs(curSnap.payback, priorSnap.payback, x => x.toFixed(1) + 'm'),
           tone: Number.isFinite(curSnap.payback)
             ? (curSnap.payback <= EFF_THRESH.payback_target_months ? 'good' : (curSnap.payback <= EFF_THRESH.ineff_payback_months ? 'warn' : 'bad'))
             : 'warn',
@@ -2724,7 +2047,7 @@ def build_dashboard_html(payload: dict) -> str:
       renderBarChart('chart-segment-margin', segmentRows, 'margin', 'segment', fmtCurrency, palette.margin);
 
       const arptRows = computeAvgRevenuePerTxBySegment(current.tx);
-      renderBarChart('chart-arpt-segment', arptRows, 'avgRevTx', 'segment', fmtCurrency, palette.accent);
+      renderBarChart('chart-arpt-segment', arptRows, 'avgRevTx', 'segment', fmtCurrency, palette.bar);
 
       const customerRevenue = computeRevenueByCustomer(current.tx);
       renderHistogram('chart-revenue-distribution', customerRevenue);
@@ -2825,7 +2148,14 @@ def build_dashboard_html(payload: dict) -> str:
           title: 'Growth vs Margin Quality',
           badge: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30 ? 'Healthy' : 'Watch',
           tone: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30 ? 'good' : 'warn',
-          text: `Revenue changed ${fmtPct(growthRate)} vs prior period while margin rate sits at ${fmtPct(curSnap.marginPct)}. This is the first test of whether scale is creating value or just volume.`
+          text: (() => {
+            const phrase = growthMethod === 'prior_period'
+              ? `Revenue changed ${fmtPct(growthRate)} vs the prior period of equal length`
+              : (Number.isFinite(growthRate)
+                  ? `Revenue grew ${fmtPct(growthRate)} from the first to the last month in scope`
+                  : `Revenue trend cannot be measured for this scope`);
+            return `${phrase}; margin rate is ${fmtPct(curSnap.marginPct)}. This is the first test of whether scale is creating value or just volume.`;
+          })()
         },
         {
           title: 'Channel Efficiency Risk',
@@ -2862,10 +2192,16 @@ def build_dashboard_html(payload: dict) -> str:
       });
     }
 
+    function clearAllFilters() {
+      ['filter-segment', 'filter-region', 'filter-channel', 'filter-product'].forEach(id => {
+        Array.from(document.getElementById(id).options).forEach(o => { o.selected = false; });
+      });
+    }
+
     function resetFilters() {
       document.getElementById('filter-start').value = DASHBOARD_DATA.meta.coverage_start;
       document.getElementById('filter-end').value = DASHBOARD_DATA.meta.coverage_end;
-      selectAllFilters();
+      clearAllFilters();
       computeAndRender();
     }
 
@@ -2875,7 +2211,8 @@ def build_dashboard_html(payload: dict) -> str:
       document.getElementById('dashboard-subtitle').textContent = DASHBOARD_DATA.meta.question;
       const coverageText = `Data coverage: ${DASHBOARD_DATA.meta.coverage_start} to ${DASHBOARD_DATA.meta.coverage_end}`;
       document.getElementById('coverage-chip').textContent = coverageText;
-      document.getElementById('coverage-print').textContent = coverageText;
+      const cp = document.getElementById('coverage-print');
+      if (cp) cp.textContent = coverageText;
       populateMultiSelect('filter-segment', DASHBOARD_DATA.meta.values.segments);
       populateMultiSelect('filter-region', DASHBOARD_DATA.meta.values.regions);
       populateMultiSelect('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels);

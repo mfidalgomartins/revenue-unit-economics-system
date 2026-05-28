@@ -48,7 +48,7 @@ Project: Revenue Analytics & Unit Economics System
 | decision_support_checks | scenario_benchmark_seed_coverage | PASS | seeds_present=[7, 21, 42, 84, 126] |
 | decision_support_checks | scenario_benchmark_uplift_resilience | PASS | positive_uplift_rate=100.00% |
 | governance_checks | dashboard_payload_budget_rows | PASS | payload_rows=85,526, warn_threshold=100,000, fail_threshold=130,000 |
-| governance_checks | dashboard_size_budget_mb | PASS | dashboard_size_mb=6.35, warn_threshold=7.00, fail_threshold=9.00 |
+| governance_checks | dashboard_size_budget_mb | PASS | dashboard_size_mb=6.34, warn_threshold=7.00, fail_threshold=9.00 |
 
 ## Issues Found
 - **[LOW] analytical_integrity**
