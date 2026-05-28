@@ -72,7 +72,7 @@ def build_embedded_payload(
     payload = {
         "meta": {
             "project_name": "Revenue Analytics & Unit Economics System",
-            "dashboard_title": "Executive Growth Quality Dashboard",
+            "dashboard_title": "Growth Quality Dashboard",
             "question": "Is the company growing sustainably, or is it relying on unprofitable growth?",
             "coverage_start": coverage_start,
             "coverage_end": coverage_end,
@@ -106,11 +106,11 @@ def build_dashboard_html(payload: dict) -> str:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Executive Growth Quality Dashboard</title>
+  <title>Growth Quality Dashboard</title>
   <style>
     :root {
       color-scheme: light;
-      --bg: #edf2f7;
+      --bg: #f3f6fa;
       --panel: #ffffff;
       --panel-soft: #f7f9fc;
       --panel-tint: #f2f6fb;
@@ -148,9 +148,9 @@ def build_dashboard_html(payload: dict) -> str:
       --chart-text: #2a3b52;
       --chart-muted: #60738c;
       --tooltip-bg: rgba(12, 18, 32, 0.94);
-      --shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
-      --shadow-soft: 0 10px 26px rgba(15, 23, 42, 0.08);
-      --shadow-lift: 0 22px 52px rgba(15, 23, 42, 0.16);
+      --shadow: 0 10px 28px rgba(15, 23, 42, 0.10);
+      --shadow-soft: 0 6px 18px rgba(15, 23, 42, 0.07);
+      --shadow-lift: 0 14px 34px rgba(15, 23, 42, 0.14);
       --focus-ring: 0 0 0 3px rgba(31, 79, 191, 0.16);
     }
 
@@ -204,21 +204,13 @@ def build_dashboard_html(payload: dict) -> str:
     body {
       margin: 0;
       font-family: "Avenir Next", "Segoe UI Variable", "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(31, 79, 191, 0.10), transparent 24%),
-        radial-gradient(circle at top right, rgba(231, 161, 0, 0.08), transparent 18%),
-        linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0) 22%),
-        var(--bg);
+      background: var(--bg);
       color: var(--ink);
       transition: background 180ms ease, color 180ms ease;
     }
 
     body[data-theme="dark"] {
-      background:
-        radial-gradient(circle at top left, rgba(110, 168, 255, 0.10), transparent 24%),
-        radial-gradient(circle at top right, rgba(250, 204, 21, 0.08), transparent 18%),
-        linear-gradient(180deg, rgba(19, 38, 71, 0.38), rgba(19, 38, 71, 0) 22%),
-        var(--bg);
+      background: var(--bg);
     }
 
     .container {
@@ -228,10 +220,30 @@ def build_dashboard_html(payload: dict) -> str:
       gap: 18px;
     }
 
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: 12px;
+      z-index: 10000;
+      transform: translateY(-140%);
+      background: var(--ink);
+      color: var(--panel);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .skip-link:focus {
+      transform: translateY(0);
+      outline: 3px solid var(--brand);
+      outline-offset: 2px;
+    }
+
     .panel {
       background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 18px;
+      border-radius: 8px;
       box-shadow: var(--shadow);
       padding: 22px;
       position: relative;
@@ -266,24 +278,11 @@ def build_dashboard_html(payload: dict) -> str:
       position: relative;
     }
 
-    .header-panel::after {
-      content: "";
-      position: absolute;
-      inset: auto -8% -28% auto;
-      width: 380px;
-      height: 380px;
-      border-radius: 999px;
-      background: radial-gradient(circle, rgba(31, 79, 191, 0.13), transparent 65%);
-      pointer-events: none;
-    }
-
     .header-panel::before {
       content: "";
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(120deg, rgba(255,255,255,0.10), transparent 36%),
-        radial-gradient(circle at 78% 22%, rgba(255,255,255,0.12), transparent 20%);
+      background: linear-gradient(120deg, rgba(255,255,255,0.10), transparent 36%);
       pointer-events: none;
     }
 
@@ -374,7 +373,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .decision-brief {
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 8px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       padding: 16px;
       display: grid;
@@ -407,7 +406,7 @@ def build_dashboard_html(payload: dict) -> str:
       gap: 10px;
       align-items: center;
       padding: 8px 10px;
-      border-radius: 12px;
+      border-radius: 8px;
       border: 1px solid var(--line);
       background: var(--panel-soft);
       font-size: 11px;
@@ -475,7 +474,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .filters-shell {
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 8px;
       background: rgba(255, 255, 255, 0.66);
       backdrop-filter: blur(10px);
       padding: 14px;
@@ -562,7 +561,7 @@ def build_dashboard_html(payload: dict) -> str:
       gap: 8px;
       align-content: start;
       padding: 12px;
-      border-radius: 14px;
+      border-radius: 8px;
       border: 1px solid var(--line);
       background: linear-gradient(180deg, rgba(255,255,255,0.50), rgba(255,255,255,0.16));
       box-shadow: var(--shadow-soft);
@@ -583,7 +582,7 @@ def build_dashboard_html(payload: dict) -> str:
     input[type="date"], select {
       width: 100%;
       border: 1px solid var(--control-border);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 10px 11px;
       font-size: 13px;
       background: var(--control-bg);
@@ -624,7 +623,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .summary-card {
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 8px;
       padding: 14px 16px 16px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       box-shadow: var(--shadow-soft);
@@ -711,7 +710,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .kpi-card {
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 8px;
       padding: 14px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       min-height: 132px;
@@ -824,6 +823,60 @@ def build_dashboard_html(payload: dict) -> str:
     .kpi-delta.negative { color: var(--bad); }
     .kpi-delta.neutral { color: var(--sub); }
     .kpi-note { font-size: 11px; color: var(--sub); margin-top: 2px; line-height: 1.35; }
+    .kpi-action {
+      margin-top: 2px;
+      padding-top: 7px;
+      border-top: 1px solid var(--line-soft);
+      color: var(--chart-text);
+      font-size: 11px;
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .decision-command {
+      display: grid;
+      grid-template-columns: minmax(280px, 1.1fr) repeat(3, minmax(180px, 0.75fr));
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .command-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 14px;
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      gap: 8px;
+      min-height: 116px;
+    }
+
+    .command-card.primary {
+      border-left: 5px solid var(--warn);
+      background: linear-gradient(180deg, var(--panel), var(--warn-soft));
+    }
+
+    .command-label {
+      color: var(--sub);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .command-value {
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.25;
+      font-weight: 800;
+    }
+
+    .command-copy {
+      color: var(--chart-text);
+      font-size: 12px;
+      line-height: 1.45;
+    }
 
     .kpi-card:hover {
       transform: translateY(-2px);
@@ -870,12 +923,12 @@ def build_dashboard_html(payload: dict) -> str:
 
     .chart-card {
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 8px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       padding: 14px;
       min-height: 330px;
       display: grid;
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto 1fr auto;
       gap: 8px;
       box-shadow: var(--shadow-soft);
       transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
@@ -934,10 +987,9 @@ def build_dashboard_html(payload: dict) -> str:
       width: 100%;
       height: 250px;
       position: relative;
-      border-radius: 14px;
+      border-radius: 8px;
       border: 1px solid var(--line);
       background:
-        radial-gradient(circle at top left, rgba(31, 79, 191, 0.08), transparent 30%),
         linear-gradient(180deg, var(--panel-soft), var(--panel));
       padding: 10px;
       overflow: hidden;
@@ -945,6 +997,16 @@ def build_dashboard_html(payload: dict) -> str:
 
     .chart-surface canvas {
       border-radius: 10px;
+    }
+
+    .chart-insight {
+      min-height: 38px;
+      border-top: 1px solid var(--line-soft);
+      padding-top: 8px;
+      color: var(--chart-text);
+      font-size: 12px;
+      line-height: 1.45;
+      font-weight: 650;
     }
 
     .chart-empty {
@@ -962,7 +1024,7 @@ def build_dashboard_html(payload: dict) -> str:
     .table-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: 8px;
       max-height: 264px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.30);
@@ -1064,7 +1126,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     .foot-block {
       border: 1px solid var(--line);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 14px;
       background: linear-gradient(180deg, var(--panel), var(--panel-tint));
       line-height: 1.45;
@@ -1103,6 +1165,7 @@ def build_dashboard_html(payload: dict) -> str:
       .summary-strip { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
       .filter-grid { grid-template-columns: repeat(3, minmax(160px, 1fr)); }
       .header-layout { grid-template-columns: 1fr; }
+      .decision-command { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
     }
 
     @media (max-width: 900px) {
@@ -1115,6 +1178,7 @@ def build_dashboard_html(payload: dict) -> str:
       .summary-strip { grid-template-columns: 1fr; }
       .filter-grid { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr; }
+      .decision-command { grid-template-columns: 1fr; }
       .header-tools { width: 100%; justify-content: flex-start; }
       .filters-top { flex-direction: column; }
       h1 { font-size: 26px; }
@@ -1176,7 +1240,8 @@ def build_dashboard_html(payload: dict) -> str:
   </style>
 </head>
 <body>
-  <div class="container">
+  <a class="skip-link" href="#main-content">Skip to dashboard content</a>
+  <main class="container" id="main-content">
     <section class="panel header-panel">
       <div class="header-top">
         <div class="header-tools">
@@ -1190,7 +1255,7 @@ def build_dashboard_html(payload: dict) -> str:
         <div class="header-copy">
           <div class="eyebrow">Executive Decision System</div>
           <div>
-            <h1 id="dashboard-title">Executive Growth Quality Dashboard</h1>
+            <h1 id="dashboard-title">Growth Quality Dashboard</h1>
             <div class="subtitle" id="dashboard-subtitle"></div>
             <div class="print-coverage" id="coverage-print"></div>
           </div>
@@ -1214,16 +1279,18 @@ def build_dashboard_html(payload: dict) -> str:
         </aside>
       </div>
 
+      <div class="decision-command" id="decision-command" aria-live="polite"></div>
+
       <div class="filters-shell">
         <div class="filters-top">
           <div>
-            <p class="filters-title">Decision Filters</p>
-            <p class="filters-note">Adjust scope by period and commercial slice. KPI cards, charts, and ranked risks stay synchronized so the dashboard remains decision-consistent.</p>
+            <p class="filters-title">Filters</p>
+            <p class="filters-note">Scope by period and commercial slice. KPIs, charts, and rankings update together.</p>
           </div>
           <div class="filter-actions">
             <button class="btn" id="btn-toggle-filters" type="button" aria-expanded="true">Hide Filters</button>
-            <button class="btn" id="btn-select-all">Select All</button>
-            <button class="btn" id="btn-reset">Reset</button>
+            <button class="btn" id="btn-select-all" type="button">Select All</button>
+            <button class="btn" id="btn-reset" type="button">Reset</button>
           </div>
         </div>
         <div class="filters-summary" id="filters-summary"></div>
@@ -1283,43 +1350,48 @@ def build_dashboard_html(payload: dict) -> str:
       <div class="chart-grid-primary">
         <div class="chart-card primary">
           <div class="chart-head">
-            <h3 class="chart-title">Revenue momentum across the selected window</h3>
+            <h3 class="chart-title">Is revenue momentum real or just period noise?</h3>
             <span class="chart-tag">Primary</span>
           </div>
-          <p class="chart-subtitle">Monthly total revenue</p>
+          <p class="chart-subtitle">Monthly total revenue, filter-aware.</p>
           <div id="chart-revenue" class="chart-surface"></div>
+          <div id="insight-revenue" class="chart-insight"></div>
         </div>
         <div class="chart-card primary">
           <div class="chart-head">
-            <h3 class="chart-title">Contribution margin trend (quality signal)</h3>
+            <h3 class="chart-title">Is growth converting into contribution margin?</h3>
             <span class="chart-tag">Primary</span>
           </div>
-          <p class="chart-subtitle">Monthly contribution margin</p>
+          <p class="chart-subtitle">Monthly contribution margin dollars.</p>
           <div id="chart-margin" class="chart-surface"></div>
+          <div id="insight-margin" class="chart-insight"></div>
         </div>
         <div class="chart-card primary">
           <div class="chart-head">
-            <h3 class="chart-title">Revenue vs cost to expose leverage pressure</h3>
+            <h3 class="chart-title">Are costs scaling faster than revenue?</h3>
             <span class="chart-tag">Primary</span>
           </div>
-          <p class="chart-subtitle">Monthly revenue and cost trend</p>
+          <p class="chart-subtitle">Monthly revenue compared with direct cost.</p>
           <div id="chart-revenue-cost" class="chart-surface"></div>
+          <div id="insight-revenue-cost" class="chart-insight"></div>
         </div>
         <div class="chart-card primary">
           <div class="chart-head">
-            <h3 class="chart-title">Cohort revenue retention decay</h3>
+            <h3 class="chart-title">How quickly do cohorts decay after signup?</h3>
             <span class="chart-tag">Primary</span>
           </div>
-          <p class="chart-subtitle">Median retention by months since signup</p>
+          <p class="chart-subtitle">Median revenue retention by months since signup.</p>
           <div id="chart-cohort-retention" class="chart-surface"></div>
+          <div id="insight-cohort-retention" class="chart-insight"></div>
         </div>
         <div class="chart-card primary">
           <div class="chart-head">
-            <h3 class="chart-title">Unit economics by channel (LTV vs CAC)</h3>
+            <h3 class="chart-title">Which acquisition channels deserve budget?</h3>
             <span class="chart-tag">Primary</span>
           </div>
-          <p class="chart-subtitle">Average LTV versus CAC</p>
+          <p class="chart-subtitle">Average LTV versus CAC, with efficiency thresholds.</p>
           <div id="chart-ltv-cac" class="chart-surface"></div>
+          <div id="insight-ltv-cac" class="chart-insight"></div>
         </div>
       </div>
     </section>
@@ -1332,37 +1404,41 @@ def build_dashboard_html(payload: dict) -> str:
       <div class="chart-grid-diagnostic">
         <div class="chart-card diagnostic">
           <div class="chart-head">
-            <h3 class="chart-title">Contribution margin by segment</h3>
+            <h3 class="chart-title">Which segment contributes the most margin?</h3>
             <span class="chart-tag">Diagnostic</span>
           </div>
-          <p class="chart-subtitle">Concentration of margin dollars</p>
+          <p class="chart-subtitle">Contribution margin dollars by segment.</p>
           <div id="chart-segment-margin" class="chart-surface"></div>
+          <div id="insight-segment-margin" class="chart-insight"></div>
         </div>
         <div class="chart-card diagnostic">
           <div class="chart-head">
-            <h3 class="chart-title">Average revenue per transaction</h3>
+            <h3 class="chart-title">Where is monetization strongest per transaction?</h3>
             <span class="chart-tag">Diagnostic</span>
           </div>
-          <p class="chart-subtitle">Ticket size differences by segment</p>
+          <p class="chart-subtitle">Average revenue per transaction by segment.</p>
           <div id="chart-arpt-segment" class="chart-surface"></div>
+          <div id="insight-arpt-segment" class="chart-insight"></div>
         </div>
         <div class="chart-card diagnostic">
           <div class="chart-head">
-            <h3 class="chart-title">Customer revenue concentration</h3>
+            <h3 class="chart-title">Is revenue concentrated in a small customer base?</h3>
             <span class="chart-tag">Diagnostic</span>
           </div>
-          <p class="chart-subtitle">Distribution of revenue by customer</p>
+          <p class="chart-subtitle">Customer revenue distribution, clipped at P99.</p>
           <div id="chart-revenue-distribution" class="chart-surface"></div>
+          <div id="insight-revenue-distribution" class="chart-insight"></div>
         </div>
         <div class="chart-card diagnostic">
           <div class="chart-head">
-            <h3 class="chart-title">Regional profitability comparison</h3>
+            <h3 class="chart-title">Which regions dilute profitability?</h3>
             <span class="chart-tag">Diagnostic</span>
           </div>
           <p class="chart-subtitle">Sortable table for margin quality by region</p>
           <div class="table-wrap">
             <table id="region-table"></table>
           </div>
+          <div id="insight-region-table" class="chart-insight"></div>
         </div>
       </div>
     </section>
@@ -1393,7 +1469,7 @@ def build_dashboard_html(payload: dict) -> str:
         </div>
       </div>
     </section>
-  </div>
+  </main>
 
   <div class="tooltip" id="tooltip"></div>
 
@@ -1609,6 +1685,8 @@ def build_dashboard_html(payload: dict) -> str:
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('width', width);
       svg.setAttribute('height', height);
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('focusable', 'false');
       svg.style.width = '100%';
       svg.style.height = height + 'px';
       container.appendChild(svg);
@@ -1997,18 +2075,13 @@ def build_dashboard_html(payload: dict) -> str:
       const spendTotal = spend.reduce((s, r) => s + r.spend, 0);
       const CAC = acquiredCount > 0 ? spendTotal / acquiredCount : NaN;
 
-      let acquiredCm = 0;
-      tx.forEach(r => {
-        if (customerSet.has(r.cid)) acquiredCm += (r.rev - r.cost);
-      });
-
-      const avgLTV = acquiredCount > 0 ? acquiredCm / acquiredCount : NaN;
+      const avgLTV = acquiredCount > 0 ? margin / acquiredCount : NaN;
       const ltvToCac = (Number.isFinite(CAC) && CAC > 0) ? avgLTV / CAC : NaN;
 
       const monthStart = monthKey(startDate);
       const monthEnd = monthKey(endDate);
       const months = Math.max(1, diffMonths(monthStart, monthEnd) + 1);
-      const monthlyCmPerCustomer = acquiredCount > 0 ? (acquiredCm / acquiredCount) / months : NaN;
+      const monthlyCmPerCustomer = acquiredCount > 0 ? (margin / acquiredCount) / months : NaN;
       const payback = (Number.isFinite(monthlyCmPerCustomer) && monthlyCmPerCustomer > 0 && Number.isFinite(CAC))
         ? CAC / monthlyCmPerCustomer
         : NaN;
@@ -2299,9 +2372,41 @@ def build_dashboard_html(payload: dict) -> str:
           <div class="kpi-value">${card.value}</div>
           <div class="${deltaClass}">${card.deltaText}</div>
           <div class="kpi-note">${card.note}</div>
+          <div class="kpi-action">${card.action}</div>
         `;
         wrap.appendChild(el);
       });
+    }
+
+    function renderDecisionCommand(command) {
+      const wrap = document.getElementById('decision-command');
+      wrap.innerHTML = `
+        <div class="command-card primary">
+          <div class="command-label">Decision now</div>
+          <div class="command-value">${command.decision}</div>
+          <div class="command-copy">${command.decisionText}</div>
+        </div>
+        <div class="command-card">
+          <div class="command-label">Scale</div>
+          <div class="command-value">${command.scale}</div>
+          <div class="command-copy">${command.scaleText}</div>
+        </div>
+        <div class="command-card">
+          <div class="command-label">Intervene</div>
+          <div class="command-value">${command.intervene}</div>
+          <div class="command-copy">${command.interveneText}</div>
+        </div>
+        <div class="command-card">
+          <div class="command-label">Operational impact</div>
+          <div class="command-value">${command.impact}</div>
+          <div class="command-copy">${command.impactText}</div>
+        </div>
+      `;
+    }
+
+    function setInsight(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
     }
 
     function renderRegionTable(rows) {
@@ -2490,6 +2595,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.revenue, priorSnap.revenue) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.revenue, priorSnap.revenue))} vs prior`
             : 'No prior-period baseline',
           note: `Scope revenue from ${startDate} to ${endDate}`,
+          action: Number.isFinite(growthRate) && growthRate > 0
+            ? 'Use margin and payback to decide if this growth can be scaled.'
+            : 'Treat this as a revenue warning; inspect channel and cohort drivers before adding spend.',
           tone: Number.isFinite(growthRate) ? (growthRate > 0 ? 'good' : 'bad') : 'warn',
         },
         {
@@ -2500,6 +2608,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.margin, priorSnap.margin) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.margin, priorSnap.margin))} vs prior`
             : 'No prior-period baseline',
           note: `Margin rate ${fmtPct(curSnap.marginPct)}`,
+          action: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30
+            ? 'Margin is above the quality floor; keep watching cost growth.'
+            : 'Margin is thin; prioritize pricing, packaging, and delivery cost review.',
           tone: Number.isFinite(curSnap.marginPct)
             ? (curSnap.marginPct >= 0.30 ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
             : 'warn',
@@ -2518,6 +2629,9 @@ def build_dashboard_html(payload: dict) -> str:
           note: growthMethod === 'prior_period'
             ? 'Period-over-period top-line growth'
             : 'Fallback growth estimate within selected scope',
+          action: Number.isFinite(growthRate) && growthRate > 0.05
+            ? 'Growth is meaningful; validate that incremental volume is not coming from weak channels.'
+            : 'Growth is weak or unavailable; use decomposition and segment cuts to find the blocker.',
           tone: Number.isFinite(growthRate) ? (growthRate > 0.05 ? 'good' : (growthRate >= 0 ? 'warn' : 'bad')) : 'warn',
         },
         {
@@ -2528,6 +2642,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.CAC, priorSnap.CAC) <= 0 ? '▲' : '▼'} ${fmtPct(Math.abs(delta(curSnap.CAC, priorSnap.CAC)))} efficiency move`
             : 'No prior-period baseline',
           note: `${fmtNum(curSnap.acquiredCount, 0)} acquired customers in scope`,
+          action: Number.isFinite(curSnap.CAC) && Number.isFinite(priorSnap.CAC) && curSnap.CAC <= priorSnap.CAC
+            ? 'Acquisition efficiency improved; protect this before increasing spend.'
+            : 'CAC is rising or lacks a baseline; review paid mix and bid discipline.',
           tone: Number.isFinite(delta(curSnap.CAC, priorSnap.CAC))
             ? (delta(curSnap.CAC, priorSnap.CAC) <= 0 ? 'good' : 'bad')
             : 'warn',
@@ -2540,6 +2657,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.avgLTV, priorSnap.avgLTV) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.avgLTV, priorSnap.avgLTV))} vs prior`
             : 'No prior-period baseline',
           note: 'Observed contribution margin per acquired customer',
+          action: Number.isFinite(curSnap.avgLTV) && Number.isFinite(curSnap.CAC) && curSnap.avgLTV > curSnap.CAC
+            ? 'Customer value covers acquisition cost; confirm payback timing.'
+            : 'Observed value is not covering CAC; restrict scaling until economics recover.',
           tone: Number.isFinite(curSnap.avgLTV) ? (curSnap.avgLTV > curSnap.CAC ? 'good' : 'warn') : 'warn',
         },
         {
@@ -2550,6 +2670,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.ltvToCac, priorSnap.ltvToCac) >= 0 ? '▲' : '▼'} ${fmtPct(delta(curSnap.ltvToCac, priorSnap.ltvToCac))} vs prior`
             : 'No prior-period baseline',
           note: `Higher is better; threshold target >= ${fmtNum(EFF_THRESH.ltv_cac_target, 1)}`,
+          action: Number.isFinite(curSnap.ltvToCac) && curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target
+            ? 'Clears the scale threshold; use channel ranking to allocate budget.'
+            : 'Below scale threshold; hold broad spend and improve unit economics first.',
           tone: Number.isFinite(curSnap.ltvToCac)
             ? (curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target ? 'good' : (curSnap.ltvToCac >= EFF_THRESH.ineff_ltv_cac ? 'warn' : 'bad'))
             : 'warn',
@@ -2562,6 +2685,9 @@ def build_dashboard_html(payload: dict) -> str:
             ? `${delta(curSnap.payback, priorSnap.payback) <= 0 ? '▲' : '▼'} ${fmtPct(Math.abs(delta(curSnap.payback, priorSnap.payback)))} vs prior`
             : 'No prior-period baseline',
           note: 'Estimated CAC recovery period in months',
+          action: Number.isFinite(curSnap.payback) && curSnap.payback <= EFF_THRESH.payback_target_months
+            ? 'Capital recovery is acceptable; preserve retention assumptions.'
+            : 'Payback breaches the guardrail; cut or repair slow-recovery acquisition.',
           tone: Number.isFinite(curSnap.payback)
             ? (curSnap.payback <= EFF_THRESH.payback_target_months ? 'good' : (curSnap.payback <= EFF_THRESH.ineff_payback_months ? 'warn' : 'bad'))
             : 'warn',
@@ -2616,9 +2742,14 @@ def build_dashboard_html(payload: dict) -> str:
       renderRiskTable(risks);
 
       const inefficient = unitRows.filter(r => r.status === 'inefficient').map(r => r.channel);
+      const efficient = unitRows.filter(r => r.status === 'efficient').map(r => r.channel);
       const m6 = cohort.summary.find(r => r.monthsSince === 6);
       const m12 = cohort.summary.find(r => r.monthsSince === 12);
       const weakestSegment = [...segmentRows].sort((a, b) => a.marginPct - b.marginPct)[0];
+      const strongestSegment = [...segmentRows].sort((a, b) => b.margin - a.margin)[0];
+      const weakestRegion = [...regionRows].sort((a, b) => a.marginPct - b.marginPct)[0];
+      const bestChannel = unitRows.filter(r => Number.isFinite(r.ltvToCac))[0];
+      const worstChannel = [...unitRows].filter(r => Number.isFinite(r.ltvToCac)).sort((a, b) => a.ltvToCac - b.ltvToCac)[0];
       const revenueShareTop10 = (() => {
         const vals = [...customerRevenue].sort((a, b) => b - a);
         if (!vals.length) return NaN;
@@ -2627,6 +2758,67 @@ def build_dashboard_html(payload: dict) -> str:
         const top = vals.slice(0, topN).reduce((s, v) => s + v, 0);
         return total > 0 ? top / total : NaN;
       })();
+
+      const revenueTrendText = (() => {
+        if (monthly.length < 2) return 'Not enough monthly observations to read momentum.';
+        const first = monthly[0];
+        const last = monthly[monthly.length - 1];
+        const change = first.revenue > 0 ? (last.revenue / first.revenue) - 1 : NaN;
+        return `Revenue moved ${fmtPct(change)} from ${monthLabel(first.month)} to ${monthLabel(last.month)}; inspect whether the same window also improves margin and payback.`;
+      })();
+
+      const marginTrendText = (() => {
+        if (monthly.length < 2) return 'Not enough monthly observations to read margin direction.';
+        const first = monthly[0];
+        const last = monthly[monthly.length - 1];
+        const firstRate = first.revenue > 0 ? first.margin / first.revenue : NaN;
+        const lastRate = last.revenue > 0 ? last.margin / last.revenue : NaN;
+        const shift = Number.isFinite(firstRate) && Number.isFinite(lastRate) ? (lastRate - firstRate) * 100 : NaN;
+        return `Margin rate shifted ${Number.isFinite(shift) ? shift.toFixed(1) + 'pp' : 'n/a'} across the window; negative movement means growth is getting less valuable.`;
+      })();
+
+      const costLeverageText = (() => {
+        if (monthly.length < 2) return 'Not enough monthly observations to compare cost leverage.';
+        const first = monthly[0];
+        const last = monthly[monthly.length - 1];
+        const revChange = first.revenue > 0 ? (last.revenue / first.revenue) - 1 : NaN;
+        const costChange = first.cost > 0 ? (last.cost / first.cost) - 1 : NaN;
+        return `Revenue changed ${fmtPct(revChange)} while cost changed ${fmtPct(costChange)}; cost growing faster is the operating bottleneck to solve.`;
+      })();
+
+      const command = (() => {
+        let decision = 'Hold broad scaling; reallocate by channel quality';
+        let decisionText = `LTV/CAC is ${fmtNum(curSnap.ltvToCac, 2)} against a ${fmtNum(EFF_THRESH.ltv_cac_target, 1)} scale threshold and payback is ${Number.isFinite(curSnap.payback) ? fmtNum(curSnap.payback, 1) + 'm' : 'n/a'}.`;
+        if (Number.isFinite(curSnap.ltvToCac) && curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target && Number.isFinite(curSnap.payback) && curSnap.payback <= EFF_THRESH.payback_target_months) {
+          decision = 'Scale selectively with guardrails';
+          decisionText = 'Overall unit economics clear the scale rule, so the decision is where to add budget without importing weak retention or low-margin mix.';
+        }
+        if (inefficient.length) {
+          decision = 'Cut weak acquisition before scaling winners';
+          decisionText = `${inefficient.join(', ')} breach efficiency rules; reallocate spend only after CAC/payback recovery tests are defined.`;
+        }
+        return {
+          decision,
+          decisionText,
+          scale: efficient.length ? efficient.join(', ') : 'No channel clears all guardrails',
+          scaleText: bestChannel ? `${bestChannel.channel} leads with LTV/CAC ${fmtNum(bestChannel.ltvToCac, 2)} and payback ${fmtNum(bestChannel.payback, 1)}m.` : 'No channel-level efficiency signal is available.',
+          intervene: inefficient.length ? inefficient.join(', ') : (worstChannel ? worstChannel.channel : 'No active breach'),
+          interveneText: worstChannel ? `${worstChannel.channel} is weakest at LTV/CAC ${fmtNum(worstChannel.ltvToCac, 2)}; require a recovery plan before budget growth.` : 'No channel breach is visible under current filters.',
+          impact: weakestSegment ? `${weakestSegment.segment} margin ${fmtPct(weakestSegment.marginPct)}` : 'No segment signal',
+          impactText: weakestRegion ? `${weakestRegion.region} is the lowest-margin region at ${fmtPct(weakestRegion.marginPct)}; check pricing, support load, and delivery cost.` : 'Regional profitability is unavailable for this filter scope.',
+        };
+      })();
+      renderDecisionCommand(command);
+
+      setInsight('insight-revenue', revenueTrendText);
+      setInsight('insight-margin', marginTrendText);
+      setInsight('insight-revenue-cost', costLeverageText);
+      setInsight('insight-cohort-retention', `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12; faster decay increases dependence on new acquisition.`);
+      setInsight('insight-ltv-cac', bestChannel && worstChannel ? `${bestChannel.channel} is the best scaling candidate; ${worstChannel.channel} is the budget risk to cap or repair.` : 'No channel efficiency comparison is available.');
+      setInsight('insight-segment-margin', strongestSegment && weakestSegment ? `${strongestSegment.segment} contributes the most margin; ${weakestSegment.segment} has the weakest margin rate at ${fmtPct(weakestSegment.marginPct)}.` : 'No segment profitability comparison is available.');
+      setInsight('insight-arpt-segment', arptRows.length ? `${arptRows[0].segment} has the highest average transaction value at ${fmtCurrency(arptRows[0].avgRevTx)}; verify margin before prioritizing volume.` : 'No ticket-size comparison is available.');
+      setInsight('insight-revenue-distribution', `Top-decile customers contribute ${fmtPct(revenueShareTop10)} of revenue; high concentration increases account-risk sensitivity.`);
+      setInsight('insight-region-table', weakestRegion ? `${weakestRegion.region} has the lowest margin rate at ${fmtPct(weakestRegion.marginPct)}; treat it as the first regional operating review.` : 'No regional profitability comparison is available.');
 
       const insights = [
         {
@@ -2752,11 +2944,10 @@ def run() -> None:
     payload = build_embedded_payload(customers, transactions, marketing)
     html = build_dashboard_html(payload)
 
-    out_path = DASHBOARD_DIR / "executive-revenue-unit-economics-command-center.html"
+    out_path = DASHBOARD_DIR / "growth-quality-dashboard.html"
     out_path.write_text(html, encoding="utf-8")
 
-    print("Executive dashboard assets built.")
-    print(f"dashboard_html: {out_path}")
+    print(f"Dashboard written: {out_path}")
 
 
 def main() -> None:

@@ -502,7 +502,7 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
         )
     )
 
-    dashboard_html_path = PROJECT_ROOT / "outputs" / "dashboard" / "executive-revenue-unit-economics-command-center.html"
+    dashboard_html_path = PROJECT_ROOT / "outputs" / "dashboard" / "growth-quality-dashboard.html"
     dashboard_text = dashboard_html_path.read_text(encoding="utf-8") if dashboard_html_path.exists() else ""
     deterministic_metadata_ok = "generated_at" not in dashboard_text
     checks.append(

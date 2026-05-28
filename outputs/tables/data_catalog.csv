@@ -1,58 +1,58 @@
 layer,dataset,column,dtype,role,owner,definition,business_use
-output,main_analysis_findings,business_interpretation,object,dimension,Analytics Lead,main_analysis_findings.business_interpretation field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,main_analysis_findings,caveats,object,dimension,Analytics Lead,main_analysis_findings.caveats field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,main_analysis_findings,metrics_used,object,dimension,Analytics Lead,main_analysis_findings.metrics_used field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,main_analysis_findings,question,object,dimension,Analytics Lead,main_analysis_findings.question field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,main_analysis_findings,result,object,dimension,Analytics Lead,main_analysis_findings.result field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,main_analysis_findings,section,object,dimension,Analytics Lead,main_analysis_findings.section field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,monthly_revenue_health,active_customers,int64,metric,Analytics Lead,monthly_revenue_health.active_customers field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,monthly_revenue_health,contribution_margin,float64,metric,Analytics Lead,Revenue minus direct cost.,Primary profitability measure for sustainable growth decisions.
-output,monthly_revenue_health,contribution_margin_growth_mom,float64,metric,Analytics Lead,monthly_revenue_health.contribution_margin_growth_mom field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,monthly_revenue_health,contribution_margin_pct,float64,metric,Analytics Lead,Contribution margin divided by revenue.,Margin quality signal for trend and segment diagnostics.
-output,monthly_revenue_health,cost_growth_mom,float64,metric,Analytics Lead,monthly_revenue_health.cost_growth_mom field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,monthly_revenue_health,month,object,temporal,Analytics Lead,monthly_revenue_health.month field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,monthly_revenue_health,revenue_growth_mom,float64,metric,Analytics Lead,monthly_revenue_health.revenue_growth_mom field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,monthly_revenue_health,total_cost,float64,metric,Analytics Lead,monthly_revenue_health.total_cost field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,monthly_revenue_health,total_revenue,float64,metric,Analytics Lead,monthly_revenue_health.total_revenue field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-output,monthly_revenue_health,transaction_count,int64,metric,Analytics Lead,monthly_revenue_health.transaction_count field in output layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,cohort_table,activity_month,object,temporal,Analytics Engineering,cohort_table.activity_month field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,cohort_table,average_revenue_per_active_customer,float64,metric,Analytics Engineering,cohort_table.average_revenue_per_active_customer field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,cohort_table,cohort_month,object,temporal,Analytics Engineering,cohort_table.cohort_month field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,cohort_table,cohort_revenue,float64,metric,Analytics Engineering,cohort_table.cohort_revenue field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,cohort_table,customers_active,int64,metric,Analytics Engineering,cohort_table.customers_active field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,acquisition_channel,object,dimension,Analytics Engineering,customer_metrics.acquisition_channel field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,avg_revenue_per_transaction,float64,metric,Analytics Engineering,customer_metrics.avg_revenue_per_transaction field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,contribution_margin,float64,metric,Analytics Engineering,Revenue minus direct cost.,Primary profitability measure for sustainable growth decisions.
-processed,customer_metrics,contribution_margin_pct,float64,metric,Analytics Engineering,Contribution margin divided by revenue.,Margin quality signal for trend and segment diagnostics.
-processed,customer_metrics,customer_id,object,identifier,Analytics Engineering,Unique customer identifier.,Join key across customer and transaction-level views.
-processed,customer_metrics,first_transaction_date,object,temporal,Analytics Engineering,customer_metrics.first_transaction_date field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,last_transaction_date,object,temporal,Analytics Engineering,customer_metrics.last_transaction_date field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,lifetime_days,int64,metric,Analytics Engineering,customer_metrics.lifetime_days field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,region,object,dimension,Analytics Engineering,customer_metrics.region field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,revenue_per_day,float64,metric,Analytics Engineering,customer_metrics.revenue_per_day field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,segment,object,dimension,Analytics Engineering,customer_metrics.segment field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,total_cost,float64,metric,Analytics Engineering,customer_metrics.total_cost field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,total_revenue,float64,metric,Analytics Engineering,customer_metrics.total_revenue field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,customer_metrics,transaction_count,int64,metric,Analytics Engineering,customer_metrics.transaction_count field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,unit_economics,CAC,float64,metric,Analytics Engineering,Customer acquisition cost by channel: total spend divided by customers acquired.,Channel efficiency and budget reallocation decisions.
-processed,unit_economics,LTV_to_CAC,float64,metric,Analytics Engineering,Lifetime value to CAC ratio by channel.,Scaling guardrail to avoid unprofitable growth.
-processed,unit_economics,acquisition_channel,object,dimension,Analytics Engineering,unit_economics.acquisition_channel field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,unit_economics,approximate_payback_period,float64,metric,Analytics Engineering,Estimated months to recover CAC using observed contribution margin.,Capital efficiency and risk prioritization.
-processed,unit_economics,average_LTV,float64,metric,Analytics Engineering,unit_economics.average_LTV field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,unit_economics,customers_acquired,int64,metric,Analytics Engineering,unit_economics.customers_acquired field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,unit_economics,median_LTV,float64,metric,Analytics Engineering,unit_economics.median_LTV field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-processed,unit_economics,total_spend,float64,metric,Analytics Engineering,unit_economics.total_spend field in processed layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,customers,acquisition_channel,object,dimension,Data Engineering,customers.acquisition_channel field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,customers,customer_id,object,identifier,Data Engineering,Unique customer identifier.,Join key across customer and transaction-level views.
-raw,customers,region,object,dimension,Data Engineering,customers.region field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,customers,segment,object,dimension,Data Engineering,customers.segment field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,customers,signup_date,object,temporal,Data Engineering,customers.signup_date field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,marketing_spend,acquisition_channel,object,dimension,Data Engineering,marketing_spend.acquisition_channel field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,marketing_spend,date,object,temporal,Data Engineering,marketing_spend.date field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,marketing_spend,spend,float64,metric,Data Engineering,marketing_spend.spend field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,transactions,cost,float64,metric,Data Engineering,Direct delivery cost linked to each transaction.,Contribution margin and unit economics.
-raw,transactions,customer_id,object,identifier,Data Engineering,Unique customer identifier.,Join key across customer and transaction-level views.
-raw,transactions,product_type,object,dimension,Data Engineering,transactions.product_type field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,transactions,revenue,float64,metric,Data Engineering,Gross revenue booked on each transaction.,Top-line growth and mix analysis.
-raw,transactions,transaction_date,object,temporal,Data Engineering,transactions.transaction_date field in raw layer.,"Operationalized in profiling, analysis, or dashboarding workflows."
-raw,transactions,transaction_id,object,identifier,Data Engineering,Unique transaction identifier.,Traceability and duplicate-control for transactional facts.
+output,main_analysis_findings,business_interpretation,object,dimension,Analytics Lead,Plain-English interpretation of the result.,Stakeholder communication.
+output,main_analysis_findings,caveats,object,dimension,Analytics Lead,Known limitations or assumptions.,Honest framing of confidence.
+output,main_analysis_findings,metrics_used,object,dimension,Analytics Lead,Metrics referenced to produce the result.,Auditability.
+output,main_analysis_findings,question,object,dimension,Analytics Lead,Business question the finding answers.,Decision framing.
+output,main_analysis_findings,result,object,dimension,Analytics Lead,Quantitative or qualitative result.,Headline figure.
+output,main_analysis_findings,section,object,dimension,Analytics Lead,Analysis section the finding belongs to.,Narrative grouping.
+output,monthly_revenue_health,active_customers,int64,metric,Analytics Lead,Distinct customers active in the period.,Engagement measure.
+output,monthly_revenue_health,contribution_margin,float64,metric,Analytics Lead,Revenue minus direct cost.,Primary profitability measure.
+output,monthly_revenue_health,contribution_margin_growth_mom,float64,metric,Analytics Lead,Month-over-month change in contribution margin.,Margin trend monitoring.
+output,monthly_revenue_health,contribution_margin_pct,float64,metric,Analytics Lead,Contribution margin as share of revenue.,Margin quality signal.
+output,monthly_revenue_health,cost_growth_mom,float64,metric,Analytics Lead,Month-over-month change in total cost.,Cost trajectory.
+output,monthly_revenue_health,month,object,temporal,Analytics Lead,"Calendar month, first-of-month timestamp.",Monthly aggregation.
+output,monthly_revenue_health,revenue_growth_mom,float64,metric,Analytics Lead,Month-over-month change in total revenue.,Top-line momentum.
+output,monthly_revenue_health,total_cost,float64,metric,Analytics Lead,Sum of direct cost over the grouping window.,Margin measurement.
+output,monthly_revenue_health,total_revenue,float64,metric,Analytics Lead,Sum of revenue over the grouping window.,Top-line measurement.
+output,monthly_revenue_health,transaction_count,int64,metric,Analytics Lead,Number of transactions in the grouping.,Volume measure.
+processed,cohort_table,activity_month,object,temporal,Analytics Engineering,Month in which the cohort generated revenue.,Retention curve x-axis.
+processed,cohort_table,average_revenue_per_active_customer,float64,metric,Analytics Engineering,Cohort revenue divided by active customers.,Per-user revenue trajectory.
+processed,cohort_table,cohort_month,object,temporal,Analytics Engineering,Signup month used as cohort key.,Cohort retention analysis.
+processed,cohort_table,cohort_revenue,float64,metric,Analytics Engineering,Revenue generated by the cohort in the activity month.,Cohort retention numerator.
+processed,cohort_table,customers_active,int64,metric,Analytics Engineering,Distinct active customers in the cohort/period.,Retention denominator.
+processed,customer_metrics,acquisition_channel,object,dimension,Analytics Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+processed,customer_metrics,avg_revenue_per_transaction,float64,metric,Analytics Engineering,Mean transaction revenue for the customer.,Ticket-size diagnostics.
+processed,customer_metrics,contribution_margin,float64,metric,Analytics Engineering,Revenue minus direct cost.,Primary profitability measure.
+processed,customer_metrics,contribution_margin_pct,float64,metric,Analytics Engineering,Contribution margin as share of revenue.,Margin quality signal.
+processed,customer_metrics,customer_id,object,identifier,Analytics Engineering,Unique customer identifier.,Join key across customer and transaction views.
+processed,customer_metrics,first_transaction_date,object,temporal,Analytics Engineering,First observed transaction for the customer.,Customer lifetime window start.
+processed,customer_metrics,last_transaction_date,object,temporal,Analytics Engineering,Last observed transaction for the customer.,Customer lifetime window end.
+processed,customer_metrics,lifetime_days,int64,metric,Analytics Engineering,Days between first and last observed transaction.,Observation window size.
+processed,customer_metrics,region,object,dimension,Analytics Engineering,"Customer region (EMEA, AMER, APAC).",Geographic mix and regional profitability.
+processed,customer_metrics,revenue_per_day,float64,metric,Analytics Engineering,Total revenue divided by observed lifetime days.,Per-day intensity.
+processed,customer_metrics,segment,object,dimension,Analytics Engineering,"Customer segment (SMB, Mid-Market, Enterprise).",Cross-cut for margin and retention diagnostics.
+processed,customer_metrics,total_cost,float64,metric,Analytics Engineering,Sum of direct cost over the grouping window.,Margin measurement.
+processed,customer_metrics,total_revenue,float64,metric,Analytics Engineering,Sum of revenue over the grouping window.,Top-line measurement.
+processed,customer_metrics,transaction_count,int64,metric,Analytics Engineering,Number of transactions in the grouping.,Volume measure.
+processed,unit_economics,CAC,float64,metric,Analytics Engineering,Channel marketing spend divided by customers acquired.,Channel efficiency.
+processed,unit_economics,LTV_to_CAC,float64,metric,Analytics Engineering,Average observed LTV divided by CAC.,Scaling guardrail.
+processed,unit_economics,acquisition_channel,object,dimension,Analytics Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+processed,unit_economics,approximate_payback_period,float64,metric,Analytics Engineering,Months of margin needed to recover CAC.,Capital efficiency proxy.
+processed,unit_economics,average_LTV,float64,metric,Analytics Engineering,Mean contribution margin per acquired customer.,Value side of LTV/CAC.
+processed,unit_economics,customers_acquired,int64,metric,Analytics Engineering,Customers whose signup falls in the period.,CAC denominator.
+processed,unit_economics,median_LTV,float64,metric,Analytics Engineering,Median contribution margin per acquired customer.,Skew-robust value check.
+processed,unit_economics,total_spend,float64,metric,Analytics Engineering,Sum of marketing spend over the grouping window.,CAC denominator input.
+raw,customers,acquisition_channel,object,dimension,Data Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+raw,customers,customer_id,object,identifier,Data Engineering,Unique customer identifier.,Join key across customer and transaction views.
+raw,customers,region,object,dimension,Data Engineering,"Customer region (EMEA, AMER, APAC).",Geographic mix and regional profitability.
+raw,customers,segment,object,dimension,Data Engineering,"Customer segment (SMB, Mid-Market, Enterprise).",Cross-cut for margin and retention diagnostics.
+raw,customers,signup_date,object,temporal,Data Engineering,Date the customer first signed up.,Cohort assignment.
+raw,marketing_spend,acquisition_channel,object,dimension,Data Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+raw,marketing_spend,date,object,temporal,Data Engineering,Calendar date.,Time-series aggregation.
+raw,marketing_spend,spend,float64,metric,Data Engineering,Marketing spend recorded for the day and channel.,CAC and channel ROI.
+raw,transactions,cost,float64,metric,Data Engineering,Direct delivery cost linked to the transaction.,Contribution margin and unit economics.
+raw,transactions,customer_id,object,identifier,Data Engineering,Unique customer identifier.,Join key across customer and transaction views.
+raw,transactions,product_type,object,dimension,Data Engineering,Product line for the transaction.,Product mix and profitability analysis.
+raw,transactions,revenue,float64,metric,Data Engineering,Gross revenue booked on the transaction.,Top-line growth and mix.
+raw,transactions,transaction_date,object,temporal,Data Engineering,Date the transaction occurred.,Time-series aggregation.
+raw,transactions,transaction_id,object,identifier,Data Engineering,Unique transaction identifier.,Duplicate control on transactional facts.

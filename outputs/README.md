@@ -2,7 +2,7 @@
 
 Curated project deliverables for review and decision support.
 
-- `charts/` — publication-ready visuals used in the dashboard and reports
+- `charts/` — static chart exports from the visualization stage
 - `tables/` — analytical tables and scenario outputs
 - `reports/` — decision brief, governance, and QA reports
 - `dashboard/` — executive interactive dashboard (live link inside)
