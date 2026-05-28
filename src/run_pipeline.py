@@ -18,6 +18,7 @@ STEPS: list[tuple[str, list[str]]] = [
     ("Build decision scenarios", ["src/scenario_engine/build_scenarios.py"]),
     ("Build scenario benchmark pack", ["src/scenario_engine/build_scenario_benchmark.py"]),
     ("Generate visualization pack", ["src/visualization/generate_visuals.py"]),
+    ("Generate showcase chart pack", ["src/visualization/build_chart_pack.py"]),
     ("Build executive dashboard", ["src/dashboard_builder/build_dashboard_assets.py"]),
     ("Publish governance artifacts (pre-QA)", ["src/governance/publish_governance_artifacts.py"]),
     ("Run final QA validation", ["src/validation/validate_final_outputs.py"]),
@@ -28,7 +29,7 @@ STEPS: list[tuple[str, list[str]]] = [
 def run_step(step_name: str, script_parts: list[str]) -> None:
     command = [sys.executable, *script_parts]
     env = os.environ.copy()
-    if "generate_visuals.py" in script_parts[-1]:
+    if script_parts[-1].endswith((".py",)) and "visualization/" in script_parts[-1]:
         env["MPLBACKEND"] = "Agg"
         mpl_cache = PROJECT_ROOT / ".cache" / "matplotlib"
         mpl_cache.mkdir(parents=True, exist_ok=True)

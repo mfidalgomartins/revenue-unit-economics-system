@@ -44,6 +44,7 @@ tests/       unit tests + metric contract tests + dashboard payload tests
 
 ## Key outputs
 - `outputs/dashboard/growth-quality-dashboard.html` — interactive dashboard with filters, drill-downs, and embedded data.
+- `outputs/Graphs/` — curated showcase chart pack (six PNGs, one per executive question).
 - `outputs/reports/decision_brief.md` — executive summary with recommendations and scenario envelope.
 - `outputs/tables/scenario_reallocation_plan.csv` — per-channel reallocation under the chosen policy.
 - `outputs/reports/pre_delivery_validation_report.md` — final QA gate before publishing.
