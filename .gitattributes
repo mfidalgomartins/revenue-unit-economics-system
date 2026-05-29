@@ -1,0 +1,4 @@
+# Tell GitHub Linguist to ignore generated and vendored output files so Python
+# is correctly identified as the project's primary language.
+outputs/ linguist-vendored
+data/    linguist-vendored
