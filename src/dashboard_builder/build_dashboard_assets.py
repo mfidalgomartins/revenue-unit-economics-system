@@ -325,7 +325,6 @@ def build_dashboard_html(payload: dict) -> str:
       gap: 8px;
       align-items: center;
     }
-    #btn-toggle-filters { display: none; }
 
     /* KPI BAND ----------------------------------------------------- */
     .kpi-row {
@@ -607,7 +606,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-variant-numeric: tabular-nums;
       text-align: right;
     }
-    .risk-priority { display: flex; flex-direction: column; gap: 6px; }
+    .risk-priority { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 
     /* FOOTNOTE ----------------------------------------------------- */
     .footnote {
@@ -732,8 +731,6 @@ def build_dashboard_html(payload: dict) -> str:
       <div class="filter-actions">
         <span class="tool-meta" id="filters-summary"></span>
         <button class="tool-btn" id="btn-reset" type="button">Reset</button>
-        <button class="tool-btn" id="btn-select-all" type="button" style="display:none"></button>
-        <button class="tool-btn" id="btn-toggle-filters" type="button" style="display:none" aria-expanded="true"></button>
       </div>
     </div>
 
@@ -860,12 +857,10 @@ def build_dashboard_html(payload: dict) -> str:
       cohort_base: 55.0
     };
     const THEME_KEY = 'exec_dashboard_theme';
-    const FILTERS_COLLAPSED_KEY = 'exec_dashboard_filters_collapsed';
 
     const state = {
       regionSort: { key: 'marginPct', dir: 'desc' },
       riskSort: { key: 'priorityScore', dir: 'desc' },
-      filtersCollapsed: false,
     };
 
     const tooltipEl = document.getElementById('tooltip');
@@ -915,27 +910,6 @@ def build_dashboard_html(payload: dict) -> str:
       window.localStorage.setItem(THEME_KEY, next);
       applyTheme(next);
       computeAndRender();
-    }
-
-    function resolveFiltersCollapsed() {
-      const saved = window.localStorage.getItem(FILTERS_COLLAPSED_KEY);
-      if (saved === 'true') return true;
-      if (saved === 'false') return false;
-      return window.innerWidth >= 1180;
-    }
-
-    function setFiltersCollapsed(collapsed, persist = true) {
-      state.filtersCollapsed = !!collapsed;
-      const shell = document.querySelector('.filters-shell');
-      const btn = document.getElementById('btn-toggle-filters');
-      if (shell) shell.classList.toggle('compact', state.filtersCollapsed);
-      if (btn) {
-        btn.textContent = state.filtersCollapsed ? 'Show Filters' : 'Hide Filters';
-        btn.setAttribute('aria-expanded', state.filtersCollapsed ? 'false' : 'true');
-      }
-      if (persist) {
-        window.localStorage.setItem(FILTERS_COLLAPSED_KEY, state.filtersCollapsed ? 'true' : 'false');
-      }
     }
 
     function summarizeSelectedValues(set, allValues, label) {
@@ -1018,6 +992,26 @@ def build_dashboard_html(payload: dict) -> str:
       const rest = pos - base;
       if (arr[base + 1] !== undefined) return arr[base] + rest * (arr[base + 1] - arr[base]);
       return arr[base];
+    }
+
+    // Choose a clean gridline step so axis labels land on human-readable
+    // numbers (e.g. $3M rather than $3.44M). `targetTicks` guides the step
+    // size; the actual line count is derived so the axis hugs the data
+    // instead of leaving wasted headroom.
+    function niceScale(dataMax, targetTicks) {
+      if (!(dataMax > 0)) return { max: 1, step: 1, count: 1 };
+      const rawStep = dataMax / targetTicks;
+      const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const norm = rawStep / mag;
+      let nice;
+      if (norm <= 1) nice = 1;
+      else if (norm <= 2) nice = 2;
+      else if (norm <= 2.5) nice = 2.5;
+      else if (norm <= 5) nice = 5;
+      else nice = 10;
+      const step = nice * mag;
+      const count = Math.max(1, Math.ceil(dataMax / step - 1e-9));
+      return { max: step * count, step, count };
     }
 
     function setTooltip(target, html) {
@@ -1110,20 +1104,20 @@ def build_dashboard_html(payload: dict) -> str:
       const xMin = Math.min(...xVals);
       const xMax = Math.max(...xVals);
 
-      let yMax = 0;
+      let dataMax = 0;
       series.forEach(s => {
-        rows.forEach(r => { yMax = Math.max(yMax, Number(r[s.key]) || 0); });
+        rows.forEach(r => { dataMax = Math.max(dataMax, Number(r[s.key]) || 0); });
       });
-      yMax = yMax <= 0 ? 1 : yMax * 1.1;
+      const yScale = niceScale(dataMax, 5);
+      const yMax = yScale.max;
 
       const sx = (x) => m.left + ((x - xMin) / Math.max(1, (xMax - xMin))) * innerW;
       const sy = (y) => m.top + innerH - (y / yMax) * innerH;
 
-      for (let i = 0; i <= 5; i += 1) {
-        const y = m.top + (i / 5) * innerH;
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const y = m.top + (i / yScale.count) * innerH;
         addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
-        const value = yMax * (1 - i / 5);
-        addSvgText(svg, m.left - 8, y + 4, yFormatter(value), { anchor: 'end', size: '10' });
+        addSvgText(svg, m.left - 8, y + 4, yFormatter(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
       }
 
       const tickCount = Math.min(6, rows.length);
@@ -1183,32 +1177,40 @@ def build_dashboard_html(payload: dict) -> str:
       const innerW = width - m.left - m.right;
       const innerH = height - m.top - m.bottom;
 
-      const xMax = Math.max(1, ...rows.map(r => r.CAC)) * 1.15;
-      const yMax = Math.max(1, ...rows.map(r => r.avgLTV)) * 1.15;
+      const xScale = niceScale(Math.max(0, ...rows.map(r => r.CAC)) * 1.1, 5);
+      const yScale = niceScale(Math.max(0, ...rows.map(r => r.avgLTV)) * 1.1, 5);
+      const xMax = xScale.max;
+      const yMax = yScale.max;
 
       const sx = (x) => m.left + (x / xMax) * innerW;
       const sy = (y) => m.top + innerH - (y / yMax) * innerH;
 
-      for (let i = 0; i <= 5; i += 1) {
-        const x = m.left + (i / 5) * innerW;
-        const v = xMax * (i / 5);
+      for (let i = 0; i <= xScale.count; i += 1) {
+        const x = m.left + (i / xScale.count) * innerW;
         addSvgLine(svg, x, m.top + innerH, x, m.top + innerH + 4, palette.axis, 1);
-        addSvgText(svg, x, m.top + innerH + 16, fmtCurrency(v), { anchor: 'middle', size: '10' });
+        addSvgText(svg, x, m.top + innerH + 16, fmtCurrency(xScale.step * i), { anchor: 'middle', size: '10' });
       }
 
-      for (let i = 0; i <= 5; i += 1) {
-        const y = m.top + (i / 5) * innerH;
-        const v = yMax * (1 - i / 5);
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const y = m.top + (i / yScale.count) * innerH;
         addSvgLine(svg, m.left - 4, y, m.left, y, palette.axis, 1);
-        addSvgText(svg, m.left - 8, y + 4, fmtCurrency(v), { anchor: 'end', size: '10' });
+        addSvgText(svg, m.left - 8, y + 4, fmtCurrency(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
       }
 
       addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
       addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
 
-      const diagStart = { x: 0, y: 0 };
-      const diagEnd = { x: Math.min(xMax, yMax), y: Math.min(xMax, yMax) };
-      addSvgLine(svg, sx(diagStart.x), sy(diagStart.y), sx(diagEnd.x), sy(diagEnd.y), palette.axis, 1, '4 4', 0.9);
+      // Break-even reference (LTV = CAC) — faint, just a floor of viability.
+      const beEnd = Math.min(xMax, yMax);
+      addSvgLine(svg, sx(0), sy(0), sx(beEnd), sy(beEnd), palette.axis, 1, '3 4', 0.55);
+      addSvgText(svg, sx(beEnd) - 4, sy(beEnd) - 6, '1:1 break-even', { anchor: 'end', size: '9.5', color: palette.muted });
+
+      // Scale threshold (LTV/CAC target) — the rule that governs the decision.
+      const target = EFF_THRESH.ltv_cac_target || 3.0;
+      const tEndX = (yMax / target <= xMax) ? yMax / target : xMax;
+      const tEndY = tEndX * target;
+      addSvgLine(svg, sx(0), sy(0), sx(tEndX), sy(tEndY), palette.good, 1.4, '5 4', 0.9);
+      addSvgText(svg, sx(tEndX) - 4, sy(tEndY) - 6, fmtNum(target, 0) + ':1 scale target', { anchor: 'end', size: '9.5', weight: '500', color: palette.good });
 
       rows.forEach(r => {
         const cx = sx(r.CAC);
@@ -1244,17 +1246,17 @@ def build_dashboard_html(payload: dict) -> str:
       const innerW = width - m.left - m.right;
       const innerH = height - m.top - m.bottom;
 
-      const yMax = Math.max(1, ...rows.map(r => Number(r[key]) || 0)) * 1.15;
+      const yScale = niceScale(Math.max(0, ...rows.map(r => Number(r[key]) || 0)), 5);
+      const yMax = yScale.max;
       const barW = innerW / rows.length * 0.65;
       const gap = innerW / rows.length;
 
       const sy = (y) => m.top + innerH - (y / yMax) * innerH;
 
-      for (let i = 0; i <= 5; i += 1) {
-        const y = m.top + (i / 5) * innerH;
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const y = m.top + (i / yScale.count) * innerH;
         addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
-        const v = yMax * (1 - i / 5);
-        addSvgText(svg, m.left - 8, y + 4, yFormatter(v), { anchor: 'end', size: '10' });
+        addSvgText(svg, m.left - 8, y + 4, yFormatter(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
       }
 
       addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
@@ -1317,14 +1319,14 @@ def build_dashboard_html(payload: dict) -> str:
       const innerW = width - m.left - m.right;
       const innerH = height - m.top - m.bottom;
 
-      const yMax = Math.max(1, ...rows.map(r => r.count)) * 1.1;
+      const yScale = niceScale(Math.max(0, ...rows.map(r => r.count)), 4);
+      const yMax = yScale.max;
       const barW = innerW / rows.length;
 
-      for (let i = 0; i <= 4; i += 1) {
-        const y = m.top + (i / 4) * innerH;
-        const v = yMax * (1 - i / 4);
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const y = m.top + (i / yScale.count) * innerH;
         addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
-        addSvgText(svg, m.left - 8, y + 4, Math.round(v).toString(), { anchor: 'end', size: '10' });
+        addSvgText(svg, m.left - 8, y + 4, Math.round(yScale.step * (yScale.count - i)).toString(), { anchor: 'end', size: '10' });
       }
 
       addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
@@ -1909,69 +1911,69 @@ def build_dashboard_html(payload: dict) -> str:
       renderFilterSummary(startDate, endDate, selected);
 
       const current = applyFilters(startDate, endDate, selected);
+      const curSnap = computeSnapshot(current.tx, current.customers, current.spend, startDate, endDate);
 
+      // Comparison baseline. Prefer the immediately prior period of equal length;
+      // when it holds no data (e.g. the full-coverage default view) compare the
+      // second half of the visible window against the first half so every metric
+      // still carries an honest, readable trend instead of an empty dash.
       const duration = dayDiff(startDate, endDate);
       const priorEnd = shiftDate(startDate, -1);
       const priorStart = shiftDate(priorEnd, -(duration - 1));
-      const prePriorEnd = shiftDate(priorStart, -1);
-      const prePriorStart = shiftDate(prePriorEnd, -(duration - 1));
-
       const prior = applyFilters(priorStart, priorEnd, selected);
-      const prePrior = applyFilters(prePriorStart, prePriorEnd, selected);
-
-      const curSnap = computeSnapshot(current.tx, current.customers, current.spend, startDate, endDate);
       const priorSnap = computeSnapshot(prior.tx, prior.customers, prior.spend, priorStart, priorEnd);
-      const prePriorSnap = computeSnapshot(prePrior.tx, prePrior.customers, prePrior.spend, prePriorStart, prePriorEnd);
 
-      let growthRate = Number.isFinite(priorSnap.revenue) && priorSnap.revenue > 0
-        ? (curSnap.revenue / priorSnap.revenue) - 1
-        : NaN;
-      let growthMethod = 'prior_period';
-      if (!Number.isFinite(growthRate)) {
-        const fallbackMonthly = aggregateMonthly(current.tx);
-        if (fallbackMonthly.length >= 2) {
-          const firstRevenue = fallbackMonthly[0].revenue;
-          const lastRevenue = fallbackMonthly[fallbackMonthly.length - 1].revenue;
-          if (Number.isFinite(firstRevenue) && Number.isFinite(lastRevenue) && firstRevenue > 0) {
-            growthRate = (lastRevenue / firstRevenue) - 1;
-            growthMethod = 'first_vs_last_month';
-          }
-        }
+      const midDate = new Date(Math.floor((dateToTs(startDate) + dateToTs(endDate)) / 2))
+        .toISOString().slice(0, 10);
+      const secondStart = shiftDate(midDate, 1);
+      const firstHalf = applyFilters(startDate, midDate, selected);
+      const secondHalf = applyFilters(secondStart, endDate, selected);
+      const firstSnap = computeSnapshot(firstHalf.tx, firstHalf.customers, firstHalf.spend, startDate, midDate);
+      const secondSnap = computeSnapshot(secondHalf.tx, secondHalf.customers, secondHalf.spend, secondStart, endDate);
+
+      let baseSnap, cmpSnap, cmpLabel;
+      if (Number.isFinite(priorSnap.revenue) && priorSnap.revenue > 0) {
+        baseSnap = priorSnap; cmpSnap = curSnap; cmpLabel = 'vs prior period';
+      } else {
+        baseSnap = firstSnap; cmpSnap = secondSnap; cmpLabel = 'vs 1st half';
       }
-      const priorGrowthRate = Number.isFinite(prePriorSnap.revenue) && prePriorSnap.revenue > 0
-        ? (priorSnap.revenue / prePriorSnap.revenue) - 1
+
+      const growthRate = Number.isFinite(baseSnap.revenue) && baseSnap.revenue > 0
+        ? (cmpSnap.revenue / baseSnap.revenue) - 1
         : NaN;
 
       const delta = (cur, prev) => (Number.isFinite(prev) && prev !== 0 ? (cur / prev) - 1 : NaN);
       const arrow = d => (d >= 0 ? '▲' : '▼');
       const deltaPct = (cur, prev) => {
         const d = delta(cur, prev);
-        return Number.isFinite(d) ? `${arrow(d)} ${fmtPct(Math.abs(d))} vs prior` : '—';
+        return Number.isFinite(d) ? `${arrow(d)} ${fmtPct(Math.abs(d))} ${cmpLabel}` : '—';
       };
       const deltaPp = (cur, prev) => {
         if (!Number.isFinite(cur) || !Number.isFinite(prev)) return '—';
         const d = cur - prev;
-        return `${arrow(d)} ${(Math.abs(d) * 100).toFixed(1)}pp vs prior`;
+        return `${arrow(d)} ${(Math.abs(d) * 100).toFixed(1)}pp ${cmpLabel}`;
       };
+      // Arrow reflects the metric's actual direction of movement; colour (set on
+      // the card) carries the good/bad reading. For CAC and payback a fall is good.
       const deltaAbs = (cur, prev, fmt) => {
         if (!Number.isFinite(cur) || !Number.isFinite(prev)) return '—';
         const d = cur - prev;
-        return `${arrow(-d)} ${fmt(Math.abs(d))} vs prior`;
+        return `${arrow(d)} ${fmt(Math.abs(d))} ${cmpLabel}`;
       };
 
       const kpis = [
         {
           label: 'Revenue',
           value: fmtCurrency(curSnap.revenue),
-          delta: delta(curSnap.revenue, priorSnap.revenue),
-          deltaText: deltaPct(curSnap.revenue, priorSnap.revenue),
+          delta: delta(cmpSnap.revenue, baseSnap.revenue),
+          deltaText: deltaPct(cmpSnap.revenue, baseSnap.revenue),
           tone: Number.isFinite(growthRate) ? (growthRate > 0 ? 'good' : 'bad') : 'warn',
         },
         {
           label: 'Contribution Margin',
           value: fmtCurrency(curSnap.margin),
-          delta: delta(curSnap.margin, priorSnap.margin),
-          deltaText: deltaPct(curSnap.margin, priorSnap.margin),
+          delta: delta(cmpSnap.margin, baseSnap.margin),
+          deltaText: deltaPct(cmpSnap.margin, baseSnap.margin),
           tone: Number.isFinite(curSnap.marginPct)
             ? (curSnap.marginPct >= 0.30 ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
             : 'warn',
@@ -1979,9 +1981,9 @@ def build_dashboard_html(payload: dict) -> str:
         {
           label: 'Margin %',
           value: fmtPct(curSnap.marginPct),
-          delta: Number.isFinite(curSnap.marginPct) && Number.isFinite(priorSnap.marginPct)
-            ? curSnap.marginPct - priorSnap.marginPct : NaN,
-          deltaText: deltaPp(curSnap.marginPct, priorSnap.marginPct),
+          delta: Number.isFinite(cmpSnap.marginPct) && Number.isFinite(baseSnap.marginPct)
+            ? cmpSnap.marginPct - baseSnap.marginPct : NaN,
+          deltaText: deltaPp(cmpSnap.marginPct, baseSnap.marginPct),
           tone: Number.isFinite(curSnap.marginPct)
             ? (curSnap.marginPct >= 0.30 ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
             : 'warn',
@@ -1989,18 +1991,18 @@ def build_dashboard_html(payload: dict) -> str:
         {
           label: 'CAC',
           value: fmtCurrency(curSnap.CAC),
-          delta: Number.isFinite(curSnap.CAC) && Number.isFinite(priorSnap.CAC)
-            ? -(delta(curSnap.CAC, priorSnap.CAC)) : NaN,
-          deltaText: deltaPct(curSnap.CAC, priorSnap.CAC).replace(/[▲▼]/, m => m === '▲' ? '▼' : '▲'),
-          tone: Number.isFinite(delta(curSnap.CAC, priorSnap.CAC))
-            ? (delta(curSnap.CAC, priorSnap.CAC) <= 0 ? 'good' : 'bad')
+          delta: Number.isFinite(cmpSnap.CAC) && Number.isFinite(baseSnap.CAC)
+            ? -(delta(cmpSnap.CAC, baseSnap.CAC)) : NaN,
+          deltaText: deltaPct(cmpSnap.CAC, baseSnap.CAC),
+          tone: Number.isFinite(delta(cmpSnap.CAC, baseSnap.CAC))
+            ? (delta(cmpSnap.CAC, baseSnap.CAC) <= 0 ? 'good' : 'bad')
             : 'warn',
         },
         {
           label: 'LTV / CAC',
           value: fmtNum(curSnap.ltvToCac, 2),
-          delta: delta(curSnap.ltvToCac, priorSnap.ltvToCac),
-          deltaText: deltaPct(curSnap.ltvToCac, priorSnap.ltvToCac),
+          delta: delta(cmpSnap.ltvToCac, baseSnap.ltvToCac),
+          deltaText: deltaPct(cmpSnap.ltvToCac, baseSnap.ltvToCac),
           tone: Number.isFinite(curSnap.ltvToCac)
             ? (curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target ? 'good' : (curSnap.ltvToCac >= EFF_THRESH.ineff_ltv_cac ? 'warn' : 'bad'))
             : 'warn',
@@ -2008,9 +2010,9 @@ def build_dashboard_html(payload: dict) -> str:
         {
           label: 'Payback',
           value: Number.isFinite(curSnap.payback) ? fmtNum(curSnap.payback, 1) + 'm' : '—',
-          delta: Number.isFinite(curSnap.payback) && Number.isFinite(priorSnap.payback)
-            ? -(curSnap.payback - priorSnap.payback) : NaN,
-          deltaText: deltaAbs(curSnap.payback, priorSnap.payback, x => x.toFixed(1) + 'm'),
+          delta: Number.isFinite(cmpSnap.payback) && Number.isFinite(baseSnap.payback)
+            ? -(cmpSnap.payback - baseSnap.payback) : NaN,
+          deltaText: deltaAbs(cmpSnap.payback, baseSnap.payback, x => x.toFixed(1) + 'm'),
           tone: Number.isFinite(curSnap.payback)
             ? (curSnap.payback <= EFF_THRESH.payback_target_months ? 'good' : (curSnap.payback <= EFF_THRESH.ineff_payback_months ? 'warn' : 'bad'))
             : 'warn',
@@ -2149,11 +2151,9 @@ def build_dashboard_html(payload: dict) -> str:
           badge: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30 ? 'Healthy' : 'Watch',
           tone: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30 ? 'good' : 'warn',
           text: (() => {
-            const phrase = growthMethod === 'prior_period'
-              ? `Revenue changed ${fmtPct(growthRate)} vs the prior period of equal length`
-              : (Number.isFinite(growthRate)
-                  ? `Revenue grew ${fmtPct(growthRate)} from the first to the last month in scope`
-                  : `Revenue trend cannot be measured for this scope`);
+            const phrase = Number.isFinite(growthRate)
+              ? `Revenue moved ${fmtPct(growthRate)} ${cmpLabel}`
+              : `Revenue trend cannot be measured for this scope`;
             return `${phrase}; margin rate is ${fmtPct(curSnap.marginPct)}. This is the first test of whether scale is creating value or just volume.`;
           })()
         },
@@ -2186,12 +2186,6 @@ def build_dashboard_html(payload: dict) -> str:
         `Current scope: ${fmtNum(current.tx.length, 0)} transactions | ${fmtNum(new Set(current.tx.map(r => r.cid)).size, 0)} active customers`;
     }
 
-    function selectAllFilters() {
-      ['filter-segment', 'filter-region', 'filter-channel', 'filter-product'].forEach(id => {
-        Array.from(document.getElementById(id).options).forEach(o => { o.selected = true; });
-      });
-    }
-
     function clearAllFilters() {
       ['filter-segment', 'filter-region', 'filter-channel', 'filter-product'].forEach(id => {
         Array.from(document.getElementById(id).options).forEach(o => { o.selected = false; });
@@ -2211,13 +2205,10 @@ def build_dashboard_html(payload: dict) -> str:
       document.getElementById('dashboard-subtitle').textContent = DASHBOARD_DATA.meta.question;
       const coverageText = `Data coverage: ${DASHBOARD_DATA.meta.coverage_start} to ${DASHBOARD_DATA.meta.coverage_end}`;
       document.getElementById('coverage-chip').textContent = coverageText;
-      const cp = document.getElementById('coverage-print');
-      if (cp) cp.textContent = coverageText;
       populateMultiSelect('filter-segment', DASHBOARD_DATA.meta.values.segments);
       populateMultiSelect('filter-region', DASHBOARD_DATA.meta.values.regions);
       populateMultiSelect('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels);
       populateMultiSelect('filter-product', DASHBOARD_DATA.meta.values.product_types);
-      setFiltersCollapsed(resolveFiltersCollapsed(), false);
 
       document.getElementById('filter-start').value = DASHBOARD_DATA.meta.coverage_start;
       document.getElementById('filter-end').value = DASHBOARD_DATA.meta.coverage_end;
@@ -2236,15 +2227,7 @@ def build_dashboard_html(payload: dict) -> str:
           computeAndRender();
         }));
 
-      document.getElementById('btn-select-all').addEventListener('click', () => {
-        selectAllFilters();
-        computeAndRender();
-      });
-
       document.getElementById('btn-reset').addEventListener('click', resetFilters);
-      document.getElementById('btn-toggle-filters').addEventListener('click', () => {
-        setFiltersCollapsed(!state.filtersCollapsed);
-      });
       document.getElementById('btn-theme').addEventListener('click', toggleTheme);
       document.getElementById('btn-print').addEventListener('click', () => window.print());
 
