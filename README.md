@@ -19,7 +19,7 @@ Light and dark mode. No login or install required. Works on mobile.
 
 | Question | Method |
 |----------|--------|
-| Which acquisition channels deserve budget? | LTV/CAC ratio and payback period per channel, colour-coded against the 3:1 scale threshold |
+| Which acquisition channels deserve budget? | LTV/CAC ratio and payback period per channel, color-coded against the 3:1 scale threshold |
 | Is margin holding as revenue scales? | Monthly contribution margin trend with margin-rate tracking |
 | Which cohorts decay fastest? | Revenue and activity retention curves from signup to month 24 |
 | Where is margin being diluted? | Contribution margin breakdown by segment, region, and product |
