@@ -108,8 +108,6 @@ def build_dashboard_html(payload: dict) -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Growth Quality Dashboard</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
-
     :root {
       color-scheme: light;
       --bg: #ffffff;
@@ -129,7 +127,7 @@ def build_dashboard_html(payload: dict) -> str:
 
       /* Chart palette — used by JS via getComputedStyle. Restrained: ink + muted. */
       --rev: #0a0a0a;
-      --cost: #a3a3a3;
+      --cost: #737373;
       --margin: #15803d;
       --bar: #0a0a0a;
       --good: #15803d;
@@ -162,7 +160,7 @@ def build_dashboard_html(payload: dict) -> str:
       --warning: #fbbf24;
 
       --rev: #fafafa;
-      --cost: #525252;
+      --cost: #a3a3a3;
       --margin: #4ade80;
       --bar: #fafafa;
       --good: #4ade80;
@@ -232,7 +230,7 @@ def build_dashboard_html(payload: dict) -> str:
       margin: 0;
       font-size: 24px;
       font-weight: 600;
-      letter-spacing: -0.022em;
+      letter-spacing: 0;
       color: var(--ink);
       line-height: 1.15;
     }
@@ -252,7 +250,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 12px;
       color: var(--muted);
       font-variant-numeric: tabular-nums;
-      letter-spacing: 0.01em;
+      letter-spacing: 0;
     }
     .tool-btn {
       font-family: inherit;
@@ -299,7 +297,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 11px;
       font-weight: 500;
       color: var(--muted);
-      letter-spacing: 0.05em;
+      letter-spacing: 0;
       text-transform: uppercase;
     }
     input[type="date"], select {
@@ -347,7 +345,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 11px;
       color: var(--muted);
       font-weight: 500;
-      letter-spacing: 0.06em;
+      letter-spacing: 0;
       text-transform: uppercase;
     }
     .kpi-value {
@@ -355,7 +353,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 30px;
       font-weight: 500;
       color: var(--ink);
-      letter-spacing: -0.028em;
+      letter-spacing: 0;
       line-height: 1;
       font-variant-numeric: tabular-nums;
       word-break: break-word;
@@ -366,7 +364,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-weight: 500;
       color: var(--muted);
       font-variant-numeric: tabular-nums;
-      letter-spacing: -0.01em;
+      letter-spacing: 0;
     }
     .kpi-delta.positive { color: var(--positive); }
     .kpi-delta.negative { color: var(--negative); }
@@ -394,7 +392,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 11px;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0;
       font-weight: 500;
     }
     .decision .value {
@@ -424,7 +422,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-weight: 600;
       color: var(--ink);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0;
     }
     .section-head .sub {
       font-size: 12px;
@@ -458,7 +456,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 11px;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0;
       font-weight: 500;
     }
     .summary-badge {
@@ -496,7 +494,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 14px;
       font-weight: 600;
       color: var(--ink);
-      letter-spacing: -0.005em;
+      letter-spacing: 0;
     }
     .chart-subtitle {
       margin: 0 0 14px;
@@ -561,7 +559,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 11px;
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0;
       cursor: pointer;
       user-select: none;
       position: sticky;
@@ -588,7 +586,7 @@ def build_dashboard_html(payload: dict) -> str:
       font-weight: 500;
       padding: 2px 8px;
       border-radius: 4px;
-      letter-spacing: 0.04em;
+      letter-spacing: 0;
       font-variant-numeric: tabular-nums;
     }
     .risk-badge.high   { color: var(--negative); background: rgba(185, 28, 28, 0.08); }
@@ -778,7 +776,7 @@ def build_dashboard_html(payload: dict) -> str:
         </div>
         <div class="chart-card span-2">
           <h3 class="chart-title">Which acquisition channels deserve budget?</h3>
-          <p class="chart-subtitle">Average LTV versus CAC, with efficiency thresholds.</p>
+          <p class="chart-subtitle">Full-coverage observed LTV versus CAC. Only the channel filter applies.</p>
           <div id="chart-ltv-cac" class="chart-surface"></div>
           <div id="insight-ltv-cac" class="chart-insight"></div>
         </div>
@@ -788,7 +786,7 @@ def build_dashboard_html(payload: dict) -> str:
     <section class="section">
       <div class="section-head">
         <h2>Diagnostics</h2>
-        <span class="sub">Localise where economics break first.</span>
+        <span class="sub">Locate where economics break first.</span>
       </div>
       <div class="chart-grid">
         <div class="chart-card">
@@ -798,7 +796,7 @@ def build_dashboard_html(payload: dict) -> str:
           <div id="insight-segment-margin" class="chart-insight"></div>
         </div>
         <div class="chart-card">
-          <h3 class="chart-title">Where is monetisation strongest per transaction?</h3>
+          <h3 class="chart-title">Where is monetization strongest per transaction?</h3>
           <p class="chart-subtitle">Average revenue per transaction by segment.</p>
           <div id="chart-arpt-segment" class="chart-surface"></div>
           <div id="insight-arpt-segment" class="chart-insight"></div>
@@ -832,7 +830,7 @@ def build_dashboard_html(payload: dict) -> str:
 
     <div class="footnote">
       Synthetic data. The pipeline demonstrates method, not market truth. Full methodology and validation in
-      <code>outputs/reports/decision_brief.md</code> and <code>outputs/reports/pre_delivery_validation_report.md</code>.
+      <code>outputs/reports/decision_brief.md</code> and <code>outputs/reports/qa_report.md</code>.
     </div>
   </main>
 
@@ -842,6 +840,7 @@ def build_dashboard_html(payload: dict) -> str:
     const DASHBOARD_DATA = __DATA_JSON__;
     const CUSTOMER_BY_ID = new Map((DASHBOARD_DATA.customers || []).map(c => [c.cid, c]));
     const METRIC_POLICY = DASHBOARD_DATA.meta.metric_policy || {};
+    const MARGIN_QUALITY_FLOOR = METRIC_POLICY.margin_quality_floor || 0.30;
     const EFF_THRESH = METRIC_POLICY.efficiency_thresholds || {
       ltv_cac_target: 3.0,
       payback_target_months: 12.0,
@@ -953,6 +952,16 @@ def build_dashboard_html(payload: dict) -> str:
     function fmtNum(value, digits = 2) {
       if (!Number.isFinite(value)) return 'n/a';
       return value.toLocaleString(undefined, { maximumFractionDigits: digits });
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char]);
     }
 
     function dateToTs(dateStr) {
@@ -1149,7 +1158,7 @@ def build_dashboard_html(payload: dict) -> str:
           c.setAttribute('fill', s.color);
           c.setAttribute('opacity', '0.95');
           svg.appendChild(c);
-          setTooltip(c, `<strong>${s.label}</strong><br>${p.label}: ${yFormatter(p.raw)}`);
+          setTooltip(c, `<strong>${escapeHtml(s.label)}</strong><br>${escapeHtml(p.label)}: ${escapeHtml(yFormatter(p.raw))}`);
         });
       });
 
@@ -1224,11 +1233,11 @@ def build_dashboard_html(payload: dict) -> str:
         svg.appendChild(c);
         addSvgText(svg, cx + 7, cy - 8, r.channel, { size: '10', color: palette.text });
         setTooltip(c,
-          `<strong>${r.channel}</strong><br>` +
-          `CAC: ${fmtCurrencyFull(r.CAC)}<br>` +
-          `Avg LTV: ${fmtCurrencyFull(r.avgLTV)}<br>` +
-          `LTV/CAC: ${fmtNum(r.ltvToCac, 2)}<br>` +
-          `Payback: ${Number.isFinite(r.payback) ? fmtNum(r.payback, 1) + ' months' : 'n/a'}`
+          `<strong>${escapeHtml(r.channel)}</strong><br>` +
+          `CAC: ${escapeHtml(fmtCurrencyFull(r.CAC))}<br>` +
+          `Avg LTV: ${escapeHtml(fmtCurrencyFull(r.avgLTV))}<br>` +
+          `LTV/CAC: ${escapeHtml(fmtNum(r.ltvToCac, 2))}<br>` +
+          `Payback: ${escapeHtml(Number.isFinite(r.payback) ? fmtNum(r.payback, 1) + ' months' : 'n/a')}`
         );
       });
     }
@@ -1277,7 +1286,7 @@ def build_dashboard_html(payload: dict) -> str:
         svg.appendChild(rect);
 
         addSvgText(svg, x + barW / 2, m.top + innerH + 16, String(r[labelKey]), { anchor: 'middle', size: '10' });
-        setTooltip(rect, `<strong>${r[labelKey]}</strong><br>${yFormatter(r[key])}` + (r.marginPct !== undefined ? `<br>Margin %: ${fmtPct(r.marginPct)}` : ''));
+        setTooltip(rect, `<strong>${escapeHtml(r[labelKey])}</strong><br>${escapeHtml(yFormatter(r[key]))}` + (r.marginPct !== undefined ? `<br>Margin %: ${escapeHtml(fmtPct(r.marginPct))}` : ''));
       });
     }
 
@@ -1436,39 +1445,22 @@ def build_dashboard_html(payload: dict) -> str:
       return rows;
     }
 
-    function computeSnapshot(tx, customers, spend, startDate, endDate) {
+    function computeSnapshot(tx, customers) {
       const revenue = tx.reduce((s, r) => s + r.rev, 0);
       const cost = tx.reduce((s, r) => s + r.cost, 0);
       const margin = revenue - cost;
       const marginPct = revenue > 0 ? margin / revenue : NaN;
-
-      const customerSet = new Set(customers.map(c => c.cid));
-      const acquiredCount = customerSet.size;
-      const spendTotal = spend.reduce((s, r) => s + r.spend, 0);
-      const CAC = acquiredCount > 0 ? spendTotal / acquiredCount : NaN;
-
-      const avgLTV = acquiredCount > 0 ? margin / acquiredCount : NaN;
-      const ltvToCac = (Number.isFinite(CAC) && CAC > 0) ? avgLTV / CAC : NaN;
-
-      const monthStart = monthKey(startDate);
-      const monthEnd = monthKey(endDate);
-      const months = Math.max(1, diffMonths(monthStart, monthEnd) + 1);
-      const monthlyCmPerCustomer = acquiredCount > 0 ? (margin / acquiredCount) / months : NaN;
-      const payback = (Number.isFinite(monthlyCmPerCustomer) && monthlyCmPerCustomer > 0 && Number.isFinite(CAC))
-        ? CAC / monthlyCmPerCustomer
-        : NaN;
+      const activeCustomers = new Set(tx.map(r => r.cid)).size;
+      const acquiredCustomers = new Set(customers.map(c => c.cid)).size;
 
       return {
         revenue,
         cost,
         margin,
         marginPct,
-        CAC,
-        avgLTV,
-        ltvToCac,
-        payback,
-        acquiredCount,
-        spendTotal,
+        activeCustomers,
+        acquiredCustomers,
+        transactionCount: tx.length,
       };
     }
 
@@ -1483,28 +1475,36 @@ def build_dashboard_html(payload: dict) -> str:
       return Math.floor(ms / 86400000) + 1;
     }
 
-    function computeUnitEconomicsByChannel(filtered, startDate, endDate, selected) {
+    function computeUnitEconomicsByChannel(selected) {
       const channels = Array.from(selected.channels);
       const customerByChannel = new Map();
       channels.forEach(ch => customerByChannel.set(ch, new Set()));
-      filtered.customers.forEach(c => {
+      DASHBOARD_DATA.customers.forEach(c => {
+        if (!selected.channels.has(c.ch)) return;
         if (!customerByChannel.has(c.ch)) customerByChannel.set(c.ch, new Set());
         customerByChannel.get(c.ch).add(c.cid);
       });
 
       const spendByChannel = new Map();
       channels.forEach(ch => spendByChannel.set(ch, 0));
-      filtered.spend.forEach(m => {
+      DASHBOARD_DATA.marketing_spend.forEach(m => {
+        if (!selected.channels.has(m.ch)) return;
         spendByChannel.set(m.ch, (spendByChannel.get(m.ch) || 0) + m.spend);
       });
 
       const cmByChannel = new Map();
       channels.forEach(ch => cmByChannel.set(ch, 0));
-      filtered.tx.forEach(t => {
-        cmByChannel.set(t.ch, (cmByChannel.get(t.ch) || 0) + (t.rev - t.cost));
+      DASHBOARD_DATA.transactions.forEach(t => {
+        const customer = CUSTOMER_BY_ID.get(t.cid);
+        if (!customer) return;
+        if (!selected.channels.has(customer.ch)) return;
+        cmByChannel.set(customer.ch, (cmByChannel.get(customer.ch) || 0) + (t.rev - t.cost));
       });
 
-      const months = Math.max(1, diffMonths(monthKey(startDate), monthKey(endDate)) + 1);
+      const months = Math.max(
+        1,
+        diffMonths(monthKey(DASHBOARD_DATA.meta.coverage_start), monthKey(DASHBOARD_DATA.meta.coverage_end)) + 1
+      );
 
       const rows = channels.map(ch => {
         const cCount = (customerByChannel.get(ch) || new Set()).size;
@@ -1710,10 +1710,10 @@ def build_dashboard_html(payload: dict) -> str:
         card.dataset.tone = item.tone || 'warn';
         card.innerHTML = `
           <div class="summary-head">
-            <div class="summary-title">${item.title}</div>
-            <div class="summary-badge ${item.tone || 'warn'}">${item.badge || ''}</div>
+            <div class="summary-title">${escapeHtml(item.title)}</div>
+            <div class="summary-badge ${item.tone || 'warn'}">${escapeHtml(item.badge || '')}</div>
           </div>
-          <div class="summary-text">${item.text}</div>
+          <div class="summary-text">${escapeHtml(item.text)}</div>
         `;
         wrap.appendChild(card);
       });
@@ -1730,9 +1730,9 @@ def build_dashboard_html(payload: dict) -> str:
         el.className = 'kpi-card';
         el.dataset.tone = card.tone || 'warn';
         el.innerHTML = `
-          <div class="kpi-label">${card.label}</div>
-          <div class="kpi-value">${card.value}</div>
-          <div class="${deltaClass}">${card.deltaText}</div>
+          <div class="kpi-label">${escapeHtml(card.label)}</div>
+          <div class="kpi-value">${escapeHtml(card.value)}</div>
+          <div class="${deltaClass}">${escapeHtml(card.deltaText)}</div>
         `;
         wrap.appendChild(el);
       });
@@ -1743,23 +1743,23 @@ def build_dashboard_html(payload: dict) -> str:
       wrap.innerHTML = `
         <div class="cell lead">
           <div class="label">Decision now</div>
-          <div class="value">${command.decision}</div>
-          <div class="copy">${command.decisionText}</div>
+          <div class="value">${escapeHtml(command.decision)}</div>
+          <div class="copy">${escapeHtml(command.decisionText)}</div>
         </div>
         <div class="cell">
           <div class="label">Scale</div>
-          <div class="value">${command.scale}</div>
-          <div class="copy">${command.scaleText}</div>
+          <div class="value">${escapeHtml(command.scale)}</div>
+          <div class="copy">${escapeHtml(command.scaleText)}</div>
         </div>
         <div class="cell">
           <div class="label">Intervene</div>
-          <div class="value">${command.intervene}</div>
-          <div class="copy">${command.interveneText}</div>
+          <div class="value">${escapeHtml(command.intervene)}</div>
+          <div class="copy">${escapeHtml(command.interveneText)}</div>
         </div>
         <div class="cell">
           <div class="label">Impact</div>
-          <div class="value">${command.impact}</div>
-          <div class="copy">${command.impactText}</div>
+          <div class="value">${escapeHtml(command.impact)}</div>
+          <div class="copy">${escapeHtml(command.impactText)}</div>
         </div>
       `;
     }
@@ -1807,11 +1807,11 @@ def build_dashboard_html(payload: dict) -> str:
         <tbody>
           ${sorted.map(r => `
             <tr>
-              <td>${r.region}</td>
-              <td>${fmtCurrencyFull(r.revenue)}</td>
-              <td>${fmtCurrencyFull(r.cost)}</td>
-              <td>${fmtCurrencyFull(r.margin)}</td>
-              <td>${fmtPct(r.marginPct)}</td>
+              <td>${escapeHtml(r.region)}</td>
+              <td>${escapeHtml(fmtCurrencyFull(r.revenue))}</td>
+              <td>${escapeHtml(fmtCurrencyFull(r.cost))}</td>
+              <td>${escapeHtml(fmtCurrencyFull(r.margin))}</td>
+              <td>${escapeHtml(fmtPct(r.marginPct))}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -1869,14 +1869,14 @@ def build_dashboard_html(payload: dict) -> str:
         <tbody>
           ${sorted.map(r => `
             <tr>
-              <td>${r.entity}</td>
-              <td>${r.metricValues}</td>
-              <td>${r.riskInterpretation}</td>
-              <td>${r.recommendedAction}</td>
+              <td>${escapeHtml(r.entity)}</td>
+              <td>${escapeHtml(r.metricValues)}</td>
+              <td>${escapeHtml(r.riskInterpretation)}</td>
+              <td>${escapeHtml(r.recommendedAction)}</td>
               <td>
                 <div class="risk-priority">
-                  <div class="risk-score">${fmtNum(r.priorityScore, 1)}</div>
-                  <span class="risk-badge ${r.priorityBand}">${r.priorityBand}</span>
+                  <div class="risk-score">${escapeHtml(fmtNum(r.priorityScore, 1))}</div>
+                  <span class="risk-badge ${r.priorityBand}">${escapeHtml(r.priorityBand)}</span>
                 </div>
               </td>
             </tr>
@@ -1911,7 +1911,7 @@ def build_dashboard_html(payload: dict) -> str:
       renderFilterSummary(startDate, endDate, selected);
 
       const current = applyFilters(startDate, endDate, selected);
-      const curSnap = computeSnapshot(current.tx, current.customers, current.spend, startDate, endDate);
+      const curSnap = computeSnapshot(current.tx, current.customers);
 
       // Comparison baseline. Prefer the immediately prior period of equal length;
       // when it holds no data (e.g. the full-coverage default view) compare the
@@ -1921,15 +1921,15 @@ def build_dashboard_html(payload: dict) -> str:
       const priorEnd = shiftDate(startDate, -1);
       const priorStart = shiftDate(priorEnd, -(duration - 1));
       const prior = applyFilters(priorStart, priorEnd, selected);
-      const priorSnap = computeSnapshot(prior.tx, prior.customers, prior.spend, priorStart, priorEnd);
+      const priorSnap = computeSnapshot(prior.tx, prior.customers);
 
       const midDate = new Date(Math.floor((dateToTs(startDate) + dateToTs(endDate)) / 2))
         .toISOString().slice(0, 10);
       const secondStart = shiftDate(midDate, 1);
       const firstHalf = applyFilters(startDate, midDate, selected);
       const secondHalf = applyFilters(secondStart, endDate, selected);
-      const firstSnap = computeSnapshot(firstHalf.tx, firstHalf.customers, firstHalf.spend, startDate, midDate);
-      const secondSnap = computeSnapshot(secondHalf.tx, secondHalf.customers, secondHalf.spend, secondStart, endDate);
+      const firstSnap = computeSnapshot(firstHalf.tx, firstHalf.customers);
+      const secondSnap = computeSnapshot(secondHalf.tx, secondHalf.customers);
 
       let baseSnap, cmpSnap, cmpLabel;
       if (Number.isFinite(priorSnap.revenue) && priorSnap.revenue > 0) {
@@ -1953,14 +1953,6 @@ def build_dashboard_html(payload: dict) -> str:
         const d = cur - prev;
         return `${arrow(d)} ${(Math.abs(d) * 100).toFixed(1)}pp ${cmpLabel}`;
       };
-      // Arrow reflects the metric's actual direction of movement; colour (set on
-      // the card) carries the good/bad reading. For CAC and payback a fall is good.
-      const deltaAbs = (cur, prev, fmt) => {
-        if (!Number.isFinite(cur) || !Number.isFinite(prev)) return '—';
-        const d = cur - prev;
-        return `${arrow(d)} ${fmt(Math.abs(d))} ${cmpLabel}`;
-      };
-
       const kpis = [
         {
           label: 'Revenue',
@@ -1975,7 +1967,7 @@ def build_dashboard_html(payload: dict) -> str:
           delta: delta(cmpSnap.margin, baseSnap.margin),
           deltaText: deltaPct(cmpSnap.margin, baseSnap.margin),
           tone: Number.isFinite(curSnap.marginPct)
-            ? (curSnap.marginPct >= 0.30 ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
+            ? (curSnap.marginPct >= MARGIN_QUALITY_FLOOR ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
             : 'warn',
         },
         {
@@ -1985,37 +1977,29 @@ def build_dashboard_html(payload: dict) -> str:
             ? cmpSnap.marginPct - baseSnap.marginPct : NaN,
           deltaText: deltaPp(cmpSnap.marginPct, baseSnap.marginPct),
           tone: Number.isFinite(curSnap.marginPct)
-            ? (curSnap.marginPct >= 0.30 ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
+            ? (curSnap.marginPct >= MARGIN_QUALITY_FLOOR ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
             : 'warn',
         },
         {
-          label: 'CAC',
-          value: fmtCurrency(curSnap.CAC),
-          delta: Number.isFinite(cmpSnap.CAC) && Number.isFinite(baseSnap.CAC)
-            ? -(delta(cmpSnap.CAC, baseSnap.CAC)) : NaN,
-          deltaText: deltaPct(cmpSnap.CAC, baseSnap.CAC),
-          tone: Number.isFinite(delta(cmpSnap.CAC, baseSnap.CAC))
-            ? (delta(cmpSnap.CAC, baseSnap.CAC) <= 0 ? 'good' : 'bad')
-            : 'warn',
+          label: 'Active Customers',
+          value: fmtNum(curSnap.activeCustomers, 0),
+          delta: delta(cmpSnap.activeCustomers, baseSnap.activeCustomers),
+          deltaText: deltaPct(cmpSnap.activeCustomers, baseSnap.activeCustomers),
+          tone: 'neutral',
         },
         {
-          label: 'LTV / CAC',
-          value: fmtNum(curSnap.ltvToCac, 2),
-          delta: delta(cmpSnap.ltvToCac, baseSnap.ltvToCac),
-          deltaText: deltaPct(cmpSnap.ltvToCac, baseSnap.ltvToCac),
-          tone: Number.isFinite(curSnap.ltvToCac)
-            ? (curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target ? 'good' : (curSnap.ltvToCac >= EFF_THRESH.ineff_ltv_cac ? 'warn' : 'bad'))
-            : 'warn',
+          label: 'Transactions',
+          value: fmtNum(curSnap.transactionCount, 0),
+          delta: delta(cmpSnap.transactionCount, baseSnap.transactionCount),
+          deltaText: deltaPct(cmpSnap.transactionCount, baseSnap.transactionCount),
+          tone: 'neutral',
         },
         {
-          label: 'Payback',
-          value: Number.isFinite(curSnap.payback) ? fmtNum(curSnap.payback, 1) + 'm' : '—',
-          delta: Number.isFinite(cmpSnap.payback) && Number.isFinite(baseSnap.payback)
-            ? -(cmpSnap.payback - baseSnap.payback) : NaN,
-          deltaText: deltaAbs(cmpSnap.payback, baseSnap.payback, x => x.toFixed(1) + 'm'),
-          tone: Number.isFinite(curSnap.payback)
-            ? (curSnap.payback <= EFF_THRESH.payback_target_months ? 'good' : (curSnap.payback <= EFF_THRESH.ineff_payback_months ? 'warn' : 'bad'))
-            : 'warn',
+          label: 'Customers Acquired',
+          value: fmtNum(curSnap.acquiredCustomers, 0),
+          delta: delta(cmpSnap.acquiredCustomers, baseSnap.acquiredCustomers),
+          deltaText: deltaPct(cmpSnap.acquiredCustomers, baseSnap.acquiredCustomers),
+          tone: 'neutral',
         },
       ];
       renderKpis(kpis);
@@ -2042,7 +2026,7 @@ def build_dashboard_html(payload: dict) -> str:
         .map(r => ({ x: r.monthsSince, label: 'M' + r.monthsSince, retention: r.medianRevenueRetention || 0 }));
       renderLineChart('chart-cohort-retention', cohortRows, [{ key: 'retention', label: 'Revenue Retention', color: palette.bar }], fmtPct);
 
-      const unitRows = computeUnitEconomicsByChannel(current, startDate, endDate, selected);
+      const unitRows = computeUnitEconomicsByChannel(selected);
       renderScatterChart('chart-ltv-cac', unitRows);
 
       const segmentRows = computeSegmentProfitability(current.tx);
@@ -2108,15 +2092,20 @@ def build_dashboard_html(payload: dict) -> str:
         const last = monthly[monthly.length - 1];
         const revChange = first.revenue > 0 ? (last.revenue / first.revenue) - 1 : NaN;
         const costChange = first.cost > 0 ? (last.cost / first.cost) - 1 : NaN;
-        return `Revenue changed ${fmtPct(revChange)} while cost changed ${fmtPct(costChange)}; cost growing faster is the operating bottleneck to solve.`;
+        const reading = Number.isFinite(revChange) && Number.isFinite(costChange)
+          ? (costChange > revChange
+            ? 'Cost is growing faster; investigate operating leverage.'
+            : 'Revenue is outpacing cost; monitor whether margin leverage persists.')
+          : 'Cost leverage comparison is unavailable for this scope.';
+        return `Revenue changed ${fmtPct(revChange)} while cost changed ${fmtPct(costChange)}. ${reading}`;
       })();
 
       const command = (() => {
         let decision = 'Hold broad scaling; reallocate by channel quality';
-        let decisionText = `LTV/CAC is ${fmtNum(curSnap.ltvToCac, 2)} against a ${fmtNum(EFF_THRESH.ltv_cac_target, 1)} scale threshold and payback is ${Number.isFinite(curSnap.payback) ? fmtNum(curSnap.payback, 1) + 'm' : 'n/a'}.`;
-        if (Number.isFinite(curSnap.ltvToCac) && curSnap.ltvToCac >= EFF_THRESH.ltv_cac_target && Number.isFinite(curSnap.payback) && curSnap.payback <= EFF_THRESH.payback_target_months) {
+        let decisionText = 'Use the full-coverage channel view below to reallocate budget without mixing period revenue with new-customer denominators.';
+        if (efficient.length && !inefficient.length) {
           decision = 'Scale selectively with guardrails';
-          decisionText = 'Overall unit economics clear the scale rule, so the decision is where to add budget without importing weak retention or low-margin mix.';
+          decisionText = 'Selected channel economics clear the scale rule. Add budget gradually and monitor retention and margin mix.';
         }
         if (inefficient.length) {
           decision = 'Cut weak acquisition before scaling winners';
@@ -2139,7 +2128,7 @@ def build_dashboard_html(payload: dict) -> str:
       setInsight('insight-margin', marginTrendText);
       setInsight('insight-revenue-cost', costLeverageText);
       setInsight('insight-cohort-retention', `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12; faster decay increases dependence on new acquisition.`);
-      setInsight('insight-ltv-cac', bestChannel && worstChannel ? `${bestChannel.channel} is the best scaling candidate; ${worstChannel.channel} is the budget risk to cap or repair.` : 'No channel efficiency comparison is available.');
+      setInsight('insight-ltv-cac', bestChannel && worstChannel ? `${bestChannel.channel} is the best scaling candidate; ${worstChannel.channel} is the budget risk to cap or repair. This full-coverage view responds only to the channel filter.` : 'No channel efficiency comparison is available.');
       setInsight('insight-segment-margin', strongestSegment && weakestSegment ? `${strongestSegment.segment} contributes the most margin; ${weakestSegment.segment} has the weakest margin rate at ${fmtPct(weakestSegment.marginPct)}.` : 'No segment profitability comparison is available.');
       setInsight('insight-arpt-segment', arptRows.length ? `${arptRows[0].segment} has the highest average transaction value at ${fmtCurrency(arptRows[0].avgRevTx)}; verify margin before prioritizing volume.` : 'No ticket-size comparison is available.');
       setInsight('insight-revenue-distribution', `Top-decile customers contribute ${fmtPct(revenueShareTop10)} of revenue; high concentration increases account-risk sensitivity.`);
@@ -2148,8 +2137,8 @@ def build_dashboard_html(payload: dict) -> str:
       const insights = [
         {
           title: 'Growth vs Margin Quality',
-          badge: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30 ? 'Healthy' : 'Watch',
-          tone: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= 0.30 ? 'good' : 'warn',
+          badge: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= MARGIN_QUALITY_FLOOR ? 'Healthy' : 'Watch',
+          tone: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= MARGIN_QUALITY_FLOOR ? 'good' : 'warn',
           text: (() => {
             const phrase = Number.isFinite(growthRate)
               ? `Revenue moved ${fmtPct(growthRate)} ${cmpLabel}`

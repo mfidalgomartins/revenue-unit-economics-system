@@ -112,10 +112,13 @@ def build_customer_metrics(customers: pd.DataFrame, transactions: pd.DataFrame) 
 
 
 def build_cohort_table(customers: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataFrame:
+    observation_end = max(customers["signup_date"].max(), transactions["transaction_date"].max())
+
     tx_customer = transactions.merge(
         customers[["customer_id", "signup_date"]],
         on="customer_id",
         how="left",
+        validate="many_to_one",
     )
 
     tx_customer["cohort_month"] = tx_customer["signup_date"].dt.to_period("M").dt.to_timestamp()
@@ -123,13 +126,34 @@ def build_cohort_table(customers: pd.DataFrame, transactions: pd.DataFrame) -> p
         tx_customer["transaction_date"].dt.to_period("M").dt.to_timestamp()
     )
 
-    cohort_table = (
+    observed = (
         tx_customer.groupby(["cohort_month", "activity_month"], as_index=False)
         .agg(
             customers_active=("customer_id", "nunique"),
             cohort_revenue=("revenue", "sum"),
         )
     )
+
+    cohort_months = (
+        customers["signup_date"].dt.to_period("M").dt.to_timestamp().drop_duplicates().sort_values()
+    )
+    activity_months = pd.date_range(cohort_months.min(), observation_end, freq="MS")
+    complete_index = pd.MultiIndex.from_product(
+        [cohort_months, activity_months],
+        names=["cohort_month", "activity_month"],
+    )
+    complete_index = complete_index[
+        complete_index.get_level_values("activity_month")
+        >= complete_index.get_level_values("cohort_month")
+    ]
+
+    cohort_table = (
+        observed.set_index(["cohort_month", "activity_month"])
+        .reindex(complete_index, fill_value=0)
+        .reset_index()
+    )
+    cohort_table["customers_active"] = cohort_table["customers_active"].astype(int)
+
     cohort_table["average_revenue_per_active_customer"] = np.where(
         cohort_table["customers_active"] > 0,
         cohort_table["cohort_revenue"] / cohort_table["customers_active"],
@@ -225,6 +249,7 @@ def build_unit_economics(
             "CAC",
             "average_LTV",
             "median_LTV",
+            "total_channel_contribution_margin",
             "LTV_to_CAC",
             "approximate_payback_period",
         ]
@@ -235,6 +260,7 @@ def build_unit_economics(
         "CAC",
         "average_LTV",
         "median_LTV",
+        "total_channel_contribution_margin",
         "LTV_to_CAC",
         "approximate_payback_period",
     ]

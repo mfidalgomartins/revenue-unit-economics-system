@@ -1,4 +1,4 @@
 table_name,grain,row_count,column_count,candidate_primary_key,duplicate_rows,duplicate_candidate_key_rows,date_min,date_max,likely_useful_dimensions,likely_useful_metrics
 customers,One row per customer_id,9000,5,customer_id,0,0,2023-01-01,2025-12-31,"segment, region, acquisition_channel, signup_date",customer_count
-transactions,One row per transaction_id,69950,6,transaction_id,0,0,2023-01-03,2025-12-31,"transaction_date, product_type, customer_id","revenue, cost, gross_margin, gross_margin_pct, transaction_count"
+transactions,One row per transaction_id,69950,6,transaction_id,0,0,2023-01-03,2025-12-31,"transaction_date, product_type, customer_id","revenue, cost, contribution_margin, transaction_count"
 marketing_spend,One row per date x acquisition_channel,6576,3,"date, acquisition_channel",0,0,2023-01-01,2025-12-31,"date, acquisition_channel",spend

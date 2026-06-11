@@ -5,6 +5,7 @@ import math
 import pandas as pd
 
 from src.feature_engineering.build_features import (
+    build_cohort_table,
     build_customer_metrics,
     build_unit_economics,
 )
@@ -113,12 +114,50 @@ def test_build_unit_economics_handles_positive_and_negative_payback() -> None:
 
     assert math.isclose(paid["CAC"], 200.0, rel_tol=0, abs_tol=1e-4)
     assert math.isclose(paid["average_LTV"], 200.0, rel_tol=0, abs_tol=1e-4)
+    assert math.isclose(
+        paid["total_channel_contribution_margin"], 200.0, rel_tol=0, abs_tol=1e-4
+    )
     assert math.isclose(paid["LTV_to_CAC"], 1.0, rel_tol=0, abs_tol=1e-4)
     assert math.isclose(paid["approximate_payback_period"], 2.0, rel_tol=0, abs_tol=1e-4)
 
     assert math.isclose(organic["CAC"], 60.0, rel_tol=0, abs_tol=1e-4)
     assert math.isclose(organic["average_LTV"], 100.0, rel_tol=0, abs_tol=1e-4)
+    assert math.isclose(
+        organic["total_channel_contribution_margin"], 200.0, rel_tol=0, abs_tol=1e-4
+    )
     assert math.isclose(organic["LTV_to_CAC"], 1.6667, rel_tol=0, abs_tol=1e-4)
     assert math.isclose(organic["approximate_payback_period"], 1.2, rel_tol=0, abs_tol=1e-4)
 
     assert math.isnan(float(social["approximate_payback_period"]))
+
+
+def test_build_cohort_table_fills_inactive_months_with_zero() -> None:
+    customers = pd.DataFrame(
+        {
+            "customer_id": ["C1", "C2"],
+            "signup_date": pd.to_datetime(["2024-01-01", "2024-03-01"]),
+            "segment": ["SMB", "SMB"],
+            "region": ["EMEA", "EMEA"],
+            "acquisition_channel": ["organic", "organic"],
+        }
+    )
+    transactions = pd.DataFrame(
+        {
+            "transaction_id": ["T1", "T2"],
+            "customer_id": ["C1", "C2"],
+            "transaction_date": pd.to_datetime(["2024-01-10", "2024-03-10"]),
+            "revenue": [100.0, 50.0],
+            "cost": [50.0, 25.0],
+            "product_type": ["Core", "Core"],
+        }
+    )
+
+    cohort = build_cohort_table(customers, transactions)
+    jan_m2 = cohort.loc[
+        (cohort["cohort_month"] == pd.Timestamp("2024-01-01"))
+        & (cohort["activity_month"] == pd.Timestamp("2024-03-01"))
+    ].iloc[0]
+
+    assert jan_m2["customers_active"] == 0
+    assert jan_m2["cohort_revenue"] == 0.0
+    assert jan_m2["average_revenue_per_active_customer"] == 0.0

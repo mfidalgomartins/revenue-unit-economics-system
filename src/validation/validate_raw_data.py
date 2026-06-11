@@ -9,6 +9,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 OUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
+NEGATIVE_MARGIN_REVIEW_THRESHOLD = 0.01
 
 
 def load_raw_tables() -> dict[str, pd.DataFrame]:
@@ -123,6 +124,7 @@ def build_results(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
 
     non_positive_revenue = int((transactions["revenue"] <= 0).sum())
     negative_cost = int((transactions["cost"] < 0).sum())
+    cost_above_revenue = int((transactions["cost"] > transactions["revenue"]).sum())
     negative_spend = int((marketing["spend"] < 0).sum())
     status_value_ranges = "PASS" if non_positive_revenue == 0 and negative_cost == 0 and negative_spend == 0 else "FAIL"
     add_result(
@@ -135,7 +137,27 @@ def build_results(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
         ),
     )
 
+    negative_margin_rate = cost_above_revenue / len(transactions)
+    add_result(
+        results,
+        "negative_margin_transaction_review",
+        "WARN" if negative_margin_rate > NEGATIVE_MARGIN_REVIEW_THRESHOLD else "PASS",
+        (
+            f"rows_with_cost_above_revenue={cost_above_revenue}, "
+            f"share={negative_margin_rate:.2%}, "
+            f"review_threshold={NEGATIVE_MARGIN_REVIEW_THRESHOLD:.2%}"
+        ),
+    )
+
     channels = sorted(customers["acquisition_channel"].dropna().unique())
+    marketing_channels = sorted(marketing["acquisition_channel"].dropna().unique())
+    add_result(
+        results,
+        "channel_domain_alignment",
+        "PASS" if channels == marketing_channels else "FAIL",
+        f"customer_channels={channels}, marketing_channels={marketing_channels}",
+    )
+
     expected_pairs = (
         len(pd.date_range(marketing["date"].min(), marketing["date"].max(), freq="D"))
         * len(channels)

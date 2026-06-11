@@ -33,6 +33,7 @@ SELECT
   s.total_spend / NULLIF(c.customers_acquired, 0) AS CAC,
   l.average_LTV,
   l.median_LTV,
+  l.total_contribution AS total_channel_contribution_margin,
   l.average_LTV / NULLIF(s.total_spend / NULLIF(c.customers_acquired, 0), 0) AS LTV_to_CAC,
   CASE
     WHEN (l.total_contribution / NULLIF(m.observed_months, 0)) / NULLIF(c.customers_acquired, 0) <= 0 THEN NULL

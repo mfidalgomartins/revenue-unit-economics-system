@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from src.governance.metric_registry import (
     EFFICIENCY_THRESHOLDS,
+    MARGIN_QUALITY_FLOOR,
     channel_priority_score,
     classify_channel_efficiency,
     to_payload_dict,
@@ -27,6 +28,7 @@ def test_channel_priority_score_behaves_directionally() -> None:
 def test_payload_dict_includes_expected_policy_keys() -> None:
     payload = to_payload_dict()
     assert "efficiency_thresholds" in payload
+    assert payload["margin_quality_floor"] == MARGIN_QUALITY_FLOOR
     assert "risk_score_weights" in payload
     assert (
         payload["efficiency_thresholds"]["ltv_cac_target"]

@@ -6,5 +6,7 @@ grain_key_uniqueness,PASS,"duplicate customer_id=0, duplicate transaction_id=0, 
 transaction_customer_referential_integrity,PASS,orphan_transaction_rows=0
 transaction_date_not_before_signup,PASS,rows_with_transaction_before_signup=0
 value_range_sanity,PASS,"non_positive_revenue=0, negative_cost=0, negative_spend=0"
+negative_margin_transaction_review,PASS,"rows_with_cost_above_revenue=258, share=0.37%, review_threshold=1.00%"
+channel_domain_alignment,PASS,"customer_channels=['email', 'organic', 'paid_search', 'partners', 'referral', 'social_ads'], marketing_channels=['email', 'organic', 'paid_search', 'partners', 'referral', 'social_ads']"
 marketing_date_channel_coverage,PASS,"expected_pairs=6576, observed_pairs=6,576, missing_pairs=0"
 date_coverage_observed,PASS,"customers=2023-01-01..2025-12-31, transactions=2023-01-03..2025-12-31, marketing=2023-01-01..2025-12-31"

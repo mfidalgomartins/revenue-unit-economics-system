@@ -15,6 +15,33 @@ output,monthly_revenue_health,revenue_growth_mom,float64,metric,Analytics Lead,M
 output,monthly_revenue_health,total_cost,float64,metric,Analytics Lead,Sum of direct cost over the grouping window.,Margin measurement.
 output,monthly_revenue_health,total_revenue,float64,metric,Analytics Lead,Sum of revenue over the grouping window.,Top-line measurement.
 output,monthly_revenue_health,transaction_count,int64,metric,Analytics Lead,Number of transactions in the grouping.,Volume measure.
+output,scenario_reallocation_plan,CAC,float64,metric,Analytics Lead,Channel marketing spend divided by customers acquired.,Channel efficiency.
+output,scenario_reallocation_plan,LTV_to_CAC,float64,metric,Analytics Lead,Average observed LTV divided by CAC.,Scaling guardrail.
+output,scenario_reallocation_plan,acquisition_channel,object,dimension,Analytics Lead,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+output,scenario_reallocation_plan,approximate_payback_period,float64,metric,Analytics Lead,Months of margin needed to recover CAC.,Capital efficiency proxy.
+output,scenario_reallocation_plan,average_LTV,float64,metric,Analytics Lead,Mean contribution margin per acquired customer.,Value side of LTV/CAC.
+output,scenario_reallocation_plan,baseline_contribution_est,float64,metric,Analytics Lead,,
+output,scenario_reallocation_plan,baseline_customers_est,float64,metric,Analytics Lead,,
+output,scenario_reallocation_plan,baseline_spend,float64,metric,Analytics Lead,Observed channel spend before reallocation.,Scenario budget baseline.
+output,scenario_reallocation_plan,cac_elasticity,float64,metric,Analytics Lead,Illustrative CAC response to a 1% spend change.,Scenario assumption.
+output,scenario_reallocation_plan,contribution_change_est,float64,metric,Analytics Lead,,
+output,scenario_reallocation_plan,efficiency_status,object,dimension,Analytics Lead,,
+output,scenario_reallocation_plan,ltv_elasticity,float64,metric,Analytics Lead,Illustrative LTV response to a 1% spend change.,Scenario assumption.
+output,scenario_reallocation_plan,recommended_action,object,dimension,Analytics Lead,,
+output,scenario_reallocation_plan,scenario_cac_assumed,float64,metric,Analytics Lead,CAC after bounded spend-response assumption.,Scenario unit economics.
+output,scenario_reallocation_plan,scenario_contribution_est,float64,metric,Analytics Lead,,
+output,scenario_reallocation_plan,scenario_customers_est,float64,metric,Analytics Lead,,
+output,scenario_reallocation_plan,scenario_ltv_assumed,float64,metric,Analytics Lead,LTV after bounded spend-response assumption.,Scenario unit economics.
+output,scenario_reallocation_plan,scenario_spend,float64,metric,Analytics Lead,Channel spend after capped policy reallocation.,Scenario allocation output.
+output,scenario_reallocation_plan,spend_change,float64,metric,Analytics Lead,Scenario spend minus baseline spend.,Scenario allocation delta.
+output,scenario_reallocation_plan,spend_change_pct,float64,metric,Analytics Lead,Scenario spend change divided by baseline spend.,Elasticity input.
+output,scenario_seed_sensitivity_summary,positive_uplift_rate,float64,metric,Analytics Lead,Share of synthetic seeds with positive simulated uplift.,Scenario stability check.
+output,scenario_seed_sensitivity_summary,seed_count,int64,metric,Analytics Lead,Number of deterministic synthetic seeds in the sensitivity run.,Scenario stability coverage.
+output,scenario_seed_sensitivity_summary,uplift_max,float64,metric,Analytics Lead,Maximum simulated contribution uplift across seeds.,Scenario upside check.
+output,scenario_seed_sensitivity_summary,uplift_mean,float64,metric,Analytics Lead,Mean simulated contribution uplift across seeds.,Scenario stability check.
+output,scenario_seed_sensitivity_summary,uplift_median,float64,metric,Analytics Lead,Median simulated contribution uplift across seeds.,Scenario stability check.
+output,scenario_seed_sensitivity_summary,uplift_min,float64,metric,Analytics Lead,Minimum simulated contribution uplift across seeds.,Scenario downside check.
+output,scenario_seed_sensitivity_summary,uplift_std,float64,metric,Analytics Lead,Standard deviation of simulated uplift across seeds.,Scenario dispersion check.
 processed,cohort_table,activity_month,object,temporal,Analytics Engineering,Month in which the cohort generated revenue.,Retention curve x-axis.
 processed,cohort_table,average_revenue_per_active_customer,float64,metric,Analytics Engineering,Cohort revenue divided by active customers.,Per-user revenue trajectory.
 processed,cohort_table,cohort_month,object,temporal,Analytics Engineering,Signup month used as cohort key.,Cohort retention analysis.
@@ -28,9 +55,9 @@ processed,customer_metrics,customer_id,object,identifier,Analytics Engineering,U
 processed,customer_metrics,first_transaction_date,object,temporal,Analytics Engineering,First observed transaction for the customer.,Customer lifetime window start.
 processed,customer_metrics,last_transaction_date,object,temporal,Analytics Engineering,Last observed transaction for the customer.,Customer lifetime window end.
 processed,customer_metrics,lifetime_days,int64,metric,Analytics Engineering,Days between first and last observed transaction.,Observation window size.
-processed,customer_metrics,region,object,dimension,Analytics Engineering,"Customer region (EMEA, AMER, APAC).",Geographic mix and regional profitability.
+processed,customer_metrics,region,object,dimension,Analytics Engineering,"Customer region (North America, EMEA, LATAM, APAC).",Geographic mix and regional profitability.
 processed,customer_metrics,revenue_per_day,float64,metric,Analytics Engineering,Total revenue divided by observed lifetime days.,Per-day intensity.
-processed,customer_metrics,segment,object,dimension,Analytics Engineering,"Customer segment (SMB, Mid-Market, Enterprise).",Cross-cut for margin and retention diagnostics.
+processed,customer_metrics,segment,object,dimension,Analytics Engineering,"Customer segment (Startup, SMB, Mid-Market, Enterprise).",Cross-cut for margin and retention diagnostics.
 processed,customer_metrics,total_cost,float64,metric,Analytics Engineering,Sum of direct cost over the grouping window.,Margin measurement.
 processed,customer_metrics,total_revenue,float64,metric,Analytics Engineering,Sum of revenue over the grouping window.,Top-line measurement.
 processed,customer_metrics,transaction_count,int64,metric,Analytics Engineering,Number of transactions in the grouping.,Volume measure.
@@ -41,11 +68,12 @@ processed,unit_economics,approximate_payback_period,float64,metric,Analytics Eng
 processed,unit_economics,average_LTV,float64,metric,Analytics Engineering,Mean contribution margin per acquired customer.,Value side of LTV/CAC.
 processed,unit_economics,customers_acquired,int64,metric,Analytics Engineering,Customers whose signup falls in the period.,CAC denominator.
 processed,unit_economics,median_LTV,float64,metric,Analytics Engineering,Median contribution margin per acquired customer.,Skew-robust value check.
+processed,unit_economics,total_channel_contribution_margin,float64,metric,Analytics Engineering,Observed contribution margin summed within an acquisition channel.,Scenario baseline reconciliation.
 processed,unit_economics,total_spend,float64,metric,Analytics Engineering,Sum of marketing spend over the grouping window.,CAC denominator input.
 raw,customers,acquisition_channel,object,dimension,Data Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
 raw,customers,customer_id,object,identifier,Data Engineering,Unique customer identifier.,Join key across customer and transaction views.
-raw,customers,region,object,dimension,Data Engineering,"Customer region (EMEA, AMER, APAC).",Geographic mix and regional profitability.
-raw,customers,segment,object,dimension,Data Engineering,"Customer segment (SMB, Mid-Market, Enterprise).",Cross-cut for margin and retention diagnostics.
+raw,customers,region,object,dimension,Data Engineering,"Customer region (North America, EMEA, LATAM, APAC).",Geographic mix and regional profitability.
+raw,customers,segment,object,dimension,Data Engineering,"Customer segment (Startup, SMB, Mid-Market, Enterprise).",Cross-cut for margin and retention diagnostics.
 raw,customers,signup_date,object,temporal,Data Engineering,Date the customer first signed up.,Cohort assignment.
 raw,marketing_spend,acquisition_channel,object,dimension,Data Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
 raw,marketing_spend,date,object,temporal,Data Engineering,Calendar date.,Time-series aggregation.

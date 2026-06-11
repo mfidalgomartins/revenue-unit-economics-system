@@ -1,3 +1,0 @@
-severity,area,issue,impact,recommendation
-low,analytical_integrity,"Revenue decomposition volume effect is window-level and ARPC-based, not a strict causal decomposition.",Effect magnitudes can be over-interpreted if treated as causal drivers rather than directional components.,Keep decomposition language directional and pair with sensitivity checks using alternative mix dimensions.
-low,data_consistency,`customer_metrics` has null first/last transaction dates for customers with zero transactions.,Nulls are expected but must remain explicitly handled in downstream visuals/tables.,Retain explicit zero-transaction handling and avoid dropping these rows in customer-level analyses.

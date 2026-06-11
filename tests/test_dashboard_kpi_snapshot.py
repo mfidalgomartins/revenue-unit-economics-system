@@ -19,17 +19,12 @@ def test_dashboard_kpi_snapshot_contract_full_coverage() -> None:
         PROJECT_ROOT / "data" / "raw" / "transactions.csv",
         parse_dates=["transaction_date"],
     )
-    marketing = pd.read_csv(
-        PROJECT_ROOT / "data" / "raw" / "marketing_spend.csv", parse_dates=["date"]
-    )
-
-    coverage_start = min(transactions["transaction_date"].min(), marketing["date"].min())
-    coverage_end = max(transactions["transaction_date"].max(), marketing["date"].max())
+    coverage_start = transactions["transaction_date"].min()
+    coverage_end = transactions["transaction_date"].max()
 
     snapshot = compute_kpi_snapshot(
         customers=customers,
         transactions=transactions,
-        marketing_spend=marketing,
         start_date=coverage_start,
         end_date=coverage_end,
     )
@@ -37,8 +32,7 @@ def test_dashboard_kpi_snapshot_contract_full_coverage() -> None:
     assert snapshot["growth_method"] == "first_vs_last_month"
     assert math.isclose(float(snapshot["revenue"]), 54595966.54, abs_tol=0.01)
     assert math.isclose(float(snapshot["margin"]), 16564030.67, abs_tol=0.01)
-    assert math.isclose(float(snapshot["cac"]), 616.9149833333333, abs_tol=1e-9)
-    assert math.isclose(float(snapshot["avg_ltv"]), 1840.4478522222223, abs_tol=1e-9)
-    assert math.isclose(float(snapshot["ltv_to_cac"]), 2.9833087247741332, abs_tol=1e-12)
-    assert math.isclose(float(snapshot["payback_months"]), 12.067138644099117, abs_tol=1e-12)
+    assert snapshot["active_customer_count"] == 8157.0
+    assert snapshot["acquired_customer_count"] == 8994.0
+    assert snapshot["transaction_count"] == 69950.0
     assert math.isclose(float(snapshot["growth_rate"]), 46.777783980127055, abs_tol=1e-12)

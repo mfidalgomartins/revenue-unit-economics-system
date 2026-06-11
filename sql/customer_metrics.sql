@@ -18,7 +18,10 @@ base AS (
     c.acquisition_channel,
     t.first_transaction_date,
     t.last_transaction_date,
-    COALESCE(DATE_DIFF('day', t.first_transaction_date, t.last_transaction_date), 0) + 1 AS lifetime_days,
+    CASE WHEN COALESCE(t.transaction_count, 0) > 0
+      THEN DATE_DIFF('day', t.first_transaction_date, t.last_transaction_date) + 1
+      ELSE 0
+    END AS lifetime_days,
     COALESCE(t.total_revenue, 0) AS total_revenue,
     COALESCE(t.total_cost, 0) AS total_cost,
     COALESCE(t.total_revenue, 0) - COALESCE(t.total_cost, 0) AS contribution_margin,
@@ -31,8 +34,8 @@ base AS (
       THEN COALESCE(t.total_revenue, 0) / COALESCE(t.transaction_count, 1)
       ELSE 0
     END AS avg_revenue_per_transaction,
-    CASE WHEN COALESCE(DATE_DIFF('day', t.first_transaction_date, t.last_transaction_date), 0) + 1 > 0
-      THEN COALESCE(t.total_revenue, 0) / (COALESCE(DATE_DIFF('day', t.first_transaction_date, t.last_transaction_date), 0) + 1)
+    CASE WHEN COALESCE(t.transaction_count, 0) > 0
+      THEN COALESCE(t.total_revenue, 0) / (DATE_DIFF('day', t.first_transaction_date, t.last_transaction_date) + 1)
       ELSE 0
     END AS revenue_per_day
   FROM customers c

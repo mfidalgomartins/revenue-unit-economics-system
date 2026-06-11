@@ -16,13 +16,12 @@ STEPS: list[tuple[str, list[str]]] = [
     ("Build engineered features", ["src/feature_engineering/build_features.py"]),
     ("Run core analysis", ["src/analysis/unit_economics_analysis.py"]),
     ("Build decision scenarios", ["src/scenario_engine/build_scenarios.py"]),
-    ("Build scenario benchmark pack", ["src/scenario_engine/build_scenario_benchmark.py"]),
-    ("Generate visualization pack", ["src/visualization/generate_visuals.py"]),
-    ("Generate showcase chart pack", ["src/visualization/build_chart_pack.py"]),
+    ("Build scenario seed sensitivity", ["src/scenario_engine/build_seed_sensitivity.py"]),
+    ("Generate curated chart pack", ["src/visualization/build_chart_pack.py"]),
     ("Build executive dashboard", ["src/dashboard_builder/build_dashboard_assets.py"]),
-    ("Publish governance artifacts (pre-QA)", ["src/governance/publish_governance_artifacts.py"]),
+    ("Publish supporting documentation", ["src/governance/publish_reports.py"]),
+    ("Build analytical PDF report", ["src/governance/build_analytical_report.py"]),
     ("Run final QA validation", ["src/validation/validate_final_outputs.py"]),
-    ("Publish governance artifacts (post-QA)", ["src/governance/publish_governance_artifacts.py"]),
 ]
 
 

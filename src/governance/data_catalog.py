@@ -20,6 +20,12 @@ DATASETS = [
     ("processed", "unit_economics", PROC_DIR / "unit_economics.csv"),
     ("output", "monthly_revenue_health", OUT_TABLES_DIR / "monthly_revenue_health.csv"),
     ("output", "main_analysis_findings", OUT_TABLES_DIR / "main_analysis_findings.csv"),
+    ("output", "scenario_reallocation_plan", OUT_TABLES_DIR / "scenario_reallocation_plan.csv"),
+    (
+        "output",
+        "scenario_seed_sensitivity_summary",
+        OUT_TABLES_DIR / "scenario_seed_sensitivity_summary.csv",
+    ),
 ]
 
 FIELD_DEFINITIONS: dict[str, tuple[str, str]] = {
@@ -27,8 +33,11 @@ FIELD_DEFINITIONS: dict[str, tuple[str, str]] = {
     "customer_id": ("Unique customer identifier.", "Join key across customer and transaction views."),
     "transaction_id": ("Unique transaction identifier.", "Duplicate control on transactional facts."),
     # Dimensions
-    "segment": ("Customer segment (SMB, Mid-Market, Enterprise).", "Cross-cut for margin and retention diagnostics."),
-    "region": ("Customer region (EMEA, AMER, APAC).", "Geographic mix and regional profitability."),
+    "segment": ("Customer segment (Startup, SMB, Mid-Market, Enterprise).", "Cross-cut for margin and retention diagnostics."),
+    "region": (
+        "Customer region (North America, EMEA, LATAM, APAC).",
+        "Geographic mix and regional profitability.",
+    ),
     "acquisition_channel": ("Channel attributed to customer acquisition.", "Unit economics and budget allocation."),
     "product_type": ("Product line for the transaction.", "Product mix and profitability analysis."),
     # Temporal
@@ -48,6 +57,10 @@ FIELD_DEFINITIONS: dict[str, tuple[str, str]] = {
     "total_cost": ("Sum of direct cost over the grouping window.", "Margin measurement."),
     "total_spend": ("Sum of marketing spend over the grouping window.", "CAC denominator input."),
     "contribution_margin": ("Revenue minus direct cost.", "Primary profitability measure."),
+    "total_channel_contribution_margin": (
+        "Observed contribution margin summed within an acquisition channel.",
+        "Scenario baseline reconciliation.",
+    ),
     "contribution_margin_pct": ("Contribution margin as share of revenue.", "Margin quality signal."),
     "contribution_margin_growth_mom": ("Month-over-month change in contribution margin.", "Margin trend monitoring."),
     "revenue_growth_mom": ("Month-over-month change in total revenue.", "Top-line momentum."),
@@ -67,6 +80,31 @@ FIELD_DEFINITIONS: dict[str, tuple[str, str]] = {
     "approximate_payback_period": ("Months of margin needed to recover CAC.", "Capital efficiency proxy."),
     "average_LTV": ("Mean contribution margin per acquired customer.", "Value side of LTV/CAC."),
     "median_LTV": ("Median contribution margin per acquired customer.", "Skew-robust value check."),
+    "baseline_spend": ("Observed channel spend before reallocation.", "Scenario budget baseline."),
+    "scenario_spend": ("Channel spend after capped policy reallocation.", "Scenario allocation output."),
+    "spend_change": ("Scenario spend minus baseline spend.", "Scenario allocation delta."),
+    "spend_change_pct": ("Scenario spend change divided by baseline spend.", "Elasticity input."),
+    "cac_elasticity": ("Illustrative CAC response to a 1% spend change.", "Scenario assumption."),
+    "ltv_elasticity": ("Illustrative LTV response to a 1% spend change.", "Scenario assumption."),
+    "scenario_cac_assumed": ("CAC after bounded spend-response assumption.", "Scenario unit economics."),
+    "scenario_ltv_assumed": ("LTV after bounded spend-response assumption.", "Scenario unit economics."),
+    "unallocated_budget": ("Budget held back when efficient-channel scale capacity is exhausted.", "Scenario allocation control."),
+    "positive_uplift_rate": (
+        "Share of synthetic seeds with positive simulated uplift.",
+        "Scenario stability check.",
+    ),
+    "uplift_mean": ("Mean simulated contribution uplift across seeds.", "Scenario stability check."),
+    "uplift_median": (
+        "Median simulated contribution uplift across seeds.",
+        "Scenario stability check.",
+    ),
+    "uplift_min": ("Minimum simulated contribution uplift across seeds.", "Scenario downside check."),
+    "uplift_max": ("Maximum simulated contribution uplift across seeds.", "Scenario upside check."),
+    "uplift_std": ("Standard deviation of simulated uplift across seeds.", "Scenario dispersion check."),
+    "seed_count": (
+        "Number of deterministic synthetic seeds in the sensitivity run.",
+        "Scenario stability coverage.",
+    ),
     # Findings table
     "section": ("Analysis section the finding belongs to.", "Narrative grouping."),
     "question": ("Business question the finding answers.", "Decision framing."),

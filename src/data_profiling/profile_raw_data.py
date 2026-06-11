@@ -44,7 +44,7 @@ TABLE_SPECS = [
         date_columns=["transaction_date"],
         categorical_columns=["product_type", "customer_id"],
         likely_dimensions=["transaction_date", "product_type", "customer_id"],
-        likely_metrics=["revenue", "cost", "gross_margin", "gross_margin_pct", "transaction_count"],
+        likely_metrics=["revenue", "cost", "contribution_margin", "transaction_count"],
     ),
     TableSpec(
         name="marketing_spend",
@@ -62,6 +62,7 @@ CUSTOMER_ALLOWED_SEGMENTS = {"Startup", "SMB", "Mid-Market", "Enterprise"}
 CUSTOMER_ALLOWED_REGIONS = {"North America", "EMEA", "LATAM", "APAC"}
 ALLOWED_CHANNELS = {"paid_search", "social_ads", "referral", "organic", "partners", "email"}
 ALLOWED_PRODUCT_TYPES = {"Core", "Add-on", "Premium", "Services"}
+NEGATIVE_MARGIN_REVIEW_THRESHOLD = 0.01
 
 
 def load_tables() -> dict[str, pd.DataFrame]:
@@ -228,15 +229,16 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
         )
     )
     cost_above_revenue = int((transactions["cost"] > transactions["revenue"]).sum())
+    cost_above_revenue_rate = cost_above_revenue / transactions_rows
     issues.append(
         make_issue(
             "transactions",
             "cost",
             "cost_exceeds_revenue",
-            "medium",
+            "medium" if cost_above_revenue_rate > NEGATIVE_MARGIN_REVIEW_THRESHOLD else "low",
             cost_above_revenue,
             transactions_rows,
-            "cost > revenue indicates negative gross margin; suspicious but not impossible.",
+            "cost > revenue creates negative contribution margin and should be monitored.",
         )
     )
 
@@ -319,7 +321,7 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
     )
 
     issues_df = pd.DataFrame(issues)
-    return issues_df
+    return issues_df.loc[issues_df["issue_count"] > 0].reset_index(drop=True)
 
 
 def summarize_tables(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:

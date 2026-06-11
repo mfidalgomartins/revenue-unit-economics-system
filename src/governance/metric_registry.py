@@ -36,6 +36,8 @@ EFFICIENCY_THRESHOLDS = EfficiencyThresholds(
     ineff_payback_months=24.0,
 )
 
+MARGIN_QUALITY_FLOOR = 0.30
+
 RISK_SCORE_WEIGHTS = RiskScoreWeights(
     low_efficiency_base=90.0,
     borderline_base=60.0,
@@ -84,6 +86,7 @@ def channel_priority_score(ltv_to_cac: float, payback_months: float) -> float:
 def to_payload_dict() -> dict:
     """Serialize registry values for dashboard and downstream consumers."""
     return {
+        "margin_quality_floor": MARGIN_QUALITY_FLOOR,
         "efficiency_thresholds": {
             "ltv_cac_target": EFFICIENCY_THRESHOLDS.ltv_cac_target,
             "payback_target_months": EFFICIENCY_THRESHOLDS.payback_target_months,
@@ -105,7 +108,7 @@ def write_metric_registry_report() -> None:
     """Write human-readable governance report for executive and interview review."""
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    report = f"""# Metric Governance Registry
+    report = f"""# Metric Registry
 
 This registry is the single source of truth for unit-economics policy thresholds and risk-scoring defaults.
 
@@ -116,6 +119,7 @@ This registry is the single source of truth for unit-economics policy thresholds
 - Undefined: missing or invalid denominator states
 
 ## Risk Scoring Defaults
+- Overall margin quality floor: `{MARGIN_QUALITY_FLOOR:.0%}`
 - Low-efficiency base score: `{RISK_SCORE_WEIGHTS.low_efficiency_base}`
 - Borderline base score: `{RISK_SCORE_WEIGHTS.borderline_base}`
 - Payback contribution cap: `{RISK_SCORE_WEIGHTS.payback_cap_points}` points
@@ -123,10 +127,9 @@ This registry is the single source of truth for unit-economics policy thresholds
 - Segment base score: `{RISK_SCORE_WEIGHTS.segment_base}`
 - Cohort base score: `{RISK_SCORE_WEIGHTS.cohort_base}`
 
-## Governance Notes
+## Change Control
 - Thresholds are used by analysis, dashboard classification, and validation checks.
-- Any threshold change must be versioned and accompanied by updated recommendation guardrails.
+- Any threshold change should update affected tests, recommendation guardrails, and published outputs.
 """
 
-    (REPORTS_DIR / "metric_governance_registry.md").write_text(report, encoding="utf-8")
-
+    (REPORTS_DIR / "metric_registry.md").write_text(report, encoding="utf-8")

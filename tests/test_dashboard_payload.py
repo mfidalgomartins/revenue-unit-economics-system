@@ -74,5 +74,12 @@ def test_dashboard_html_contains_decision_layer_and_contract_ltv_logic() -> None
 
     assert 'id="decision-command"' in html
     assert 'class="chart-insight"' in html
-    assert "const avgLTV = acquiredCount > 0 ? margin / acquiredCount : NaN;" in html
+    assert "const avgLTV = cCount > 0 ? cm / cCount : NaN;" in html
+    assert "Full-coverage observed LTV versus CAC. Only the channel filter applies." in html
+    assert "label: 'Active Customers'" in html
+    assert "label: 'Customers Acquired'" in html
+    assert "Revenue is outpacing cost; monitor whether margin leverage persists." in html
+    assert "Cost is growing faster; investigate operating leverage." in html
+    assert "function escapeHtml(value)" in html
+    assert "fonts.googleapis.com" not in html
     assert "acquiredCm" not in html

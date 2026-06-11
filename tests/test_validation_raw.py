@@ -58,3 +58,33 @@ def test_build_results_detects_key_failures() -> None:
     assert by_check.loc["transaction_customer_referential_integrity", "status"] == "FAIL"
     assert by_check.loc["transaction_date_not_before_signup", "status"] == "FAIL"
     assert by_check.loc["value_range_sanity", "status"] == "FAIL"
+
+
+def test_build_results_surfaces_negative_margin_transactions_for_review() -> None:
+    tables = _base_tables()
+    tables["transactions"].loc[0, "cost"] = 110.0
+
+    results = build_results(tables).set_index("check_name")
+
+    assert results.loc["negative_margin_transaction_review", "status"] == "WARN"
+
+
+def test_build_results_accepts_small_negative_margin_exception_rate() -> None:
+    tables = _base_tables()
+    transactions = pd.concat([tables["transactions"]] * 100, ignore_index=True)
+    transactions["transaction_id"] = [f"T{i}" for i in range(len(transactions))]
+    transactions.loc[0, "cost"] = 110.0
+    tables["transactions"] = transactions
+
+    results = build_results(tables).set_index("check_name")
+
+    assert results.loc["negative_margin_transaction_review", "status"] == "PASS"
+
+
+def test_build_results_detects_channel_domain_mismatch() -> None:
+    tables = _base_tables()
+    tables["marketing_spend"].loc[1, "acquisition_channel"] = "social_ads"
+
+    results = build_results(tables).set_index("check_name")
+
+    assert results.loc["channel_domain_alignment", "status"] == "FAIL"

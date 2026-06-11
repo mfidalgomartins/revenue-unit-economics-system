@@ -1,0 +1,6 @@
+seed,total_budget_baseline,total_budget_scenario,baseline_contribution_est,scenario_contribution_est,estimated_contribution_uplift,efficient_channels,inefficient_channels,top_scale_channel,top_scale_spend_change,top_cut_channel,top_cut_spend_change
+7,5557749.0,5557749.0,16931188.64,24965691.4056,8034502.7656,3,2,partners,584624.2195,paid_search,-705156.3225
+21,5547025.7,5547025.7,16575273.72,24695402.7507,8120129.0307,3,2,partners,585608.848,paid_search,-702954.3045
+42,5552234.85,5552234.85,16564030.67,24477398.5698,7913367.8998,3,2,partners,588160.2865,paid_search,-701137.4615
+84,5529294.26,5529294.26,16415282.35,24390469.9469,7975187.5969,3,2,partners,578390.751,paid_search,-696934.1575
+126,5555245.92,5555245.92,16571097.86,24398607.322,7827509.462,3,2,partners,588335.907,paid_search,-704044.4285

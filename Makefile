@@ -6,6 +6,7 @@ VENV ?= .venv
 setup:
 	$(PYTHON) -m venv $(VENV)
 	. $(VENV)/bin/activate && pip install --upgrade pip && pip install -r requirements-dev.txt
+	. $(VENV)/bin/activate && python -m playwright install chromium
 
 run:
 	. $(VENV)/bin/activate && python src/run_pipeline.py

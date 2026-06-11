@@ -1,17 +1,2 @@
 table_name,column_name,check_name,severity,issue_count,issue_rate,description
-customers,customer_id,duplicate_customer_id,high,0,0.0,customer_id should be unique at customer grain.
-customers,segment,invalid_segment_value,medium,0,0.0,segment contains unexpected categories.
-customers,region,invalid_region_value,medium,0,0.0,region contains unexpected categories.
-customers,acquisition_channel,invalid_channel_value,medium,0,0.0,acquisition_channel contains unexpected categories.
-transactions,transaction_id,duplicate_transaction_id,high,0,0.0,transaction_id should be unique at transaction grain.
-transactions,customer_id,orphan_customer_id,high,0,0.0,transactions.customer_id must exist in customers.customer_id.
-transactions,product_type,invalid_product_type,medium,0,0.0,product_type contains unexpected categories.
-transactions,revenue,non_positive_revenue,high,0,0.0,revenue should be strictly positive.
-transactions,cost,negative_cost,high,0,0.0,cost should not be negative.
-transactions,cost,cost_exceeds_revenue,medium,258,0.003688348820586133,cost > revenue indicates negative gross margin; suspicious but not impossible.
-transactions,transaction_date,transaction_before_signup,high,0,0.0,transaction_date should not be earlier than the customer's signup_date.
-marketing_spend,"date, acquisition_channel",duplicate_marketing_grain,high,0,0.0,date + acquisition_channel should define a unique row.
-marketing_spend,acquisition_channel,invalid_channel_value,medium,0,0.0,acquisition_channel contains unexpected categories.
-marketing_spend,spend,negative_spend,high,0,0.0,marketing spend should not be negative.
-marketing_spend,spend,zero_spend,low,0,0.0,zero spend rows can be valid but should be reviewed for campaign inactivity.
-marketing_spend,"date, acquisition_channel",missing_date_channel_pairs,medium,0,0.0,missing date-channel combinations can break CAC and time-series analysis.
+transactions,cost,cost_exceeds_revenue,low,258,0.003688348820586133,cost > revenue creates negative contribution margin and should be monitored.

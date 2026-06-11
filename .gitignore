@@ -1,6 +1,9 @@
 # OS artifacts
 .DS_Store
 
+# Local assistant/editor configuration
+.claude/
+
 # Python cache/build
 __pycache__/
 *.py[cod]
@@ -27,3 +30,6 @@ htmlcov/
 
 # Logs
 *.log
+
+# Interrupted report builds
+outputs/reports/_report.html

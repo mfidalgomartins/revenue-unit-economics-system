@@ -43,11 +43,55 @@ RESPONSE_ASSUMPTIONS = {
     "undefined": {"cac_elasticity": 0.20, "ltv_elasticity": -0.15},
 }
 
+MAX_SCALE_UPLIFT = 1.00
+
 
 def load_inputs() -> tuple[pd.DataFrame, pd.DataFrame]:
     unit_economics = pd.read_csv(PROC_DIR / "unit_economics.csv")
     marketing_spend = pd.read_csv(RAW_DIR / "marketing_spend.csv", parse_dates=["date"])
     return unit_economics, marketing_spend
+
+
+def _redistribute_budget(
+    delta_budget: float,
+    efficient_scores: np.ndarray,
+    baseline_spend: pd.Series,
+    preliminary_spend: pd.Series,
+) -> np.ndarray:
+    """Allocate budget to efficient channels while capacity remains."""
+    redistribution = np.zeros(len(preliminary_spend), dtype=float)
+    score_sum = float(efficient_scores.sum())
+    if np.isclose(delta_budget, 0.0) or score_sum <= 0:
+        return redistribution
+
+    if delta_budget < 0:
+        return delta_budget * (efficient_scores / score_sum)
+
+    capacity = np.where(
+        efficient_scores > 0,
+        baseline_spend.to_numpy() * (1 + MAX_SCALE_UPLIFT) - preliminary_spend.to_numpy(),
+        0.0,
+    )
+    capacity = np.clip(capacity, 0.0, None)
+    remaining = delta_budget
+
+    while remaining > 1e-6:
+        eligible = capacity > 1e-6
+        if not eligible.any():
+            break
+
+        eligible_scores = np.where(eligible, efficient_scores, 0.0)
+        proposals = remaining * (eligible_scores / eligible_scores.sum())
+        allocations = np.minimum(proposals, capacity)
+        allocated = float(allocations.sum())
+        if allocated <= 0:
+            break
+
+        redistribution += allocations
+        capacity -= allocations
+        remaining -= allocated
+
+    return redistribution
 
 
 def build_reallocation_plan(
@@ -76,14 +120,12 @@ def build_reallocation_plan(
         np.where(ue["CAC"] > 0, ue["LTV_to_CAC"] / ue["CAC"], 0.0),
         0.0,
     )
-    score_sum = float(efficient_scores.sum())
-
-    if score_sum > 0 and delta_budget != 0:
-        redistribution = delta_budget * (efficient_scores / score_sum)
-    else:
-        redistribution = np.zeros(len(ue))
-
-    ue["redistribution_spend"] = redistribution
+    ue["redistribution_spend"] = _redistribute_budget(
+        delta_budget,
+        efficient_scores,
+        ue["baseline_spend"],
+        ue["preliminary_spend"],
+    )
     ue["scenario_spend"] = ue["preliminary_spend"] + ue["redistribution_spend"]
     ue["spend_change_pct"] = np.where(
         ue["baseline_spend"] > 0,
@@ -111,7 +153,7 @@ def build_reallocation_plan(
         np.nan,
     )
 
-    ue["baseline_contribution_est"] = ue["baseline_customers_est"] * ue["average_LTV"]
+    ue["baseline_contribution_est"] = ue["total_channel_contribution_margin"]
     ue["scenario_contribution_est"] = ue["scenario_customers_est"] * ue["scenario_ltv_assumed"]
 
     ue["spend_change"] = ue["scenario_spend"] - ue["baseline_spend"]
@@ -137,9 +179,12 @@ def build_reallocation_plan(
         "baseline_spend",
         "scenario_spend",
         "spend_change",
+        "spend_change_pct",
         "CAC",
+        "cac_elasticity",
         "scenario_cac_assumed",
         "average_LTV",
+        "ltv_elasticity",
         "scenario_ltv_assumed",
         "LTV_to_CAC",
         "approximate_payback_period",
@@ -158,6 +203,9 @@ def build_reallocation_plan(
                 "scenario_name": "budget_reallocation_v1",
                 "total_budget_baseline": float(plan["baseline_spend"].sum()),
                 "total_budget_scenario": float(plan["scenario_spend"].sum()),
+                "unallocated_budget": float(
+                    plan["baseline_spend"].sum() - plan["scenario_spend"].sum()
+                ),
                 "baseline_contribution_est": float(plan["baseline_contribution_est"].sum()),
                 "scenario_contribution_est": float(plan["scenario_contribution_est"].sum()),
                 "estimated_contribution_uplift": float(plan["contribution_change_est"].sum()),
@@ -220,9 +268,12 @@ def write_outputs(plan: pd.DataFrame, summary: pd.DataFrame, stress_summary: pd.
         "baseline_spend",
         "scenario_spend",
         "spend_change",
+        "spend_change_pct",
         "CAC",
+        "cac_elasticity",
         "scenario_cac_assumed",
         "average_LTV",
+        "ltv_elasticity",
         "scenario_ltv_assumed",
         "LTV_to_CAC",
         "approximate_payback_period",

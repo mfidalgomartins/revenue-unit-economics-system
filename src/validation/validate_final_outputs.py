@@ -1,9 +1,10 @@
-"""Pre-delivery QA validation for full analytical output."""
+"""Run the final QA gate for analytical outputs."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import struct
 import sys
 
 import pandas as pd
@@ -15,7 +16,8 @@ from src.governance.metric_registry import (
     EFFICIENCY_THRESHOLDS,
     classify_channel_efficiency,
 )
-from src.governance.release_governance import changelog_contains_version, read_version
+from src.scenario_engine.build_scenarios import MAX_SCALE_UPLIFT
+from src.visualization.chart_manifest import expected_chart_files
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
@@ -47,11 +49,22 @@ class Issue:
     recommendation: str
 
 
+def read_png_dimensions(path: Path) -> tuple[int, int]:
+    """Return PNG height and width without importing an image library."""
+    with path.open("rb") as image_file:
+        header = image_file.read(24)
+    if len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError(f"Invalid PNG header: {path}")
+    width, height = struct.unpack(">II", header[16:24])
+    return height, width
+
+
 def load_data() -> dict[str, pd.DataFrame]:
     scenario_summary_path = OUT_TABLES_DIR / "scenario_outcomes_summary.csv"
     scenario_plan_path = OUT_TABLES_DIR / "scenario_reallocation_plan.csv"
     scenario_stress_path = OUT_TABLES_DIR / "scenario_stress_test_summary.csv"
-    scenario_benchmark_path = OUT_TABLES_DIR / "scenario_benchmark_by_seed.csv"
+    seed_sensitivity_path = OUT_TABLES_DIR / "scenario_seed_sensitivity.csv"
+    seed_sensitivity_summary_path = OUT_TABLES_DIR / "scenario_seed_sensitivity_summary.csv"
 
     return {
         "customers": pd.read_csv(RAW_DIR / "customers.csv", parse_dates=["signup_date"]),
@@ -81,22 +94,25 @@ def load_data() -> dict[str, pd.DataFrame]:
         "scenario_stress": pd.read_csv(scenario_stress_path)
         if scenario_stress_path.exists()
         else pd.DataFrame(),
-        "scenario_benchmark": pd.read_csv(scenario_benchmark_path)
-        if scenario_benchmark_path.exists()
+        "seed_sensitivity": pd.read_csv(seed_sensitivity_path)
+        if seed_sensitivity_path.exists()
+        else pd.DataFrame(),
+        "seed_sensitivity_summary": pd.read_csv(seed_sensitivity_summary_path)
+        if seed_sensitivity_summary_path.exists()
         else pd.DataFrame(),
     }
 
 
-def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[Issue], list[str], list[str], str]:
+def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[Issue], list[str], str]:
     checks: list[CheckResult] = []
     issues: list[Issue] = []
-    fixes_applied: list[str] = []
     caveats: list[str] = []
 
     customers = data["customers"]
     transactions = data["transactions"]
     marketing = data["marketing"]
     customer_metrics = data["customer_metrics"]
+    cohort_table = data["cohort_table"]
     monthly = data["monthly"]
     unit_economics = data["unit_economics"]
     findings = data["findings"]
@@ -159,6 +175,20 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
             (
                 f"duplicate customer_id={dup_customer}, duplicate transaction_id={dup_tx}, "
                 f"duplicate marketing grain={dup_marketing}"
+            ),
+        )
+    )
+
+    negative_margin_rows = int((transactions["cost"] > transactions["revenue"]).sum())
+    negative_margin_rate = negative_margin_rows / len(transactions)
+    checks.append(
+        CheckResult(
+            "data_consistency",
+            "negative_margin_transaction_review",
+            "PASS" if negative_margin_rate <= 0.01 else "WARN",
+            (
+                f"rows_with_cost_above_revenue={negative_margin_rows:,}, "
+                f"share={negative_margin_rate:.2%}, review_threshold=1.00%"
             ),
         )
     )
@@ -251,6 +281,7 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
 
     max_cac_diff = 0.0
     max_ltv_diff = 0.0
+    max_total_contribution_diff = 0.0
     max_payback_diff = 0.0
     for row in unit_economics.itertuples(index=False):
         ch = row.acquisition_channel
@@ -266,6 +297,10 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
             abs(float(row.average_LTV) - float(exp_avg_ltv)),
             abs(float(row.median_LTV) - float(exp_med_ltv)),
         )
+        max_total_contribution_diff = max(
+            max_total_contribution_diff,
+            abs(float(row.total_channel_contribution_margin) - float(total_cm_by_ch[ch])),
+        )
         if pd.notna(exp_payback):
             max_payback_diff = max(max_payback_diff, abs(float(row.approximate_payback_period) - float(exp_payback)))
 
@@ -273,9 +308,15 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
         CheckResult(
             "calculation_checks",
             "ltv_cac_payback_logic",
-            "PASS" if max_cac_diff < 0.01 and max_ltv_diff < 0.01 and max_payback_diff < 0.01 else "FAIL",
+            "PASS"
+            if max_cac_diff < 0.01
+            and max_ltv_diff < 0.01
+            and max_total_contribution_diff < 0.01
+            and max_payback_diff < 0.01
+            else "FAIL",
             (
                 f"max CAC diff={max_cac_diff:.6f}, max LTV diff={max_ltv_diff:.6f}, "
+                f"max total contribution diff={max_total_contribution_diff:.6f}, "
                 f"max payback diff={max_payback_diff:.6f}"
             ),
         )
@@ -292,6 +333,21 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
                 f"transactions rows pre={len(transactions):,}, post={len(joined):,}, "
                 f"orphans={int(joined['segment'].isna().sum()):,}"
             ),
+        )
+    )
+
+    cohort_months = cohort_table["cohort_month"].drop_duplicates().sort_values()
+    final_activity_month = cohort_table["activity_month"].max()
+    expected_cohort_rows = sum(
+        (final_activity_month.to_period("M") - month.to_period("M")).n + 1
+        for month in cohort_months
+    )
+    checks.append(
+        CheckResult(
+            "analytical_integrity",
+            "cohort_month_grid_completeness",
+            "PASS" if len(cohort_table) == expected_cohort_rows else "FAIL",
+            f"expected_rows={expected_cohort_rows}, observed_rows={len(cohort_table)}",
         )
     )
 
@@ -399,16 +455,7 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
 
     # 4) Visualization checks.
     chart_files = sorted([p.name for p in OUT_CHARTS_DIR.glob("*.png")])
-    mandatory = [
-        "01_revenue_trend_over_time.png",
-        "02_contribution_margin_trend_over_time.png",
-        "03_revenue_vs_cost_over_time.png",
-        "04_cohort_revenue_retention.png",
-        "05_ltv_vs_cac_by_acquisition_channel.png",
-        "06_contribution_margin_by_segment.png",
-        "07_revenue_distribution_across_customers.png",
-        "08_avg_revenue_per_transaction_by_segment.png",
-    ]
+    mandatory = expected_chart_files()
     missing = sorted(set(mandatory) - set(chart_files))
 
     checks.append(
@@ -420,45 +467,40 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
         )
     )
 
-    chart_index_text = (OUT_CHARTS_DIR / "chart_index.md").read_text(encoding="utf-8")
+    chart_readme_path = OUT_CHARTS_DIR / "README.md"
+    chart_readme_text = (
+        chart_readme_path.read_text(encoding="utf-8") if chart_readme_path.exists() else ""
+    )
     checks.append(
         CheckResult(
             "visualization_checks",
-            "chart_index_completeness",
-            "PASS" if chart_index_text.count(".png") >= 8 else "FAIL",
-            f"chart_index_rows_detected={chart_index_text.count('.png')}",
+            "chart_readme_completeness",
+            "PASS" if chart_readme_text.count(".png") >= len(mandatory) else "FAIL",
+            f"chart_readme_rows_detected={chart_readme_text.count('.png')}",
         )
     )
 
-    viz_code = (PROJECT_ROOT / "src" / "visualization" / "generate_visuals.py").read_text(encoding="utf-8")
-    axis_zero_ok = (
-        "chart_revenue_trend" in viz_code
-        and "chart_margin_trend" in viz_code
-        and "chart_revenue_vs_cost" in viz_code
-        and viz_code.count("set_ylim(bottom=0)") >= 4
+    chart_shapes = {
+        path.name: read_png_dimensions(path)
+        for path in OUT_CHARTS_DIR.glob("*.png")
+        if path.name in mandatory
+    }
+    chart_export_ok = (
+        len(chart_shapes) == len(mandatory)
+        and all(height >= 600 and width >= 1_000 for height, width in chart_shapes.values())
     )
 
     checks.append(
         CheckResult(
             "visualization_checks",
-            "axis_sanity_and_misleading_scale",
-            "PASS" if axis_zero_ok else "WARN",
-            "Money trend charts set y-axis baseline to zero; cohort/ltv-cac also anchored for interpretability.",
+            "curated_chart_export_quality",
+            "PASS" if chart_export_ok else "WARN",
+            f"chart_dimensions={chart_shapes}",
         )
     )
 
     # 5) Governance and reproducibility checks.
-    reports_validation = REPORTS_DIR / "pre_delivery_validation_report.md"
-    checks.append(
-        CheckResult(
-            "governance_checks",
-            "validation_report_presence",
-            "PASS" if reports_validation.exists() else "WARN",
-            f"report_exists={reports_validation.exists()}",
-        )
-    )
-
-    metric_registry_path = REPORTS_DIR / "metric_governance_registry.md"
+    metric_registry_path = REPORTS_DIR / "metric_registry.md"
     checks.append(
         CheckResult(
             "governance_checks",
@@ -479,26 +521,19 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
         )
     )
 
-    version = read_version()
-    version_semver_ok = (
-        len(version.split(".")) == 3 and all(part.isdigit() for part in version.split("."))
+    analytical_report = REPORTS_DIR / "revenue_unit_economics_report.pdf"
+    analytical_report_ok = (
+        analytical_report.exists() and analytical_report.stat().st_size >= 100_000
     )
     checks.append(
         CheckResult(
             "governance_checks",
-            "release_version_semver",
-            "PASS" if version_semver_ok else "WARN",
-            f"version={version}",
-        )
-    )
-
-    changelog_ok = changelog_contains_version(version)
-    checks.append(
-        CheckResult(
-            "governance_checks",
-            "release_changelog_alignment",
-            "PASS" if changelog_ok else "WARN",
-            f"changelog_contains_version={changelog_ok}",
+            "analytical_report_presence",
+            "PASS" if analytical_report_ok else "FAIL",
+            (
+                f"report_exists={analytical_report.exists()}, "
+                f"size_bytes={analytical_report.stat().st_size if analytical_report.exists() else 0}"
+            ),
         )
     )
 
@@ -517,7 +552,8 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
     scenario_summary = data["scenario_summary"]
     scenario_plan = data["scenario_plan"]
     scenario_stress = data["scenario_stress"]
-    scenario_benchmark = data["scenario_benchmark"]
+    seed_sensitivity = data["seed_sensitivity"]
+    seed_sensitivity_summary = data["seed_sensitivity_summary"]
     scenario_ok = not scenario_summary.empty and not scenario_plan.empty
     checks.append(
         CheckResult(
@@ -531,7 +567,67 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
         )
     )
     if scenario_ok:
+        required_assumption_cols = {
+            "spend_change_pct",
+            "cac_elasticity",
+            "ltv_elasticity",
+            "scenario_cac_assumed",
+            "scenario_ltv_assumed",
+        }
+        assumption_cols_ok = required_assumption_cols.issubset(set(scenario_plan.columns))
+        checks.append(
+            CheckResult(
+                "decision_support_checks",
+                "scenario_assumptions_auditable",
+                "PASS" if assumption_cols_ok else "WARN",
+                f"required_columns_present={assumption_cols_ok}",
+            )
+        )
+        max_scale_uplift = float(scenario_plan["spend_change_pct"].max())
+        checks.append(
+            CheckResult(
+                "decision_support_checks",
+                "scenario_scale_cap",
+                "PASS" if max_scale_uplift <= MAX_SCALE_UPLIFT + 1e-6 else "FAIL",
+                (
+                    f"max_channel_scale_uplift={max_scale_uplift:.2%}, "
+                    f"policy_cap={MAX_SCALE_UPLIFT:.2%}"
+                ),
+            )
+        )
+        baseline_budget = float(scenario_summary["total_budget_baseline"].iloc[0])
+        scenario_budget = float(scenario_summary["total_budget_scenario"].iloc[0])
+        unallocated_budget = float(scenario_summary["unallocated_budget"].iloc[0])
+        budget_accounting_ok = (
+            unallocated_budget >= -0.01
+            and abs(baseline_budget - scenario_budget - unallocated_budget) <= 0.01
+        )
+        checks.append(
+            CheckResult(
+                "decision_support_checks",
+                "scenario_budget_accounting",
+                "PASS" if budget_accounting_ok else "FAIL",
+                (
+                    f"baseline_budget={baseline_budget:.2f}, scenario_budget={scenario_budget:.2f}, "
+                    f"unallocated_budget={unallocated_budget:.2f}"
+                ),
+            )
+        )
         uplift = float(scenario_summary["estimated_contribution_uplift"].iloc[0])
+        scenario_baseline_contribution = float(
+            scenario_summary["baseline_contribution_est"].iloc[0]
+        )
+        checks.append(
+            CheckResult(
+                "decision_support_checks",
+                "scenario_baseline_reconciliation",
+                "PASS" if abs(scenario_baseline_contribution - tr_margin) <= 0.01 else "FAIL",
+                (
+                    f"scenario_baseline_contribution={scenario_baseline_contribution:.2f}, "
+                    f"observed_contribution_margin={tr_margin:.2f}"
+                ),
+            )
+        )
         checks.append(
             CheckResult(
                 "decision_support_checks",
@@ -577,38 +673,48 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
             )
         )
 
-    benchmark_ok = not scenario_benchmark.empty
+    sensitivity_ok = not seed_sensitivity.empty
     checks.append(
         CheckResult(
             "decision_support_checks",
-            "scenario_benchmark_outputs",
-            "PASS" if benchmark_ok else "WARN",
-            f"scenario_benchmark_rows={len(scenario_benchmark)}",
+            "scenario_seed_sensitivity_outputs",
+            "PASS" if sensitivity_ok else "WARN",
+            f"scenario_seed_sensitivity_rows={len(seed_sensitivity)}",
         )
     )
-    if benchmark_ok:
-        seeds = sorted(scenario_benchmark["seed"].astype(int).tolist())
+    if sensitivity_ok:
+        seeds = sorted(seed_sensitivity["seed"].astype(int).tolist())
         required_seeds = {7, 21, 42, 84, 126}
         seed_coverage_ok = required_seeds.issubset(set(seeds))
         checks.append(
             CheckResult(
                 "decision_support_checks",
-                "scenario_benchmark_seed_coverage",
+                "scenario_seed_sensitivity_coverage",
                 "PASS" if seed_coverage_ok else "WARN",
                 f"seeds_present={seeds}",
             )
         )
+
         uplift_positive_rate = float(
-            (scenario_benchmark["estimated_contribution_uplift"] > 0).mean()
+            (seed_sensitivity["estimated_contribution_uplift"] > 0).mean()
         )
         checks.append(
             CheckResult(
                 "decision_support_checks",
-                "scenario_benchmark_uplift_resilience",
+                "scenario_seed_sensitivity_uplift_stability",
                 "PASS" if uplift_positive_rate >= 0.8 else "WARN",
                 f"positive_uplift_rate={uplift_positive_rate:.2%}",
             )
         )
+
+    checks.append(
+        CheckResult(
+            "decision_support_checks",
+            "scenario_seed_sensitivity_summary",
+            "PASS" if len(seed_sensitivity_summary) == 1 else "WARN",
+            f"scenario_seed_sensitivity_summary_rows={len(seed_sensitivity_summary)}",
+        )
+    )
 
     payload_rows = len(customers) + len(transactions) + len(marketing)
     if payload_rows <= DASHBOARD_PAYLOAD_WARN_ROWS:
@@ -630,7 +736,7 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
         )
     )
 
-    # Issues, fixes, caveats.
+    # Issues and caveats.
     issues.append(
         Issue(
             severity="low",
@@ -694,28 +800,6 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
             )
         )
 
-    if non_tx_customers > 0:
-        issues.append(
-            Issue(
-                severity="low",
-                area="data_consistency",
-                issue="`customer_metrics` has null first/last transaction dates for customers with zero transactions.",
-                impact="Nulls are expected but must remain explicitly handled in downstream visuals/tables.",
-                recommendation="Retain explicit zero-transaction handling and avoid dropping these rows in customer-level analyses.",
-            )
-        )
-
-    if not version_semver_ok or not changelog_ok:
-        issues.append(
-            Issue(
-                severity="medium",
-                area="release_governance",
-                issue="Release version or changelog policy is not aligned with SemVer governance.",
-                impact="Weakens release auditability and interview defensibility for production-grade analytics delivery.",
-                recommendation="Ensure VERSION follows MAJOR.MINOR.PATCH and changelog includes matching version section.",
-            )
-        )
-
     caveats.append(
         "All findings are based on synthetic data; directional insights are valid for methodology demonstration, not real-world forecasting precision."
     )
@@ -726,7 +810,16 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
         "Revenue decomposition should be interpreted as directional decomposition, not formal causal attribution."
     )
     caveats.append(
-        "Scenario engine outputs are policy simulations assuming stable CAC/LTV under spend changes, not forecasts."
+        "Scenario engine outputs are policy simulations with illustrative, bounded CAC/LTV elasticities and a 100% channel scale-up cap; excess budget is held back when capacity is exhausted."
+    )
+    caveats.append(
+        f"{non_tx_customers:,} customers have no observed transactions; they remain in customer-level denominators with zero contribution."
+    )
+    caveats.append(
+        f"{negative_margin_rows:,} transactions ({negative_margin_rate:.2%}) have cost above revenue and remain in profitability calculations."
+    )
+    caveats.append(
+        "Seed sensitivity uses repeated draws from the same synthetic data-generating process; it measures stability, not external validity."
     )
 
     fail_count = sum(1 for c in checks if c.status == "FAIL")
@@ -735,19 +828,18 @@ def run_checks(data: dict[str, pd.DataFrame]) -> tuple[list[CheckResult], list[I
     has_medium_issue = any(i.severity == "medium" for i in issues)
 
     if fail_count > 0 or has_high_issue:
-        confidence = "Needs revision"
+        confidence = "Not ready"
     elif warn_count >= 3 or has_medium_issue:
-        confidence = "Share with caveats"
+        confidence = "Ready with caveats"
     else:
-        confidence = "Ready to share"
+        confidence = "Ready to publish"
 
-    return checks, issues, fixes_applied, caveats, confidence
+    return checks, issues, caveats, confidence
 
 
 def write_outputs(
     checks: list[CheckResult],
     issues: list[Issue],
-    fixes_applied: list[str],
     caveats: list[str],
     confidence: str,
 ) -> None:
@@ -757,8 +849,8 @@ def write_outputs(
     checks_df = pd.DataFrame([c.__dict__ for c in checks])
     issues_df = pd.DataFrame([i.__dict__ for i in issues])
 
-    checks_df.to_csv(OUT_TABLES_DIR / "pre_delivery_validation_checks.csv", index=False)
-    issues_df.to_csv(OUT_TABLES_DIR / "pre_delivery_validation_issues.csv", index=False)
+    checks_df.to_csv(OUT_TABLES_DIR / "qa_checks.csv", index=False)
+    issues_df.to_csv(OUT_TABLES_DIR / "qa_issues.csv", index=False)
 
     pass_count = int((checks_df["status"] == "PASS").sum())
     warn_count = int((checks_df["status"] == "WARN").sum())
@@ -774,26 +866,26 @@ def write_outputs(
         return "\n".join([header, divider] + body)
 
     report_lines = [
-        "# Pre-Delivery Validation Report",
+        "# QA Report",
         "",
         "Project: Revenue Analytics & Unit Economics System",
         "",
-        "## Validation Scope",
+        "## Scope",
         "- Data consistency (row count, null handling, duplicate handling)",
         "- Calculation checks (revenue/cost/margin/rates/LTV/CAC/payback)",
         "- Analytical integrity (join inflation, period comparison, averaging risks, evidence alignment)",
-        "- Visualization checks (title quality, axis sanity, readability, scale risk)",
+        "- Visualization checks (curated chart coverage and export readability)",
         "",
-        "## Validation Summary",
+        "## Summary",
         f"- PASS checks: {pass_count}",
         f"- WARN checks: {warn_count}",
         f"- FAIL checks: {fail_count}",
         f"- Final confidence assessment: **{confidence}**",
         "",
-        "## Check Results",
+        "## Checks",
         to_markdown_fallback(checks_df),
         "",
-        "## Issues Found",
+        "## Known Limitations",
     ]
 
     if issues_df.empty:
@@ -809,14 +901,7 @@ def write_outputs(
                 ]
             )
 
-    report_lines.extend(["", "## Fixes Applied"])
-    if fixes_applied:
-        for fix in fixes_applied:
-            report_lines.append(f"- {fix}")
-    else:
-        report_lines.append("- No code or output fixes were applied during this QA pass.")
-
-    report_lines.extend(["", "## Required Caveats"])
+    report_lines.extend(["", "## Caveats"])
     for caveat in caveats:
         report_lines.append(f"- {caveat}")
 
@@ -824,35 +909,37 @@ def write_outputs(
         [
             "",
             "## Output Files",
-            "- `outputs/tables/pre_delivery_validation_checks.csv`",
-            "- `outputs/tables/pre_delivery_validation_issues.csv`",
-            "- `outputs/reports/pre_delivery_validation_report.md`",
+            "- `outputs/tables/qa_checks.csv`",
+            "- `outputs/tables/qa_issues.csv`",
+            "- `outputs/reports/qa_report.md`",
             "- `outputs/tables/scenario_reallocation_plan.csv`",
             "- `outputs/tables/scenario_outcomes_summary.csv`",
             "- `outputs/tables/scenario_stress_test_summary.csv`",
-            "- `outputs/tables/scenario_benchmark_by_seed.csv`",
-            "- `outputs/reports/metric_governance_registry.md`",
+            "- `outputs/tables/scenario_seed_sensitivity.csv`",
+            "- `outputs/tables/scenario_seed_sensitivity_summary.csv`",
+            "- `outputs/reports/metric_registry.md`",
             "- `outputs/tables/data_catalog.csv`",
-            "- `outputs/tables/release_manifest.csv`",
-            "- `outputs/reports/release_governance.md`",
         ]
     )
 
-    (REPORTS_DIR / "pre_delivery_validation_report.md").write_text(
-        "\n".join(report_lines), encoding="utf-8"
+    (REPORTS_DIR / "qa_report.md").write_text(
+        "\n".join(report_lines) + "\n",
+        encoding="utf-8",
     )
 
 
 def main() -> None:
     data = load_data()
-    checks, issues, fixes_applied, caveats, confidence = run_checks(data)
-    write_outputs(checks, issues, fixes_applied, caveats, confidence)
+    checks, issues, caveats, confidence = run_checks(data)
+    write_outputs(checks, issues, caveats, confidence)
 
-    print("Pre-delivery validation completed.")
-    print(f"report: {REPORTS_DIR / 'pre_delivery_validation_report.md'}")
-    print(f"checks_csv: {OUT_TABLES_DIR / 'pre_delivery_validation_checks.csv'}")
-    print(f"issues_csv: {OUT_TABLES_DIR / 'pre_delivery_validation_issues.csv'}")
+    print("Final QA validation completed.")
+    print(f"report: {REPORTS_DIR / 'qa_report.md'}")
+    print(f"checks_csv: {OUT_TABLES_DIR / 'qa_checks.csv'}")
+    print(f"issues_csv: {OUT_TABLES_DIR / 'qa_issues.csv'}")
     print(f"confidence: {confidence}")
+    if confidence == "Not ready":
+        raise SystemExit("Final QA gate failed. Review outputs/reports/qa_report.md.")
 
 
 if __name__ == "__main__":
