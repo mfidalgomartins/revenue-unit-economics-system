@@ -9,6 +9,7 @@
 Top-line revenue growth can hide weak acquisition efficiency, fragile retention, or margin erosion. The pipeline calculates LTV/CAC by channel, cohort retention, contribution margin, and bounded spend-reallocation scenarios, then publishes the results as an interactive dashboard, chart pack, and analytical PDF.
 
 **→ [Open the live dashboard](https://mfidalgomartins.github.io/revenue-unit-economics-system/)**  
+**→ [Read the full report (PDF)](https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/reports/revenue_unit_economics_report.pdf)**  
 Light and dark mode. No login or install required. Works on mobile.
 
 ![Channel unit economics — LTV vs CAC with the 3:1 scale threshold](outputs/charts/08_channel_economics.png)

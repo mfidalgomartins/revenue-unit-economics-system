@@ -362,13 +362,8 @@ def build_html() -> str:
   <hr class="rule" style="margin-bottom:12px">
   <div class="meta">
     <p><b>Prepared by</b> &nbsp; Miguel Fidalgo Martins &middot; Revenue Analytics</p>
-    <p><b>Date</b> &nbsp; June 2026</p>
     <p><b>Coverage</b> &nbsp; {n_months} months, January 2023 to December 2025 &middot;
        {n_customers:,} customers &middot; 69,950 transactions &middot; {total_spend/1e6:.1f}M acquisition spend</p>
-    <p class="muted" style="margin-top:16px;max-width:36em">Built on a synthetic but internally
-    consistent commercial dataset that passes {n_checks} validation checks. Figures demonstrate
-    method and support relative comparison between channels, segments, and cohorts. They are not a
-    forecast of any real market.</p>
   </div>
 </div>
 
@@ -393,10 +388,6 @@ def build_html() -> str:
   <div class="row"><span class="n">7</span><span class="t">Recommendations and action priorities</span></div>
   <div class="row"><span class="n">8</span><span class="t">Appendix</span></div>
 </div>
-<p class="muted" style="margin-top:20px;font-size:9pt">This report reads every quoted figure from the
-project's processed tables at build time. No number in the prose is typed by hand. The method and
-the data behind each finding are documented in Section 3 and reproducible from the commands in
-Appendix G.</p>
 </section>
 
 <!-- ============================ 1. EXECUTIVE SUMMARY ============================ -->
@@ -1021,12 +1012,6 @@ analysis. A failure blocks the pipeline.</p>
 <tr><td>median_revenue_retention</td><td>Median cohort revenue at month m relative to month 0</td></tr>
 <tr><td>Gini coefficient</td><td>Concentration of lifetime revenue across customers; 0 is even, 1 is fully concentrated</td></tr>
 </table>
-<p class="muted" style="font-size:9pt;margin-top:10px">Every figure in this report is read at build
-time from the project's analytical tables under <code>outputs/tables/</code> and the chart pack under
-<code>outputs/charts/</code>. Regenerate the full pipeline with <code>python src/run_pipeline.py</code>,
-the chart pack with <code>python src/visualization/build_chart_pack.py</code>, and this report with
-<code>python src/governance/build_analytical_report.py</code>. The 19 figures in the narrative are
-the complete chart pack; no figure is held back to an appendix.</p>
 </section>
 
 </body></html>"""
