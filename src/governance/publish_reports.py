@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import pandas as pd
 
@@ -23,7 +23,6 @@ def write_decision_brief() -> None:
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     monthly = pd.read_csv(TABLES_DIR / "monthly_revenue_health.csv", parse_dates=["month"])
-    findings = pd.read_csv(TABLES_DIR / "main_analysis_findings.csv")
     unit_econ = pd.read_csv(PROCESSED_DIR / "unit_economics.csv")
     scenario = pd.read_csv(TABLES_DIR / "scenario_outcomes_summary.csv")
     stress = pd.read_csv(TABLES_DIR / "scenario_stress_test_summary.csv")
@@ -33,7 +32,6 @@ def write_decision_brief() -> None:
     quality_issues = pd.read_csv(TABLES_DIR / "data_quality_issues.csv")
 
     total_revenue = float(monthly["total_revenue"].sum())
-    total_cost = float(monthly["total_cost"].sum())
     total_margin = float(monthly["contribution_margin"].sum())
     margin_pct = total_margin / total_revenue if total_revenue else float("nan")
 

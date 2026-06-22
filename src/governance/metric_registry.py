@@ -83,7 +83,7 @@ def channel_priority_score(ltv_to_cac: float, payback_months: float) -> float:
     return float(base + payback_component)
 
 
-def to_payload_dict() -> dict:
+def to_payload_dict() -> dict[str, object]:
     """Serialize registry values for dashboard and downstream consumers."""
     return {
         "margin_quality_floor": MARGIN_QUALITY_FLOOR,

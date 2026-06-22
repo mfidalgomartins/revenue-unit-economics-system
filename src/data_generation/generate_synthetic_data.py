@@ -10,8 +10,8 @@ Key design assumptions are encoded in comments near each generation block.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -108,7 +108,7 @@ def _build_signup_dates(n_customers: int) -> np.ndarray:
     final_weight = final_weight / final_weight.sum()
 
     sampled = RNG.choice(all_days.to_numpy(), size=n_customers, p=final_weight)
-    return pd.to_datetime(sampled).to_numpy()
+    return np.asarray(pd.to_datetime(sampled).to_numpy())
 
 
 def generate_customers(n_customers: int = 9000) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -185,7 +185,7 @@ def generate_transactions(customers: pd.DataFrame, traits: pd.DataFrame) -> pd.D
     """Generate transactional ledger with skewed revenue and margin variability."""
     customer_frame = customers.merge(traits, on="customer_id", how="left")
 
-    records: list[dict] = []
+    records: list[dict[str, object]] = []
     tx_id = 1
 
     for row in customer_frame.itertuples(index=False):
@@ -277,7 +277,7 @@ def generate_marketing_spend() -> pd.DataFrame:
         "email": 320,
     }
 
-    rows: list[dict] = []
+    rows: list[dict[str, object]] = []
     horizon = len(all_days) - 1
 
     for day_idx, date in enumerate(all_days):

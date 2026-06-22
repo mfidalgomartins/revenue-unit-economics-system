@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pandas as pd
-
 from src.validation.validate_raw_data import build_results
 
 

@@ -1,0 +1,69 @@
+# Tooling configuration for the revenue-analytics pipeline.
+# Runtime/build metadata lives in requirements*.txt; this file holds the
+# quality gates (ruff, mypy, pytest, coverage) used locally and in CI.
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# High-signal families. E501 (line length) is excluded because several report
+# and dashboard builders embed long Markdown/HTML string literals where wrapping
+# would hurt readability; B905 (zip strict) is excluded as an opinionated rule.
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "RUF"]
+# E501: long embedded Markdown/HTML report strings. B905: opinionated zip strict.
+# RUF001: intentional typographic minus (U+2212) in chart and report display text.
+ignore = ["E501", "B905", "RUF001"]
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.mypy]
+python_version = "3.12"
+files = ["src"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+# Annotate our own code and parameterize generics. disallow_untyped_calls stays
+# off because matplotlib's public API is untyped and we should not fight it.
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_any_generics = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+# Coverage runs by default and the gate is enforced via [tool.coverage.report]
+# fail_under. Pass --no-cov for fast single-file runs during development.
+addopts = "-q --cov --cov-report=term-missing"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+omit = [
+    # Output renderers and orchestration are exercised end-to-end by the
+    # pipeline run in CI rather than by unit tests; their value is the produced
+    # artifact, not branch logic. Coverage focuses on analytical/contract code.
+    "src/run_pipeline.py",
+    "src/visualization/build_chart_pack.py",
+    "src/visualization/chart_manifest.py",
+    "src/dashboard_builder/build_dashboard_assets.py",
+    "src/governance/build_analytical_report.py",
+    "src/governance/publish_reports.py",
+    "src/scenario_engine/build_seed_sensitivity.py",
+    "src/validation/validate_final_outputs.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 90
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "def main\\(",
+    "raise NotImplementedError",
+]

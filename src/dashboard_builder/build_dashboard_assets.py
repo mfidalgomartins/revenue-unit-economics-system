@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 
 import pandas as pd
@@ -29,7 +30,7 @@ def build_embedded_payload(
     customers: pd.DataFrame,
     transactions: pd.DataFrame,
     marketing: pd.DataFrame,
-) -> dict:
+) -> Mapping[str, object]:
     tx = transactions.copy()
 
     tx_records = []
@@ -98,7 +99,7 @@ def build_embedded_payload(
     return payload
 
 
-def build_dashboard_html(payload: dict) -> str:
+def build_dashboard_html(payload: Mapping[str, object]) -> str:
     data_json = json.dumps(payload, separators=(",", ":"))
 
     template = """<!DOCTYPE html>
@@ -110,84 +111,101 @@ def build_dashboard_html(payload: dict) -> str:
   <style>
     :root {
       color-scheme: light;
-      --bg: #ffffff;
+      /* Apple-style surfaces: off-white canvas, white grouped cards. */
+      --bg: #fbfbfd;
       --surface: #ffffff;
-      --surface-2: #fafafa;
-      --surface-3: #f4f4f5;
-      --hairline: #ececec;
-      --hairline-strong: #d4d4d4;
-      --ink: #0a0a0a;
-      --ink-2: #262626;
-      --muted: #737373;
-      --subtle: #a3a3a3;
-      --accent: #1d4ed8;
-      --positive: #15803d;
-      --negative: #b91c1c;
-      --warning: #b45309;
+      --surface-2: #f5f5f7;
+      --surface-3: #ececef;
+      --hairline: #e6e6ea;
+      --hairline-strong: #d2d2d7;
+      --ink: #1d1d1f;
+      --ink-2: #424245;
+      --muted: #6e6e73;
+      --subtle: #86868b;
+      --accent: #0071e3;
+      --positive: #248a3d;
+      --negative: #d70015;
+      --warning: #b25000;
+
+      /* Material + type tokens (Apple HIG). */
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+        "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+      --font-num: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue",
+        "Segoe UI", sans-serif;
+      --radius-card: 18px;
+      --radius-control: 12px;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -10px rgba(0, 0, 0, 0.10);
+      --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.06), 0 16px 36px -12px rgba(0, 0, 0, 0.16);
+      --ease: cubic-bezier(0.4, 0, 0.22, 1);
 
       /* Chart palette — used by JS via getComputedStyle. Restrained: ink + muted. */
-      --rev: #0a0a0a;
-      --cost: #737373;
-      --margin: #15803d;
-      --bar: #0a0a0a;
-      --good: #15803d;
-      --bad: #b91c1c;
-      --warn: #b45309;
-      --chart-grid: #f0f0f0;
-      --chart-axis: #a3a3a3;
-      --chart-text: #404040;
-      --chart-muted: #737373;
-      --tooltip-bg: #0a0a0a;
-      --tooltip-ink: #fafafa;
-      --focus-ring: 0 0 0 3px rgba(29, 78, 216, 0.18);
+      --rev: #1d1d1f;
+      --cost: #86868b;
+      --margin: #248a3d;
+      --bar: #1d1d1f;
+      --good: #248a3d;
+      --bad: #d70015;
+      --warn: #b25000;
+      --chart-grid: #eeeef0;
+      --chart-axis: #b0b0b5;
+      --chart-text: #424245;
+      --chart-muted: #6e6e73;
+      --tooltip-bg: #1d1d1f;
+      --tooltip-ink: #f5f5f7;
+      --focus-ring: 0 0 0 4px rgba(0, 113, 227, 0.30);
     }
 
     body[data-theme="dark"] {
       color-scheme: dark;
-      --bg: #0a0a0a;
-      --surface: #0a0a0a;
-      --surface-2: #111111;
-      --surface-3: #1a1a1a;
-      --hairline: #1f1f1f;
-      --hairline-strong: #2a2a2a;
-      --ink: #fafafa;
-      --ink-2: #e5e5e5;
-      --muted: #a3a3a3;
-      --subtle: #525252;
-      --accent: #60a5fa;
-      --positive: #4ade80;
-      --negative: #f87171;
-      --warning: #fbbf24;
+      /* Apple dark: true-black canvas, elevated graphite cards. */
+      --bg: #000000;
+      --surface: #1c1c1e;
+      --surface-2: #2c2c2e;
+      --surface-3: #3a3a3c;
+      --hairline: #38383a;
+      --hairline-strong: #48484a;
+      --ink: #f5f5f7;
+      --ink-2: #d1d1d6;
+      --muted: #98989d;
+      --subtle: #6e6e73;
+      --accent: #0a84ff;
+      --positive: #30d158;
+      --negative: #ff453a;
+      --warning: #ff9f0a;
 
-      --rev: #fafafa;
-      --cost: #a3a3a3;
-      --margin: #4ade80;
-      --bar: #fafafa;
-      --good: #4ade80;
-      --bad: #f87171;
-      --warn: #fbbf24;
-      --chart-grid: #1f1f1f;
-      --chart-axis: #525252;
-      --chart-text: #d4d4d4;
-      --chart-muted: #a3a3a3;
-      --tooltip-bg: #fafafa;
-      --tooltip-ink: #0a0a0a;
-      --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.22);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -10px rgba(0, 0, 0, 0.6);
+      --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 18px 40px -12px rgba(0, 0, 0, 0.7);
+
+      --rev: #f5f5f7;
+      --cost: #98989d;
+      --margin: #30d158;
+      --bar: #f5f5f7;
+      --good: #30d158;
+      --bad: #ff453a;
+      --warn: #ff9f0a;
+      --chart-grid: #2c2c2e;
+      --chart-axis: #6e6e73;
+      --chart-text: #d1d1d6;
+      --chart-muted: #98989d;
+      --tooltip-bg: #f5f5f7;
+      --tooltip-ink: #1d1d1f;
+      --focus-ring: 0 0 0 4px rgba(10, 132, 255, 0.36);
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-feature-settings: 'ss01', 'cv11';
+      font-family: var(--font-sans);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
       background: var(--bg);
       color: var(--ink);
       font-size: 14px;
-      line-height: 1.5;
-      transition: background 160ms ease, color 160ms ease;
+      line-height: 1.47;
+      letter-spacing: -0.01em;
+      transition: background 200ms var(--ease), color 200ms var(--ease);
     }
 
     .skip-link {
@@ -228,11 +246,11 @@ def build_dashboard_html(payload: dict) -> str:
     }
     .masthead h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 600;
-      letter-spacing: 0;
+      letter-spacing: -0.021em;
       color: var(--ink);
-      line-height: 1.15;
+      line-height: 1.12;
     }
     .masthead .lede {
       margin: 0;
@@ -254,21 +272,21 @@ def build_dashboard_html(payload: dict) -> str:
     }
     .tool-btn {
       font-family: inherit;
-      background: var(--surface);
-      border: 1px solid var(--hairline-strong);
-      color: var(--ink-2);
-      border-radius: 6px;
-      padding: 7px 12px;
-      font-size: 12px;
+      background: var(--surface-2);
+      border: none;
+      color: var(--ink);
+      border-radius: 980px;
+      padding: 8px 16px;
+      font-size: 12.5px;
       font-weight: 500;
+      letter-spacing: -0.01em;
       cursor: pointer;
-      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+      transition: background 160ms var(--ease), transform 160ms var(--ease);
     }
     .tool-btn:hover {
-      background: var(--surface-2);
-      border-color: var(--ink-2);
-      color: var(--ink);
+      background: var(--surface-3);
     }
+    .tool-btn:active { transform: scale(0.97); }
     .tool-btn:focus-visible,
     input[type="date"]:focus-visible,
     select:focus-visible {
@@ -304,11 +322,11 @@ def build_dashboard_html(payload: dict) -> str:
       font-family: inherit;
       background: var(--surface);
       border: 1px solid var(--hairline-strong);
-      border-radius: 6px;
-      padding: 7px 10px;
+      border-radius: var(--radius-control);
+      padding: 8px 11px;
       font-size: 13px;
       color: var(--ink);
-      transition: border-color 120ms ease;
+      transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
     }
     input[type="date"]:hover, select:hover { border-color: var(--ink-2); }
     select[multiple] {
@@ -328,12 +346,15 @@ def build_dashboard_html(payload: dict) -> str:
     .kpi-row {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      border-top: 1px solid var(--hairline);
-      border-bottom: 1px solid var(--hairline);
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
       margin-bottom: 36px;
     }
     .kpi-card {
-      padding: 22px 22px 24px;
+      padding: 22px 24px 24px;
       border-right: 1px solid var(--hairline);
       display: flex;
       flex-direction: column;
@@ -345,26 +366,26 @@ def build_dashboard_html(payload: dict) -> str:
       font-size: 11px;
       color: var(--muted);
       font-weight: 500;
-      letter-spacing: 0;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
     }
     .kpi-value {
-      font-family: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-      font-size: 30px;
-      font-weight: 500;
+      font-family: var(--font-num);
+      font-size: 32px;
+      font-weight: 600;
       color: var(--ink);
-      letter-spacing: 0;
-      line-height: 1;
+      letter-spacing: -0.022em;
+      line-height: 1.02;
       font-variant-numeric: tabular-nums;
       word-break: break-word;
     }
     .kpi-delta {
-      font-family: 'Geist Mono', ui-monospace, monospace;
-      font-size: 12px;
+      font-family: var(--font-num);
+      font-size: 12.5px;
       font-weight: 500;
       color: var(--muted);
       font-variant-numeric: tabular-nums;
-      letter-spacing: 0;
+      letter-spacing: -0.005em;
     }
     .kpi-delta.positive { color: var(--positive); }
     .kpi-delta.negative { color: var(--negative); }
@@ -374,8 +395,9 @@ def build_dashboard_html(payload: dict) -> str:
       display: grid;
       grid-template-columns: 1.4fr 1fr 1fr 1fr;
       border: 1px solid var(--hairline);
-      border-radius: 8px;
+      border-radius: var(--radius-card);
       background: var(--surface);
+      box-shadow: var(--shadow);
       margin-bottom: 48px;
       overflow: hidden;
     }
@@ -434,8 +456,9 @@ def build_dashboard_html(payload: dict) -> str:
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       border: 1px solid var(--hairline);
-      border-radius: 8px;
+      border-radius: var(--radius-card);
       background: var(--surface);
+      box-shadow: var(--shadow);
       overflow: hidden;
     }
     .summary-card {
@@ -482,12 +505,21 @@ def build_dashboard_html(payload: dict) -> str:
     }
     .chart-card {
       border: 1px solid var(--hairline);
-      border-radius: 8px;
+      border-radius: var(--radius-card);
       background: var(--surface);
-      padding: 20px 22px 22px;
+      box-shadow: var(--shadow);
+      padding: 22px 24px 24px;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      /* Allow the card to shrink inside its grid track instead of being held
+         open by intrinsic SVG/table width (prevents mobile horizontal overflow). */
+      min-width: 0;
+      transition: box-shadow 220ms var(--ease), transform 220ms var(--ease);
+    }
+    .chart-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
     }
     .chart-title {
       margin: 0;
@@ -529,19 +561,22 @@ def build_dashboard_html(payload: dict) -> str:
       color: var(--muted);
       font-size: 12px;
       border: 1px dashed var(--hairline-strong);
-      border-radius: 6px;
+      border-radius: var(--radius-control);
     }
 
     /* TABLES ------------------------------------------------------- */
     .table-wrap {
       border: 1px solid var(--hairline);
-      border-radius: 8px;
+      border-radius: var(--radius-card);
       overflow: hidden;
       background: var(--surface);
+      box-shadow: var(--shadow);
     }
     .chart-card .table-wrap {
       border: none;
       border-radius: 0;
+      box-shadow: none;
+      overflow-x: auto;
     }
     table {
       border-collapse: collapse;
@@ -584,8 +619,8 @@ def build_dashboard_html(payload: dict) -> str:
       display: inline-block;
       font-size: 11px;
       font-weight: 500;
-      padding: 2px 8px;
-      border-radius: 4px;
+      padding: 2px 9px;
+      border-radius: 980px;
       letter-spacing: 0;
       font-variant-numeric: tabular-nums;
     }
@@ -598,7 +633,7 @@ def build_dashboard_html(payload: dict) -> str:
     .risk-score {
       display: inline-block;
       min-width: 36px;
-      font-family: 'Geist Mono', ui-monospace, monospace;
+      font-family: var(--font-num);
       font-weight: 500;
       color: var(--ink);
       font-variant-numeric: tabular-nums;
@@ -616,11 +651,11 @@ def build_dashboard_html(payload: dict) -> str:
       line-height: 1.6;
     }
     .footnote code {
-      font-family: 'Geist Mono', monospace;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
       font-size: 11.5px;
       background: var(--surface-2);
       padding: 1px 6px;
-      border-radius: 3px;
+      border-radius: 6px;
       color: var(--ink-2);
     }
 
@@ -631,9 +666,9 @@ def build_dashboard_html(payload: dict) -> str:
       background: var(--tooltip-bg);
       color: var(--tooltip-ink);
       font-size: 12px;
-      font-family: 'Geist Mono', ui-monospace, monospace;
-      border-radius: 4px;
-      padding: 7px 10px;
+      font-family: var(--font-num);
+      border-radius: 10px;
+      padding: 8px 11px;
       z-index: 9999;
       display: none;
       max-width: 320px;
@@ -1052,14 +1087,19 @@ def build_dashboard_html(payload: dict) -> str:
     }
 
     function createSvg(container, height = 248) {
+      // Keep a 340-unit floor for the drawing coordinate space (label legibility),
+      // but map it to the element via a viewBox so the chart scales to the real
+      // container width. Without this, narrow (mobile) containers overflow the page.
       const width = Math.max(340, container.clientWidth - 6);
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('width', width);
-      svg.setAttribute('height', height);
+      svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+      svg.setAttribute('preserveAspectRatio', 'none');
       svg.setAttribute('aria-hidden', 'true');
       svg.setAttribute('focusable', 'false');
       svg.style.width = '100%';
+      svg.style.maxWidth = '100%';
       svg.style.height = height + 'px';
+      svg.style.display = 'block';
       container.appendChild(svg);
       return { svg, width, height };
     }

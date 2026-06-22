@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -95,7 +94,7 @@ def make_issue(
     issue_count: int,
     row_count: int,
     description: str,
-) -> dict:
+) -> dict[str, object]:
     issue_rate = (issue_count / row_count) if row_count else 0.0
     return {
         "table_name": table_name,
@@ -113,7 +112,7 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
     transactions = tables["transactions"].copy()
     marketing = tables["marketing_spend"].copy()
 
-    issues: list[dict] = []
+    issues: list[dict[str, object]] = []
 
     customers_rows = len(customers)
     transactions_rows = len(transactions)

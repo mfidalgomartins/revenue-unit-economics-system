@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 
 import pandas as pd
-
 from src.scenario_engine.build_scenarios import (
     build_reallocation_plan,
     build_stress_test_summary,

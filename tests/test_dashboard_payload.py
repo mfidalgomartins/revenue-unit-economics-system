@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import pandas as pd
-
-from src.dashboard_builder.build_dashboard_assets import build_embedded_payload
-from src.dashboard_builder.build_dashboard_assets import build_dashboard_html
+from src.dashboard_builder.build_dashboard_assets import (
+    build_dashboard_html,
+    build_embedded_payload,
+)
 
 
 def test_dashboard_payload_contains_policy_and_no_volatile_timestamp() -> None:

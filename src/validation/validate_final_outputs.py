@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import struct
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 
 import pandas as pd
 
@@ -863,7 +863,7 @@ def write_outputs(
         body = []
         for row in df.itertuples(index=False):
             body.append("| " + " | ".join(str(v) for v in row) + " |")
-        return "\n".join([header, divider] + body)
+        return "\n".join([header, divider, *body])
 
     report_lines = [
         "# QA Report",

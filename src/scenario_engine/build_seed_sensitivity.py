@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pandas as pd
 
@@ -81,7 +81,7 @@ def write_outputs(sensitivity: pd.DataFrame) -> None:
     summary = pd.DataFrame(
         [
             {
-                "seed_count": int(len(sensitivity_out)),
+                "seed_count": len(sensitivity_out),
                 "positive_uplift_rate": float((uplift > 0).mean()),
                 "uplift_mean": float(uplift.mean()),
                 "uplift_median": float(uplift.median()),

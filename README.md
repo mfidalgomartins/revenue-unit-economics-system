@@ -39,10 +39,27 @@ Without `make`:
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 python -m playwright install chromium
-python src/run_pipeline.py && pytest -q
+python src/run_pipeline.py && pytest
 ```
 
 Python 3.12. No external services or credentials required.
+
+## Quality gates
+
+Every push and pull request runs the same gates you can run locally:
+
+```bash
+make lint     # ruff lint
+make type     # mypy type-check
+make audit    # pip-audit dependency scan
+make test     # pytest with branch coverage (fails under 90%)
+make qa       # all of the above plus a full pipeline run
+```
+
+Lint, types, dependency audit, branch coverage, CodeQL static analysis, and
+Dependabot updates are configured in [`pyproject.toml`](pyproject.toml) and
+[`.github/`](.github/). See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+development loop and [SECURITY.md](SECURITY.md) for the security policy.
 
 ## Data scope
 
@@ -107,7 +124,7 @@ tests/        unit tests, metric contract tests, dashboard payload tests
 
 ## Stack
 
-Python 3.12 · pandas · NumPy · matplotlib · Playwright · vanilla JS/SVG for the dashboard · GitHub Actions for CI and tagged releases
+Python 3.12 · pandas · NumPy · matplotlib · Playwright · vanilla JS/SVG for the dashboard · ruff · mypy · pytest + coverage · pip-audit · GitHub Actions for CI, CodeQL, and tagged releases
 
 ## License
 

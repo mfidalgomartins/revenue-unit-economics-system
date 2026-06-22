@@ -37,13 +37,14 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
 if str(Path(__file__).resolve().parents[2]) not in sys.path:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from src.governance.metric_registry import MARGIN_QUALITY_FLOOR
-from src.visualization.chart_manifest import CHART_METADATA
-from src.visualization.chart_manifest import expected_chart_files
+from src.visualization.chart_manifest import CHART_METADATA, expected_chart_files
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
@@ -116,13 +117,13 @@ def _apply_style() -> None:
     )
 
 
-def _new_fig(width: float = 11.0, height: float = 6.0):
+def _new_fig(width: float = 11.0, height: float = 6.0) -> tuple[Figure, Axes]:
     fig, ax = plt.subplots(figsize=(width, height))
     return fig, ax
 
 
-def _money(ax, *, axis: str = "y", short: bool = True) -> None:
-    def fmt(x, _):
+def _money(ax: Axes, *, axis: str = "y", short: bool = True) -> None:
+    def fmt(x: float, _: object) -> str:
         if not np.isfinite(x):
             return ""
         a = abs(x)
@@ -145,7 +146,7 @@ def _money(ax, *, axis: str = "y", short: bool = True) -> None:
         ax.xaxis.set_major_formatter(formatter)
 
 
-def _pct(ax, *, axis: str = "y", decimals: int = 0) -> None:
+def _pct(ax: Axes, *, axis: str = "y", decimals: int = 0) -> None:
     fmt = mticker.PercentFormatter(xmax=1.0, decimals=decimals)
     if axis == "y":
         ax.yaxis.set_major_formatter(fmt)
@@ -153,16 +154,16 @@ def _pct(ax, *, axis: str = "y", decimals: int = 0) -> None:
         ax.xaxis.set_major_formatter(fmt)
 
 
-def _suptitle(fig, title: str, subtitle: str) -> None:
+def _suptitle(fig: Figure, title: str, subtitle: str) -> None:
     fig.text(0.045, 0.945, title, ha="left", fontsize=15, fontweight=600, color=INK)
     fig.text(0.045, 0.895, subtitle, ha="left", fontsize=10, color=MUTED)
 
 
-def _footer(fig, text: str) -> None:
+def _footer(fig: Figure, text: str) -> None:
     fig.text(0.045, 0.025, text, ha="left", fontsize=8, color=SUBTLE, style="italic")
 
 
-def _save(fig, name: str, *, top: float = 0.83, bottom: float = 0.14,
+def _save(fig: Figure, name: str, *, top: float = 0.83, bottom: float = 0.14,
           left: float = 0.08, right: float = 0.96) -> Path:
     out = OUT_DIR / f"{name}.png"
     fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right)
@@ -171,7 +172,7 @@ def _save(fig, name: str, *, top: float = 0.83, bottom: float = 0.14,
     return out
 
 
-def _read(name: str, **kw) -> pd.DataFrame:
+def _read(name: str, **kw: object) -> pd.DataFrame:
     return pd.read_csv(TABLES_DIR / name, **kw)
 
 
@@ -281,7 +282,7 @@ def chart_active_customers_arpu() -> Path:
     ax2.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"${x:,.0f}"))
 
     lines = ax.get_lines() + ax2.get_lines()
-    ax.legend(lines, [l.get_label() for l in lines], loc="upper left", bbox_to_anchor=(0, 1.0))
+    ax.legend(lines, [str(ln.get_label()) for ln in lines], loc="upper left", bbox_to_anchor=(0, 1.0))
 
     _suptitle(fig, "Is the base growing faster than monetization?",
               "Active customers against revenue per active customer.")
@@ -297,7 +298,7 @@ def chart_active_customers_arpu() -> Path:
 def chart_revenue_decomposition() -> Path:
     dec = _read("revenue_decomposition_effects.csv")
 
-    def val(effect):
+    def val(effect: str) -> float:
         return float(dec.loc[dec["effect"] == effect, "effect_value"].iloc[0])
 
     vol, avg, mix = val("customer_volume_effect"), val("average_revenue_effect"), val("mix_effect")
@@ -321,7 +322,7 @@ def chart_revenue_decomposition() -> Path:
             fontsize=10, color=INK, weight=600)
 
     # connector lines
-    cum = np.cumsum([0] + deltas)
+    cum = np.cumsum([0, *deltas])
     for i in range(3):
         ax.plot([i - 0.3, i + 0.3 + 1 - 0.4] if False else [i + 0.3, i + 0.7], [cum[i + 1], cum[i + 1]],
                 color=SUBTLE, linewidth=0.8, linestyle=(0, (3, 3)))
@@ -414,7 +415,8 @@ def chart_cohort_heatmap() -> Path:
         spine.set_visible(False)
 
     cbar = fig.colorbar(im, ax=ax, fraction=0.030, pad=0.025)
-    cbar.outline.set_visible(False)
+    # matplotlib stubs type Colorbar.outline imprecisely; the call is valid.
+    cbar.outline.set_visible(False)  # type: ignore[operator]
     cbar.ax.tick_params(labelsize=8, colors=MUTED)
     cbar.ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0, decimals=0))
     cbar.set_label("Revenue retention vs month 0", fontsize=9, color=INK_2)
@@ -491,7 +493,7 @@ def chart_channel_ltv_cac_ranking() -> Path:
     for spine in ("bottom",):
         ax.spines[spine].set_visible(False)
     for yi, v in zip(y, df["LTV_to_CAC"]):
-        ax.text(v + 0.25, yi, f"{v:.1f}x", va="center", fontsize=9, color=INK_2, weight=600)
+        ax.text(v + 0.25, float(yi), f"{v:.1f}x", va="center", fontsize=9, color=INK_2, weight=600)
 
     ax.set_xlim(0, df["LTV_to_CAC"].max() * 1.12)
     ax.set_xlabel("LTV to CAC ratio")
@@ -712,7 +714,7 @@ def chart_revenue_distribution() -> Path:
 
     fig, ax = _new_fig(11, 5.4)
     bins = np.logspace(np.log10(pos.min()), np.log10(pos.max()), 40)
-    ax.hist(pos, bins=bins, color=INK, alpha=0.85)
+    ax.hist(pos, bins=bins.tolist(), color=INK, alpha=0.85)
     ax.set_xscale("log")
 
     median = np.median(rev)
@@ -796,7 +798,7 @@ def chart_reallocation_waterfall() -> Path:
             fontsize=9, color=INK, weight=600)
 
     running = baseline
-    for i, (name, delta) in enumerate(moves, start=1):
+    for i, (_name, delta) in enumerate(moves, start=1):
         color = POSITIVE if delta >= 0 else NEGATIVE
         bottom = running if delta >= 0 else running + delta
         ax.bar(i, abs(delta), bottom=bottom, width=0.6, color=color)
@@ -839,7 +841,7 @@ def chart_scenario_envelope() -> Path:
     stress = stress.sort_values("scenario_name").reset_index(drop=True)
 
     labels = ["Baseline"] + [s.replace("_", " ").title() for s in stress["scenario_name"].astype(str)]
-    values = [baseline_value] + stress["scenario_contribution_est"].tolist()
+    values = [baseline_value, *stress["scenario_contribution_est"].tolist()]
     colors = [MUTED, NEGATIVE, INK, POSITIVE]
 
     fig, ax = _new_fig(11, 5.4)
@@ -886,7 +888,7 @@ def chart_scenario_seed_stability() -> Path:
     ax.text(-0.45, mean, f"mean ${mean/1e6:.2f}M", color=INK, fontsize=9,
             va="bottom", ha="left")
     for xi, v in zip(x, seed["estimated_contribution_uplift"]):
-        ax.text(xi, v + mean * 0.01, f"${v/1e6:.2f}M", ha="center", va="bottom", fontsize=9,
+        ax.text(float(xi), v + mean * 0.01, f"${v/1e6:.2f}M", ha="center", va="bottom", fontsize=9,
                 color=INK_2, weight=500)
 
     ax.set_xticks(x)

@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 
 import pandas as pd
-
 from src.feature_engineering.build_features import (
     build_cohort_table,
     build_customer_metrics,

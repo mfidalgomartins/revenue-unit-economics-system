@@ -79,7 +79,7 @@ def build_html() -> str:
     margin_max = float(monthly["contribution_margin_pct"].max())
 
     # --- channels ---
-    def chan(name):
+    def chan(name: str) -> pd.Series:
         return ue[ue["acquisition_channel"] == name].iloc[0]
 
     organic, referral, partners = chan("organic"), chan("referral"), chan("partners")
@@ -115,7 +115,6 @@ def build_html() -> str:
     ent = seg_only[seg_only["dimension_value"] == "Enterprise"].iloc[0]
     mm = seg_only[seg_only["dimension_value"] == "Mid-Market"].iloc[0]
     smb = seg_only[seg_only["dimension_value"] == "SMB"].iloc[0]
-    startup = seg_only[seg_only["dimension_value"] == "Startup"].iloc[0]
     services = prod[prod["dimension_value"] == "Services"].iloc[0]
     core = prod[prod["dimension_value"] == "Core"].iloc[0]
     premium = prod[prod["dimension_value"] == "Premium"].iloc[0]
@@ -124,16 +123,36 @@ def build_html() -> str:
     reg_top = reg_only.iloc[0]
     reg_bottom = reg_only.iloc[-1]
     reg_margin_spread = float(reg_only["margin_pct"].max() - reg_only["margin_pct"].min())
+    margin_floor = 0.30
+    ent_floor_gap = max(0.0, margin_floor * float(ent["total_revenue"]) - float(ent["contribution_margin"]))
+    services_floor_gap = max(
+        0.0, margin_floor * float(services["total_revenue"]) - float(services["contribution_margin"])
+    )
+    premium_floor_gap = max(
+        0.0, margin_floor * float(premium["total_revenue"]) - float(premium["contribution_margin"])
+    )
+    product_floor_gap = services_floor_gap + premium_floor_gap
+    active_multiple = last_active / first_active
+    arpac_lift = arpac_last / arpac_first - 1
 
     # --- cohorts ---
-    def coh_at(m, col):
+    def coh_at(m: int, col: str) -> float:
         return float(coh.loc[coh["months_since_cohort"] == m, col].iloc[0])
 
+    rev_ret_m3 = coh_at(3, "median_revenue_retention")
+    rev_ret_m6 = coh_at(6, "median_revenue_retention")
+    rev_ret_m12 = coh_at(12, "median_revenue_retention")
+    act_ret_m6 = coh_at(6, "median_activity_retention")
+    act_ret_m12 = coh_at(12, "median_activity_retention")
+    m3_m6_decay_pp = (rev_ret_m3 - rev_ret_m6) * 100
+    m6_m12_decay_pp = (rev_ret_m6 - rev_ret_m12) * 100
+    m24_cohorts = int(coh.loc[coh["months_since_cohort"] == 24, "cohorts_observed"].iloc[0])
+
     # --- decomposition ---
-    def dval(effect):
+    def dval(effect: str) -> float:
         return float(dec.loc[dec["effect"] == effect, "effect_value"].iloc[0])
 
-    def dshare(effect):
+    def dshare(effect: str) -> float:
         return float(dec.loc[dec["effect"] == effect, "share_of_total_change"].iloc[0])
 
     vol_v, vol_s = dval("customer_volume_effect"), dshare("customer_volume_effect")
@@ -161,12 +180,20 @@ def build_html() -> str:
     gini = (2 * np.sum(np.arange(1, n + 1) * rev) / (n * rev.sum())) - (n + 1) / n
     rev_median = float(cust["total_revenue"].median())
     rev_mean = float(cust["total_revenue"].mean())
-    rev_p75 = float(cust["total_revenue"].quantile(0.75))
     rev_max = float(cust["total_revenue"].max())
+    mean_median_multiple = rev_mean / rev_median
     corr_life = float(cust.loc[cust["total_revenue"] > 0, "lifetime_days"].corr(
         cust.loc[cust["total_revenue"] > 0, "total_revenue"]))
     corr_txn = float(cust["transaction_count"].corr(cust["total_revenue"]))
     neg_margin_cust = int((cust["contribution_margin"] < 0).sum())
+    neg_margin_cust_pct = neg_margin_cust / n_customers
+    efficient_add = float(
+        plan.loc[plan["efficiency_status"] == "efficient", "contribution_change_est"].sum()
+    )
+    inefficient_drag = float(
+        plan.loc[plan["efficiency_status"] == "inefficient", "contribution_change_est"].sum()
+    )
+    freed_budget = ineff_spend * 0.35
 
     # ---------------- table rows ----------------
     ch_rows = ""
@@ -386,7 +413,8 @@ def build_html() -> str:
   <div class="sub2">5.8&nbsp;&nbsp;The reallocation scenario</div>
   <div class="row"><span class="n">6</span><span class="t">Risks, limitations, and caveats</span></div>
   <div class="row"><span class="n">7</span><span class="t">Recommendations and action priorities</span></div>
-  <div class="row"><span class="n">8</span><span class="t">Appendix</span></div>
+  <div class="row"><span class="n">8</span><span class="t">Decision controls and open questions</span></div>
+  <div class="row"><span class="n">9</span><span class="t">Appendix</span></div>
 </div>
 </section>
 
@@ -406,10 +434,11 @@ dollar.</p>
   <div class="kpi"><div class="v neg">{social['LTV_to_CAC']:.2f}&times;</div><div class="l">Worst channel LTV/CAC</div><div class="d neg">social ads &middot; loses money</div></div>
 </div>
 
-<p>The headline is unambiguous. Monthly revenue rose from {_usd(first_rev/1e3)}K in January 2023 to
-{_usd(last_rev/1e6,1)}M in December 2025, and contribution margin tracked it closely in absolute
-dollars. A revenue chart on its own would read as an unqualified success. Five separate analyses
-say otherwise, and they agree.</p>
+<p>The headline is unambiguous, but incomplete. Monthly revenue rose from {_usd(first_rev/1e3)}K in
+January 2023 to {_usd(last_rev/1e6,1)}M in December 2025, and contribution margin tracked it closely
+in absolute dollars. A revenue chart on its own would read as an unqualified success. Five separate
+analyses say otherwise, and they agree: the business has strong demand capture, but weak allocation
+discipline.</p>
 
 <p>First, channel economics split sharply with no middle ground. Organic, referral, and partners
 return between {partners['LTV_to_CAC']:.1f} and {organic['LTV_to_CAC']:.1f} times their acquisition
@@ -422,9 +451,8 @@ of contribution.</p>
 
 <p>Second, growth is volume-led rather than monetization-led. Of the {_usd(tot_change/1e6,1)}M
 revenue increase between the first and last six months, {vol_s:.0%} comes from acquiring more
-customers and only {avg_s:.0%} from higher revenue per customer. Volume bought through channels
-that lose money is the weakest form of growth, because holding the line depends on continued
-spend.</p>
+customers and only {avg_s:.0%} from higher revenue per customer. Volume bought through channels that
+lose money is the weakest form of growth, because holding the line depends on continued spend.</p>
 
 <p>Third, retention decays fast and early. Median revenue retention falls to
 {coh_at(6,'median_revenue_retention'):.0%} by month 6 and {coh_at(12,'median_revenue_retention'):.0%}
@@ -435,23 +463,25 @@ treadmill cannot be slowed until this early-life decay is fixed.</p>
 <p>Fourth, margin concentrates in the least efficient places. Enterprise is the largest segment at
 {ent['revenue_share']:.0%} of revenue but carries the lowest margin rate at {ent['margin_pct']:.1%},
 the only segment below the 30% quality floor. The Services product line runs at just
-{services['margin_pct']:.1%} margin on {_usd(float(services['total_revenue'])/1e6,1)}M of revenue.
-Regional margins, by contrast, are banded within {reg_margin_spread*100:.1f} points, so geography is
-not the problem. Mix and cost-to-serve are.</p>
+{services['margin_pct']:.1%} margin on {_usd(float(services['total_revenue'])/1e6,1)}M of revenue,
+and Premium also sits below the floor at {premium['margin_pct']:.1%}. Regional margins, by contrast,
+are banded within {reg_margin_spread*100:.1f} points, so geography is not the problem. Mix and
+cost-to-serve are.</p>
 
 <p>Fifth, revenue is highly concentrated. The top 10% of customers account for {top10:.0%} of
 revenue and the top 20% for {top20:.0%}, with a Gini coefficient of {gini:.2f}. That concentration
 makes retention of high-value customers a first-order risk, and it makes the early cohort decay
 more expensive than the median retention figure suggests.</p>
 
-<p>The recommended response is a bounded reallocation. Scaling the three efficient channels within
-guardrails and pulling 35% from the two inefficient ones lifts estimated annual contribution from
+<p>The recommended response is a bounded reallocation, governed as a test-and-scale motion rather
+than a blind budget swing. Scaling the three efficient channels within guardrails and pulling 35%
+from the two inefficient ones lifts estimated annual contribution from
 {_usd(baseline_cm/1e6,1)}M to {_usd(base_cm/1e6,1)}M, an uplift of {_usd(uplift/1e6,1)}M
 ({uplift_pct:.0%}), with no extra budget. The uplift stays positive in every stress case tested,
 from {_usd(float(worst['estimated_uplift_vs_baseline'])/1e6,1)}M in the worst case to
 {_usd(float(best['estimated_uplift_vs_baseline'])/1e6,1)}M in the best, and across all {n_seeds}
 deterministic seeds it averages {_usd(seed_mean/1e6,1)}M with a coefficient of variation of
-{seed_cv:.1%}. The full set of recommendations and their priority order is in Section 7.</p>
+{seed_cv:.1%}. The full recommendation set is in Section 7, with rollout controls in Section 8.</p>
 </section>
 
 <!-- ============================ 2. CONTEXT ============================ -->
@@ -481,6 +511,12 @@ question is asked five ways, each with a method chosen to give a decision rather
 study. It is a diagnostic of growth quality on the data available, built so that each finding either
 confirms the current allocation or changes it. Where a finding cannot be settled with the data on
 hand, Section 6 says so plainly rather than papering over the gap.</p>
+
+<p>The decision standard is practical: a finding is strong enough to change budget only when it is
+visible in at least two places, such as channel economics and spend mix, or cohort decay and customer
+concentration. Findings supported by one view only are treated as monitoring items or experiments,
+not as immediate allocation moves. That is why the report recommends a controlled reallocation, a
+retention workstream, and a margin diagnostic rather than a single blanket growth call.</p>
 
 <h3>Who should read this</h3>
 <p>The primary audience is the executive or commercial owner deciding next quarter's acquisition
@@ -513,6 +549,12 @@ The margin quality floor is set at 30%. These thresholds live in a single metric
 analysis, the dashboard, the chart pack, and the validation gate all import, so no definition can
 drift between outputs.</p>
 
+<p>The report uses average and median LTV together because they answer different questions. Average
+LTV is the right numerator for contribution economics because it reconciles to total contribution.
+Median LTV is the buyer-quality check because it shows the typical customer experience underneath
+the mean. When both measures point in the same direction, the channel conclusion is stronger; when
+they diverge, the channel needs segmentation before scaling.</p>
+
 <h3>Cohort construction</h3>
 <p>Customers are grouped into monthly signup cohorts. For each cohort, revenue retention at age m is
 that cohort's revenue in month m divided by its revenue in month 0, and activity retention is the
@@ -536,13 +578,19 @@ stress-tested across best, base, and worst elasticity cases, and repeated across
 deterministic seeds to confirm the result is a property of the policy rather than of one random
 draw. The total budget is held constant in every case, so the uplift is a pure allocation effect.</p>
 
+<p>The scenario is not allowed to create value by expanding the budget, deleting weak channels, or
+assuming unlimited capacity in strong ones. It must earn the uplift through reweighting the existing
+budget and absorbing weaker economics as spend scales. That makes the base case useful as an
+implementation estimate and the worst case useful as the planning floor.</p>
+
 <h3>Data quality gate</h3>
 <p>All {n_checks} raw-data validation checks pass before any analysis runs: schema match, grain
 uniqueness, referential integrity, date coverage, channel-domain alignment, and value-range sanity.
 The gate flagged 258 transactions (0.37%) where cost exceeds revenue. That share sits below the 1%
 review threshold, so the rows are retained as genuine cost-to-serve exceptions rather than scrubbed.
 At the customer level, {neg_margin_cust:,} customers carry a negative lifetime contribution margin,
-which the LTV figures absorb rather than exclude. The full gate is reproduced in Appendix F.</p>
+{neg_margin_cust_pct:.1%} of the base, which the LTV figures absorb rather than exclude. The full
+gate is reproduced in Appendix F.</p>
 
 <h3>Limitations of the data</h3>
 <p>The data is synthetic. It is built to be realistic and internally consistent, which makes it
@@ -620,6 +668,11 @@ it already has.</p>
 <img class="chart" src="{_img('04_active_customers_arpu.png')}">
 <p class="cap"><b>Figure 3.</b> The active base climbs steeply while revenue per active customer stays
 in a narrow band. Growth is coming from more customers, not richer ones.</p>
+<p>The operating implication is that the next budget decision should be judged on marginal customer
+quality, not on whether the revenue line continues to rise. The active base expanded
+{active_multiple:.1f}&times; from the first month to the last; revenue per active customer rose only
+{arpac_lift:.0%}. That imbalance makes the business sensitive to CAC inflation and retention slippage,
+because growth is doing more work than monetization.</p>
 </section>
 
 <section class="break">
@@ -637,6 +690,10 @@ profitable than the existing base, the rate would rise. If they were dragging, i
 does neither, which says the business is cloning its average economics at scale rather than improving
 them. The next three findings explain why the rate is stuck, and the reallocation in Section 5.8 is
 the move that would unstick it.</p>
+<p>This is a stronger warning than a simple margin miss. The business has not lost control of direct
+costs, but it has also not converted scale into better economics. That points to allocation, mix, and
+cost-to-serve rather than a broad operational failure. The practical target is not to defend the
+current 30% floor; it is to create an incremental margin rate visibly above that floor.</p>
 </section>
 
 <section class="break">
@@ -661,15 +718,19 @@ the average is not improving.</p>
 a richer customer mix that would lift the rate on its own. If anything, the structural margin problem
 documented in Section 5.6 means a larger mix shift toward the biggest segment would pull the rate
 down, not up.</p>
+<p>The read-through for planning is clear: a retention or pricing program can improve durability, but
+it will not explain the historical growth on its own. The historical engine is acquisition volume.
+That means the highest-leverage governance point is the channel budget, because it sits upstream of
+the customers entering the system.</p>
 </section>
 
 <section class="break">
 <h3>5.4&nbsp;&nbsp;Cohorts decay fast in the first six months</h3>
 <p>If growth depends on volume, retention determines how much of that volume the business keeps.
-Median revenue retention falls to {coh_at(3,'median_revenue_retention'):.0%} by month 3 and
-{coh_at(6,'median_revenue_retention'):.0%} by month 6. Activity retention is worse, at
-{coh_at(6,'median_activity_retention'):.0%} by month 6 and {coh_at(12,'median_activity_retention'):.0%}
-by month 12.</p>
+Median revenue retention falls to {rev_ret_m3:.0%} by month 3 and {rev_ret_m6:.0%} by month 6, a
+{m3_m6_decay_pp:.1f}-point loss in the window where activation, onboarding, and first value should
+be doing the most work. It then drops another {m6_m12_decay_pp:.1f} points by month 12. Activity
+retention is worse, at {act_ret_m6:.0%} by month 6 and {act_ret_m12:.0%} by month 12.</p>
 <img class="chart" src="{_img('06_cohort_retention.png')}">
 <p class="cap"><b>Figure 6.</b> Median activity and revenue retention through month 24. The steepest
 loss is concentrated between months 3 and 6, the window where onboarding and first-value delivery
@@ -689,6 +750,11 @@ high-value customers, as Section 5.7 shows, losing the wrong customers early is 
 the median curve implies. Slowing the acquisition treadmill is not possible until this early-life
 decay is addressed, which is why retention is a named recommendation in Section 7 rather than a
 footnote.</p>
+<p>The month-6 read is the most decision-useful point on the curve. It is mature enough to include
+{int(coh.loc[coh["months_since_cohort"] == 6, "cohorts_observed"].iloc[0])} cohorts and early enough
+to change through onboarding, customer success, product adoption, and channel mix. By contrast, the
+month-24 tail uses {m24_cohorts} mature cohorts, so it is useful for direction but too sparse to own
+the near-term target.</p>
 </section>
 
 <section class="break">
@@ -725,6 +791,11 @@ payback. It is a hold-and-fix case rather than a scale-or-cut one. The median LT
 sharper version of the same story than the mean: social ads has a median LTV of {_usd(social['median_LTV'])}
 against a CAC of {_usd(social['CAC'])}, so the typical customer it buys is deeply underwater even
 before averaging in the rare high-value account.</p>
+<p>The mean and median both matter here. Organic and referral have high average LTV and materially
+higher median LTV than the paid channels, so the conclusion is not just being carried by a few large
+winners. Social ads is the opposite: average LTV is already below CAC, and median LTV is only
+{_usd(social['median_LTV'])}. That makes it a poor scaling candidate even before attribution risk is
+considered.</p>
 <div class="callout">Reallocating budget away from these two channels is the single highest-value
 move available, and it requires no incremental spend. Section 5.8 sizes it.</div>
 </section>
@@ -746,7 +817,9 @@ carries the most margin dollars at the lowest rate, and it is the only segment b
 rate at {ent['margin_pct']:.1%}, below every smaller segment. Mid-Market, SMB, and Startup all run
 between {smb['margin_pct']:.0%} and {mm['margin_pct']:.0%}. Nearly half the revenue base sits in the
 least efficient segment, which is a concentration risk: pricing or cost-to-serve pressure in
-Enterprise hits the margin line harder than its rate alone suggests.</p>
+Enterprise hits the margin line harder than its rate alone suggests. Closing Enterprise to the 30%
+floor would be worth roughly {_usd(ent_floor_gap/1e6,1)}M of contribution before any volume response,
+but that estimate should be treated as a sizing anchor, not an additive forecast.</p>
 <p>Geography, by contrast, is not where the margin problem lives. Regional margin rates are banded
 within {reg_margin_spread*100:.1f} points of each other, from {reg_bottom['margin_pct']:.1%} in
 {reg_bottom['dimension_value']} to {reg_top['margin_pct']:.1%} in {reg_top['dimension_value']}.
@@ -757,17 +830,22 @@ Regions differ in size, not in efficiency.</p>
 rate. Geography is a scale story, not a margin story.</p>
 <p>The product view sharpens the diagnosis. Services run at just {services['margin_pct']:.1%} margin
 on {_usd(float(services['total_revenue'])/1e6,1)}M of revenue ({services['revenue_share']:.0%} of the
-total), the clear low-margin growth pocket. Premium runs at {premium['margin_pct']:.1%}, while Core
-and Add-on, the two highest-rate lines, run at {core['margin_pct']:.1%} and {addon['margin_pct']:.1%}.
-The spread between the best and worst product line is nearly {(addon['margin_pct']-services['margin_pct'])*100:.0f}
-margin points.</p>
+total), the deepest low-margin growth pocket. Premium is also below the 30% floor at
+{premium['margin_pct']:.1%}, while Core and Add-on, the two highest-rate lines, run at
+{core['margin_pct']:.1%} and {addon['margin_pct']:.1%}. The spread between the best and worst product
+line is nearly {(addon['margin_pct']-services['margin_pct'])*100:.0f} margin points.</p>
 <img class="chart" src="{_img('13_product_margin.png')}">
-<p class="cap"><b>Figure 13.</b> Margin rate by product type with revenue. Services is the only major
-line well below the floor, and it is large enough to drag the blended rate.</p>
+<p class="cap"><b>Figure 13.</b> Margin rate by product type with revenue. Services is the deepest gap
+to the floor, Premium is a secondary gap, and Core plus Add-on are the products protecting the blend.</p>
 <p>Taken together, the segment and product views say the margin problem is a mix and cost-to-serve
 problem, not a pricing-everywhere problem. The fix is targeted: re-price or re-scope the Services
 line and the Enterprise delivery model, rather than raising prices across a base that is already
 running at or above the floor everywhere else.</p>
+<p>Do not add the segment and product gaps together. They are different cuts of the same underlying
+customers and transactions. Their value is diagnostic, not arithmetic: both cuts point to the same
+commercial workstream, which is Enterprise delivery economics and Services/Premium margin design.
+Within the product cut alone, closing Services and Premium to the 30% floor would address roughly
+{_usd(product_floor_gap/1e6,1)}M of margin gap before any behavioural response.</p>
 </section>
 
 <section class="break">
@@ -781,9 +859,9 @@ business.</p>
 The deep bow away from the equality line is the concentration: a fifth of customers hold four fifths
 of revenue.</p>
 <p>The distribution behind the curve is a long right tail. Median lifetime revenue is
-{_usd(rev_median)} while the mean is {_usd(rev_mean)}, more than three times higher, because a small
-number of customers reach up to {_usd(rev_max/1e3)}K each. The {zero_txn:,} customers who never
-transacted sit at the bottom of the same distribution and pull the median down further.</p>
+{_usd(rev_median)} while the mean is {_usd(rev_mean)}, {mean_median_multiple:.1f} times higher,
+because a small number of customers reach up to {_usd(rev_max/1e3)}K each. The {zero_txn:,} customers
+who never transacted sit at the bottom of the same distribution and pull the median down further.</p>
 <img class="chart" src="{_img('15_revenue_distribution.png')}">
 <p class="cap"><b>Figure 15.</b> Distribution of lifetime revenue per customer on a log scale. The
 mean sits far to the right of the median, the signature of a heavy tail.</p>
@@ -800,6 +878,10 @@ expensive.</p>
 business should weight acquisition toward channels that bring durable, high-value customers, and
 should protect the high-value base it already has. Both point the same way as the channel economics
 in Section 5.5.</p>
+<p>The concentration read also protects the analysis from a common mistake: optimizing for the
+average customer when the business is carried by a small high-value tail. The right operating lens is
+not just whether a channel buys customers cheaply; it is whether it buys customers with enough
+survival, expansion, and contribution potential to join that tail.</p>
 </section>
 
 <section class="break">
@@ -807,7 +889,8 @@ in Section 5.5.</p>
 <p>The reallocation scenario scales organic, referral, and partners within guardrails, cuts paid
 search and social ads by 35%, holds email, and reinvests the freed budget into the efficient channels
 up to a 100% scale-up cap per channel. Total budget is unchanged, so every dollar of uplift is a pure
-allocation effect.</p>
+allocation effect. The policy moves {_usd(freed_budget/1e6,1)}M of spend out of the two inefficient
+channels and puts it only into channels that already clear the LTV/CAC and payback gates.</p>
 <img class="chart" src="{_img('17_reallocation_waterfall.png')}">
 <p class="cap"><b>Figure 17.</b> Contribution bridge from baseline to scenario by channel move.
 Scaling the three efficient channels adds the bulk of the uplift; trimming the two inefficient ones
@@ -821,6 +904,11 @@ removes a small contribution drag.</p>
 in the base case, an uplift of {_usd(uplift/1e6,1)}M, or {uplift_pct:.0%}. The result is robust to
 the elasticity assumptions. The scenario is stress-tested across a best, base, and worst case, with
 CAC and LTV moved against the policy in the worst case.</p>
+<p>The economics of the bridge are concentrated. Scaling organic, referral, and partners contributes
+{_usd(efficient_add/1e6,1)}M of gross uplift, while cutting paid search and social ads removes
+{_usd(abs(inefficient_drag)/1e6,1)}M of contribution attached to weak traffic. That trade is still
+attractive because the freed spend earns materially more in the efficient channels than it loses in
+the inefficient ones.</p>
 <img class="chart" src="{_img('18_scenario_envelope.png')}">
 <p class="cap"><b>Figure 18.</b> Contribution under the reallocation across stress cases. Every case
 clears the baseline; even the worst case, with CAC up 15% and LTV down 12% on the scaled channels,
@@ -844,6 +932,11 @@ around the mean shows the outcome is a property of the allocation, not of one fa
 <th class="num">Uplift</th><th>Top scale-up</th><th>Top cut</th></tr>
 {seed_rows}
 </table>
+<p>This result is strong enough to act on, but not strong enough to run unmanaged. The rollout should
+be staged with stop-loss rules: pause a scaled channel if LTV/CAC falls below 3.0, if payback moves
+beyond 12 months, or if month-6 revenue retention for newly acquired cohorts deteriorates versus the
+current baseline. Those controls turn the scenario from a spreadsheet answer into an operating
+decision.</p>
 </section>
 
 <!-- ============================ 6. RISKS ============================ -->
@@ -872,6 +965,12 @@ Real customer journeys cross channels, and lagged or assist effects are not mode
 looks inefficient on last-touch economics could be assisting conversions credited elsewhere. The
 reallocation is bounded and reversible partly to absorb this risk.</p>
 
+<h3>Product and segment gaps are diagnostic, not additive</h3>
+<p>The Enterprise, Services, and Premium margin gaps are different cuts of the same economic base.
+They should not be summed into one opportunity figure without a customer-product bridge. Their value
+is to identify where margin work should start: delivery model, service scope, packaging, discounting,
+and cost-to-serve in the slices that repeatedly sit below the floor.</p>
+
 <h3>The decomposition depends on the mix dimension</h3>
 <p>The growth decomposition uses segment as the mix dimension. Defining mix by region, product, or
 channel would allocate the {mix_s:.0%} mix term differently. The volume-led conclusion is robust
@@ -890,6 +989,12 @@ the planning floor.</p>
 24 figure rests on fewer cohorts than the month 6 figure, so the tail of the retention curve is
 noisier than its head. The month 3 to 6 decay, which carries the recommendation, sits in the
 best-observed part of the curve.</p>
+
+<h3>Execution capacity is assumed, not proven</h3>
+<p>The reallocation assumes efficient channels can absorb additional spend up to the stated cap while
+remaining inside the modeled CAC and LTV penalties. That is plausible based on the observed gap, but
+not guaranteed. Capacity should therefore be proven during rollout with weekly CAC, payback,
+conversion quality, and cohort-retention checks rather than assumed for the full quarter.</p>
 </section>
 
 <!-- ============================ 7. RECOMMENDATIONS ============================ -->
@@ -944,9 +1049,56 @@ value. Treat the margin re-pricing as a quarter-two action that needs commercial
 alignment, and the email experiment as a continuous test that informs the next budget cycle.</p>
 </section>
 
-<!-- ============================ 8. APPENDIX ============================ -->
+<!-- ============================ 8. DECISION CONTROLS ============================ -->
 <section class="break">
-<h2><span class="num">8</span>Appendix</h2><hr class="rule">
+<h2><span class="num">8</span>Decision controls and open questions</h2><hr class="rule">
+<p>The recommendation is not to declare the efficient channels permanently efficient. It is to move
+budget in a controlled way, then let observed cohort and payback evidence decide whether the next
+move is scale, hold, or reverse. The control system below is the minimum needed to protect the
+upside in Section 5.8.</p>
+
+<h3>Controls for the reallocation</h3>
+<table>
+<tr><th>Control</th><th>Trigger</th><th>Decision response</th></tr>
+<tr><td>LTV/CAC guardrail</td><td>Any scaled channel drops below 3.0&times;</td><td>Freeze incremental budget and inspect customer mix before further scale</td></tr>
+<tr><td>Payback guardrail</td><td>Any scaled channel moves beyond 12 months</td><td>Reduce spend to the last clean level and review CAC inflation</td></tr>
+<tr><td>Retention guardrail</td><td>Month-6 revenue retention deteriorates versus the current {rev_ret_m6:.0%} baseline</td><td>Shift focus from acquisition scale to onboarding and activation quality</td></tr>
+<tr><td>Margin guardrail</td><td>Blended contribution margin remains pinned at the 30% floor after reallocation</td><td>Escalate Services, Premium, and Enterprise cost-to-serve work</td></tr>
+<tr><td>Attribution guardrail</td><td>Paid search or social ads show material assist value in a multi-touch read</td><td>Reclassify from cut to constrained hold, with spend tied to assisted contribution</td></tr>
+</table>
+
+<h3>Open questions that could change the decision</h3>
+<p><b>How much incremental capacity do organic, referral, and partners really have?</b> The scenario
+caps scale-up at 100%, but observed channel performance should be monitored by marginal cohort, not
+only by blended historical channel averages. The key question is whether the next tranche of spend
+keeps the same buyer quality as the existing base.</p>
+
+<p><b>Are paid search and social ads genuinely value-destructive, or miscredited?</b> Their observed
+LTV/CAC is weak enough to justify cuts, but multi-touch or assisted-conversion evidence could support
+a smaller holdout budget. The current action should be a reduction with measurement, not an
+irreversible shutdown.</p>
+
+<p><b>Which customers are responsible for the early retention drop?</b> The cohort curve proves the
+decay pattern; it does not yet isolate the exact product, segment, channel, or use-case driver.
+Because revenue is concentrated, the follow-up should prioritize high-value customers with early
+usage decay rather than treating all churn equally.</p>
+
+<p><b>What part of the Enterprise and Services margin gap is price versus cost-to-serve?</b> The report
+identifies where the gap sits, not the operating root cause. The next analysis should split gross
+margin leakage into discounting, delivery effort, support load, fulfilment cost, and product scope
+before changing price cards or service packages.</p>
+
+<h3>90-day evidence plan</h3>
+<p><b>Weeks 1-2:</b> move the first tranche, instrument channel-level CAC, payback, and new-cohort
+quality, and create a holdout read for the reduced paid channels. <b>Weeks 3-6:</b> compare marginal
+cohorts against current channel baselines, with a separate read for high-value and
+Services-heavy journeys. <b>Weeks 7-12:</b> complete, pause, or reverse the full reallocation based on
+guardrail performance, not spend delivery alone.</p>
+</section>
+
+<!-- ============================ 9. APPENDIX ============================ -->
+<section class="break">
+<h2><span class="num">9</span>Appendix</h2><hr class="rule">
 
 <h3>A. Channel unit economics (full)</h3>
 <table>

@@ -15,6 +15,7 @@ Outputs generated:
 from __future__ import annotations
 
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
@@ -77,7 +78,7 @@ def load_data() -> dict[str, pd.DataFrame]:
     return tables
 
 
-def compute_overall_revenue_health(transactions: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+def compute_overall_revenue_health(transactions: pd.DataFrame) -> tuple[pd.DataFrame, Mapping[str, object]]:
     tx = transactions.copy()
     tx["month"] = tx["transaction_date"].dt.to_period("M").dt.to_timestamp()
 
@@ -185,7 +186,7 @@ def _period_segment_stats(frame: pd.DataFrame) -> tuple[int, float, float, pd.Da
 def compute_revenue_decomposition(
     customers: pd.DataFrame,
     transactions: pd.DataFrame,
-) -> tuple[pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, Mapping[str, object]]:
     tx = transactions.merge(customers[["customer_id", "segment"]], on="customer_id", how="left")
     tx["month"] = tx["transaction_date"].dt.to_period("M").dt.to_timestamp()
     months = sorted(tx["month"].dropna().unique())
@@ -198,7 +199,7 @@ def compute_revenue_decomposition(
     recent = tx[tx["month"].isin(recent_months)].copy()
 
     n0, r0, arpc0, seg0 = _period_segment_stats(base)
-    n1, r1, arpc1, seg1 = _period_segment_stats(recent)
+    n1, r1, _arpc1, seg1 = _period_segment_stats(recent)
 
     seg0 = seg0.set_index("segment")
     seg1 = seg1.set_index("segment")
@@ -277,7 +278,7 @@ def compute_revenue_decomposition(
     return decomposition, result
 
 
-def compute_cohort_analysis(cohort_table: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+def compute_cohort_analysis(cohort_table: pd.DataFrame) -> tuple[pd.DataFrame, Mapping[str, object]]:
     cohort = cohort_table.copy()
     cohort["cohort_month"] = pd.to_datetime(cohort["cohort_month"])
     cohort["activity_month"] = pd.to_datetime(cohort["activity_month"])
@@ -391,7 +392,7 @@ def compute_cohort_analysis(cohort_table: pd.DataFrame) -> tuple[pd.DataFrame, d
     return retention_summary, result
 
 
-def compute_unit_economics_section(unit_economics: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+def compute_unit_economics_section(unit_economics: pd.DataFrame) -> tuple[pd.DataFrame, Mapping[str, object]]:
     ue = unit_economics.copy()
 
     ue["efficiency_status"] = ue.apply(
@@ -491,7 +492,7 @@ def compute_segment_profitability(
     customers: pd.DataFrame,
     customer_metrics: pd.DataFrame,
     transactions: pd.DataFrame,
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, Mapping[str, object]]:
     total_revenue_base = float(transactions["revenue"].sum())
 
     segment_profitability = _profitability_table(

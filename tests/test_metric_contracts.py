@@ -4,9 +4,7 @@ import math
 from pathlib import Path
 
 import pandas as pd
-
 from src.governance.metric_registry import classify_channel_efficiency
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 

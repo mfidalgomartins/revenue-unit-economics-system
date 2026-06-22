@@ -4,9 +4,7 @@ import math
 from pathlib import Path
 
 import pandas as pd
-
 from src.dashboard_builder.kpi_snapshot import compute_kpi_snapshot
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
