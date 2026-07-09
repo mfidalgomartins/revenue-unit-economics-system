@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from src.paths import PROJECT_ROOT
+
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 OUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 NEGATIVE_MARGIN_REVIEW_THRESHOLD = 0.01

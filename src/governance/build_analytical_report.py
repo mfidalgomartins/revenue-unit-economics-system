@@ -12,21 +12,37 @@ from __future__ import annotations
 
 import base64
 from pathlib import Path
+from string import Template
 
 import numpy as np
 import pandas as pd
 from pypdf import PdfReader
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from src.design.tokens import (
+    HAIRLINE,
+    INK,
+    INK_2,
+    MUTED,
+    SUBTLE,
+    SURFACE_2,
+    SURFACE_3,
+)
+from src.design.tokens import (
+    NEGATIVE as NEG,
+)
+from src.design.tokens import (
+    POSITIVE as ACCENT,
+)
+from src.design.tokens import (
+    WARNING as WARN,
+)
+from src.paths import PROJECT_ROOT
+
 TABLES = PROJECT_ROOT / "outputs" / "tables"
 PROCESSED = PROJECT_ROOT / "data" / "processed"
 GRAPHS = PROJECT_ROOT / "outputs" / "charts"
 OUT = PROJECT_ROOT / "outputs" / "reports"
-
-ACCENT = "#1a7f37"
-NEG = "#d70015"
-WARN = "#b25000"
-INK = "#1d1d1f"
+ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 
 # Stable substrings unique to each heading's rendered text, used to locate the
 # real page each TOC entry lands on (Chromium's print engine has no
@@ -370,70 +386,11 @@ def build_html(toc_pages: dict[str, int] | None = None) -> str:
             f"<td class='muted' style='font-size:8.2pt'>{str(r['detail'])[:90]}</td></tr>"
         )
 
-    css = """
-    @page { size: A4; margin: 20mm 18mm 18mm 18mm;
-      @bottom-center { content: counter(page); font-size: 8pt; color:#86868b; } }
-    @page:first { @bottom-center { content: ""; } }
-    * { box-sizing: border-box; }
-    body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color:#1d1d1f;
-      font-size: 10.2pt; line-height: 1.45; margin:0; -webkit-font-smoothing: antialiased; }
-    h1,h2,h3 { font-weight:600; color:#1d1d1f; line-height:1.2; }
-    h2 { font-size: 15pt; margin: 0 0 2px; padding-top: 2px; page-break-after: avoid; }
-    h2 .num { color:#6e6e73; font-weight:500; font-size:10pt; margin-right:8px; }
-    h3 { font-size: 11.5pt; margin: 15px 0 4px; page-break-after: avoid; }
-    p { margin: 0 0 7px; }
-    /* Keep a heading's first paragraph glued to the heading, and keep each chart
-       with its own caption, so neither is ever orphaned across a page break. */
-    h3 + p, .figure { page-break-inside: avoid; }
-    thead { display: table-header-group; }
-    tr { page-break-inside: avoid; }
-    .muted { color:#6e6e73; }
-    .accent { color:#1a7f37; }
-    .neg { color:#d70015; }
-    .lead { font-size:10.8pt; line-height:1.48; }
-    .rule { height:2px; background:#1d1d1f; border:0; margin:6px 0 12px; }
-    .hair { height:1px; background:#e6e6ea; border:0; margin:14px 0; }
-    section { page-break-inside: auto; }
-    .break { page-break-before: always; }
-    .figure { margin: 0; }
-    .chart { width:100%; margin:12px 0 4px; border:1px solid #e6e6ea; }
-    .chart.sm { width:86%; display:block; margin-left:auto; margin-right:auto; }
-    .cap { font-size:8.6pt; color:#6e6e73; margin:0 0 14px; line-height:1.4; }
-    .cap b { color:#1d1d1f; }
-    table { width:100%; border-collapse:collapse; font-size:9pt; margin:8px 0 8px; }
-    th,td { text-align:left; padding:5px 8px; border-bottom:1px solid #e6e6ea; }
-    th { color:#6e6e73; font-weight:600; border-bottom:1.5px solid #1d1d1f; text-transform:uppercase; letter-spacing:.03em; font-size:8pt; }
-    td.num, th.num { text-align:right; font-variant-numeric: tabular-nums; }
-    .kpis { display:flex; gap:0; margin:13px 0 5px; border-top:2px solid #1d1d1f; border-bottom:1px solid #e6e6ea; }
-    .kpi { flex:1; padding:9px 14px 9px 0; }
-    .kpi .v { font-size:18pt; font-weight:600; letter-spacing:-.01em; }
-    .kpi .l { font-size:8pt; color:#6e6e73; text-transform:uppercase; letter-spacing:.04em; }
-    .kpi .d { font-size:8.4pt; color:#1a7f37; margin-top:2px; }
-    .callout { border-left:3px solid #1a7f37; background:#f5f5f7; padding:8px 14px; margin:10px 0; font-size:9.8pt; }
-    .callout.warn { border-left-color:#d70015; }
-    .cover { height:247mm; display:flex; flex-direction:column; }
-    .cover .tag { font-size:9pt; letter-spacing:.18em; text-transform:uppercase; color:#6e6e73; }
-    .cover h1 { font-size:31pt; letter-spacing:-.02em; margin:12px 0 0; max-width:15em; line-height:1.08; }
-    .cover .sub { font-size:13pt; color:#424245; margin-top:16px; max-width:30em; line-height:1.42; }
-    .cover .spacer { flex:1; }
-    .cover .meta { font-size:9.5pt; color:#424245; }
-    .cover .meta b { color:#1d1d1f; font-weight:600; }
-    ol.rec { margin:6px 0; padding-left:20px; }
-    ol.rec li { margin-bottom:12px; }
-    ol.rec li b { font-size:10.4pt; }
-    .toc { font-size:10.4pt; }
-    .toc .row, .toc .subrow { display:flex; align-items:baseline; padding:6px 0; border-bottom:1px solid #ececef; }
-    .toc .subrow { padding:3.5px 0 3.5px 2.4em; border-bottom:none; font-size:9.4pt; color:#6e6e73; }
-    .toc .n { width:2.4em; flex-shrink:0; color:#6e6e73; font-variant-numeric:tabular-nums; }
-    .toc .t { flex: 0 1 auto; }
-    .toc .fill { flex: 1 1 auto; border-bottom: 1px dotted #c7c7cc; margin: 0 6px 3px; }
-    .toc .pg { flex-shrink:0; color:#6e6e73; font-variant-numeric:tabular-nums; text-align:right; }
-    .grid2 { display:flex; gap:14px; }
-    .grid2 > div { flex:1; }
-    .priority { display:inline-block; font-size:7.6pt; font-weight:700; letter-spacing:.04em;
-      text-transform:uppercase; padding:2px 7px; border-radius:3px; color:#fff; margin-right:6px; vertical-align:middle; }
-    .p1 { background:#d70015; } .p2 { background:#b25000; } .p3 { background:#1a7f37; } .p4 { background:#6e6e73; }
-    """
+    css = Template((ASSETS_DIR / "report.css").read_text(encoding="utf-8")).substitute(
+        INK=INK, INK_2=INK_2, MUTED=MUTED, SUBTLE=SUBTLE, HAIRLINE=HAIRLINE,
+        SURFACE_2=SURFACE_2, SURFACE_3=SURFACE_3, POSITIVE=ACCENT, NEGATIVE=NEG,
+        WARNING=WARN,
+    )
 
     html = f"""<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head><body>
 

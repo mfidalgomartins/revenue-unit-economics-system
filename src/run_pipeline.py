@@ -9,9 +9,8 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+from src.paths import PROJECT_ROOT
 
 STEPS: list[tuple[str, str]] = [
     ("Generate synthetic raw data", "src.data_generation.generate_synthetic_data"),

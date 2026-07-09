@@ -10,7 +10,7 @@ setup:
 	$(ACTIVATE) && python -m playwright install chromium
 
 run:
-	$(ACTIVATE) && python src/run_pipeline.py
+	$(ACTIVATE) && python -m src.run_pipeline
 
 test:
 	$(ACTIVATE) && pytest

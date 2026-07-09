@@ -20,7 +20,7 @@ visualization_checks,chart_readme_completeness,PASS,chart_readme_rows_detected=3
 visualization_checks,curated_chart_export_quality,PASS,"chart_dimensions={'13_product_margin.png': (777, 1584), '10_channel_allocation_gap.png': (835, 1584), '15_revenue_distribution.png': (777, 1584), '19_scenario_seed_stability.png': (777, 1584), '04_active_customers_arpu.png': (806, 1584), '17_reallocation_waterfall.png': (835, 1728), '11_segment_profitability.png': (777, 1584), '08_channel_economics.png': (864, 1584), '14_revenue_concentration.png': (835, 1584), '06_cohort_retention.png': (748, 1584), '09_channel_ltv_cac_ranking.png': (806, 1584), '18_scenario_envelope.png': (777, 1584), '16_revenue_lifetime_corr.png': (835, 1584), '03_revenue_growth_mom.png': (748, 1584), '05_revenue_decomposition.png': (806, 1584), '01_growth_quality.png': (835, 1584), '12_region_profitability.png': (777, 1584), '02_margin_rate.png': (720, 1584), '07_cohort_heatmap.png': (1008, 1728)}"
 governance_checks,metric_registry_presence,PASS,metric_registry_exists=True
 governance_checks,data_catalog_presence,PASS,table_exists=True
-governance_checks,analytical_report_presence,PASS,"report_exists=True, size_bytes=1828713"
+governance_checks,analytical_report_presence,PASS,"report_exists=True, size_bytes=1888191"
 governance_checks,dashboard_deterministic_metadata,PASS,Dashboard payload should avoid volatile build timestamps.
 decision_support_checks,scenario_engine_outputs,PASS,"scenario_summary_rows=1, scenario_plan_rows=6"
 decision_support_checks,scenario_assumptions_auditable,PASS,required_columns_present=True
@@ -35,4 +35,4 @@ decision_support_checks,scenario_seed_sensitivity_coverage,PASS,"seeds_present=[
 decision_support_checks,scenario_seed_sensitivity_uplift_stability,PASS,positive_uplift_rate=100.00%
 decision_support_checks,scenario_seed_sensitivity_summary,PASS,scenario_seed_sensitivity_summary_rows=1
 governance_checks,dashboard_payload_budget_rows,PASS,"payload_rows=85,526, warn_threshold=100,000, fail_threshold=130,000"
-governance_checks,dashboard_size_budget_mb,PASS,"dashboard_size_mb=6.34, warn_threshold=7.00, fail_threshold=9.00"
+governance_checks,dashboard_size_budget_mb,PASS,"dashboard_size_mb=2.04, warn_threshold=7.00, fail_threshold=9.00"

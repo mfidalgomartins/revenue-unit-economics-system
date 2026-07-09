@@ -15,7 +15,6 @@ Outputs generated:
 from __future__ import annotations
 
 from collections.abc import Mapping
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -24,8 +23,8 @@ from src.governance.metric_registry import (
     EFFICIENCY_THRESHOLDS,
     classify_channel_efficiency,
 )
+from src.paths import PROJECT_ROOT
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 OUTPUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"

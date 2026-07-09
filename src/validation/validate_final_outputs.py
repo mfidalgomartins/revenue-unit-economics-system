@@ -12,10 +12,10 @@ from src.governance.metric_registry import (
     EFFICIENCY_THRESHOLDS,
     classify_channel_efficiency,
 )
+from src.paths import PROJECT_ROOT
 from src.scenario_engine.build_scenarios import MAX_SCALE_UPLIFT
 from src.visualization.chart_manifest import expected_chart_files
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 PROC_DIR = PROJECT_ROOT / "data" / "processed"
 OUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"

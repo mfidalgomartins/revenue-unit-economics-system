@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 
 import pandas as pd
+import pytest
 from src.analysis.unit_economics_analysis import (
     compute_cohort_analysis,
     compute_revenue_decomposition,
@@ -31,21 +32,47 @@ def test_formatters_handle_values_and_missing() -> None:
     assert fmt_num(float("nan")) == "n/a"
 
 
-def test_revenue_decomposition_returns_table_and_summary() -> None:
+def test_revenue_decomposition_effects_are_exhaustive_and_volume_led() -> None:
     tables = load_data()
     table, summary = compute_revenue_decomposition(
         tables["customers"], tables["transactions"]
     )
-    assert isinstance(table, pd.DataFrame)
-    assert not table.empty
+    effects = table.set_index("effect")
+
+    # The three effects fully account for the change: zero residual and
+    # shares that sum to one.
+    assert effects.loc["residual", "effect_value"] == pytest.approx(0.0, abs=1e-6)
+    component_shares = effects.loc[
+        ["customer_volume_effect", "average_revenue_effect", "mix_effect"],
+        "share_of_total_change",
+    ].sum()
+    assert component_shares == pytest.approx(1.0, abs=1e-6)
+    # Golden values on the committed deterministic seed (regression guard).
+    assert effects.loc["customer_volume_effect", "share_of_total_change"] == pytest.approx(
+        0.685957, abs=1e-4
+    )
+    assert effects.loc["total_revenue_change", "effect_value"] == pytest.approx(
+        15_087_947.54, rel=1e-6
+    )
     assert isinstance(summary, dict)
 
 
-def test_cohort_analysis_returns_table_and_summary() -> None:
+def test_cohort_analysis_medians_and_expansion_share() -> None:
     tables = load_data()
     table, summary = compute_cohort_analysis(tables["cohort_table"])
-    assert isinstance(table, pd.DataFrame)
-    assert not table.empty
+    at = table.set_index("months_since_cohort")
+
+    # Retention starts at 100% by construction and decays monotonically
+    # through the well-observed early months.
+    assert at.loc[0, "median_revenue_retention"] == pytest.approx(1.0)
+    assert (
+        at.loc[3, "median_revenue_retention"]
+        > at.loc[6, "median_revenue_retention"]
+        > at.loc[12, "median_revenue_retention"]
+    )
+    # Golden values on the committed deterministic seed (regression guard).
+    assert at.loc[6, "median_revenue_retention"] == pytest.approx(0.682916, abs=1e-4)
+    assert at.loc[6, "revenue_expansion_share_m6"] == pytest.approx(1 / 6, abs=1e-4)
     assert isinstance(summary, dict)
 
 
