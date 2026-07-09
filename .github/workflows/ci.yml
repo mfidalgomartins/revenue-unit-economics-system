@@ -59,7 +59,7 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: Run full pipeline
-        run: python src/run_pipeline.py
+        run: python -m src.run_pipeline
 
       - name: Run tests with coverage gate
         run: pytest

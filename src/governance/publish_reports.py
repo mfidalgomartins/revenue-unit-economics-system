@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
 
 from src.governance.data_catalog import write_data_catalog_artifacts
 from src.governance.metric_registry import classify_channel_efficiency, write_metric_registry_report
+from src.paths import PROJECT_ROOT
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REPORTS_DIR = PROJECT_ROOT / "outputs" / "reports"
 TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"

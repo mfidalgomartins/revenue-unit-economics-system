@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from src.paths import PROJECT_ROOT
+
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 OUTPUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 

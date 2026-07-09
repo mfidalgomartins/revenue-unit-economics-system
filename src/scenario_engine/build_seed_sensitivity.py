@@ -5,11 +5,11 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
-from pathlib import Path
 
 import pandas as pd
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from src.paths import PROJECT_ROOT
+
 OUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 
 SENSITIVITY_SEEDS = [7, 21, 42, 84, 126]

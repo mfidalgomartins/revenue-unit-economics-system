@@ -12,15 +12,15 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
+from src.paths import PROJECT_ROOT
+
 SEED = int(os.getenv("SYNTHETIC_SEED", "42"))
 RNG = np.random.default_rng(SEED)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 
 START_DATE = pd.Timestamp("2023-01-01")
