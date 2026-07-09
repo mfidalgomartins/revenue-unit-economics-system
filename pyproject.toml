@@ -39,6 +39,11 @@ testpaths = ["tests"]
 # Coverage runs by default and the gate is enforced via [tool.coverage.report]
 # fail_under. Pass --no-cov for fast single-file runs during development.
 addopts = "-q --cov --cov-report=term-missing"
+filterwarnings = [
+    # matplotlib's internal fontconfig parser calls deprecated pyparsing APIs;
+    # not actionable from this codebase. Everything else stays visible.
+    "ignore::pyparsing.warnings.PyparsingDeprecationWarning",
+]
 
 [tool.coverage.run]
 branch = true
@@ -50,7 +55,6 @@ omit = [
     "src/run_pipeline.py",
     "src/visualization/build_chart_pack.py",
     "src/visualization/chart_manifest.py",
-    "src/dashboard_builder/build_dashboard_assets.py",
     "src/governance/build_analytical_report.py",
     "src/governance/publish_reports.py",
     "src/scenario_engine/build_seed_sensitivity.py",
