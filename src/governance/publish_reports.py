@@ -2,13 +2,9 @@
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pandas as pd
-
-if str(Path(__file__).resolve().parents[2]) not in sys.path:
-    sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from src.governance.data_catalog import write_data_catalog_artifacts
 from src.governance.metric_registry import classify_channel_efficiency, write_metric_registry_report

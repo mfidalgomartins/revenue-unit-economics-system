@@ -3,14 +3,10 @@
 from __future__ import annotations
 
 import struct
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
-
-if str(Path(__file__).resolve().parents[2]) not in sys.path:
-    sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from src.governance.metric_registry import (
     EFFICIENCY_THRESHOLDS,

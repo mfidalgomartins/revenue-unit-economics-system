@@ -16,11 +16,11 @@ SENSITIVITY_SEEDS = [7, 21, 42, 84, 126]
 BASELINE_SEED = 42
 
 
-def _run_script(script_path: str, seed: int) -> None:
+def _run_module(module: str, seed: int) -> None:
     env = os.environ.copy()
     env["SYNTHETIC_SEED"] = str(seed)
     subprocess.run(
-        [sys.executable, script_path],
+        [sys.executable, "-m", module],
         cwd=PROJECT_ROOT,
         check=True,
         env=env,
@@ -28,9 +28,9 @@ def _run_script(script_path: str, seed: int) -> None:
 
 
 def _run_seed(seed: int) -> dict[str, float | int | str]:
-    _run_script("src/data_generation/generate_synthetic_data.py", seed)
-    _run_script("src/feature_engineering/build_features.py", seed)
-    _run_script("src/scenario_engine/build_scenarios.py", seed)
+    _run_module("src.data_generation.generate_synthetic_data", seed)
+    _run_module("src.feature_engineering.build_features", seed)
+    _run_module("src.scenario_engine.build_scenarios", seed)
 
     summary = pd.read_csv(OUT_TABLES_DIR / "scenario_outcomes_summary.csv").iloc[0]
     plan = pd.read_csv(OUT_TABLES_DIR / "scenario_reallocation_plan.csv")
@@ -98,9 +98,9 @@ def write_outputs(sensitivity: pd.DataFrame) -> None:
 
 
 def restore_baseline_seed() -> None:
-    _run_script("src/data_generation/generate_synthetic_data.py", BASELINE_SEED)
-    _run_script("src/feature_engineering/build_features.py", BASELINE_SEED)
-    _run_script("src/scenario_engine/build_scenarios.py", BASELINE_SEED)
+    _run_module("src.data_generation.generate_synthetic_data", BASELINE_SEED)
+    _run_module("src.feature_engineering.build_features", BASELINE_SEED)
+    _run_module("src.scenario_engine.build_scenarios", BASELINE_SEED)
 
 
 def run() -> None:
