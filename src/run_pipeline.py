@@ -1,4 +1,8 @@
-"""Run the full analytics workflow in deterministic stage order."""
+"""Run the full analytics workflow in deterministic stage order.
+
+Each stage is run as a module (``python -m src.<stage>``) from the project root,
+so ``src`` is importable without per-module ``sys.path`` manipulation.
+"""
 
 from __future__ import annotations
 
@@ -9,26 +13,26 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-STEPS: list[tuple[str, list[str]]] = [
-    ("Generate synthetic raw data", ["src/data_generation/generate_synthetic_data.py"]),
-    ("Validate raw data", ["src/validation/validate_raw_data.py"]),
-    ("Profile raw data", ["src/data_profiling/profile_raw_data.py"]),
-    ("Build engineered features", ["src/feature_engineering/build_features.py"]),
-    ("Run core analysis", ["src/analysis/unit_economics_analysis.py"]),
-    ("Build decision scenarios", ["src/scenario_engine/build_scenarios.py"]),
-    ("Build scenario seed sensitivity", ["src/scenario_engine/build_seed_sensitivity.py"]),
-    ("Generate curated chart pack", ["src/visualization/build_chart_pack.py"]),
-    ("Build executive dashboard", ["src/dashboard_builder/build_dashboard_assets.py"]),
-    ("Publish supporting documentation", ["src/governance/publish_reports.py"]),
-    ("Build analytical PDF report", ["src/governance/build_analytical_report.py"]),
-    ("Run final QA validation", ["src/validation/validate_final_outputs.py"]),
+STEPS: list[tuple[str, str]] = [
+    ("Generate synthetic raw data", "src.data_generation.generate_synthetic_data"),
+    ("Validate raw data", "src.validation.validate_raw_data"),
+    ("Profile raw data", "src.data_profiling.profile_raw_data"),
+    ("Build engineered features", "src.feature_engineering.build_features"),
+    ("Run core analysis", "src.analysis.unit_economics_analysis"),
+    ("Build decision scenarios", "src.scenario_engine.build_scenarios"),
+    ("Build scenario seed sensitivity", "src.scenario_engine.build_seed_sensitivity"),
+    ("Generate curated chart pack", "src.visualization.build_chart_pack"),
+    ("Build executive dashboard", "src.dashboard_builder.build_dashboard_assets"),
+    ("Publish supporting documentation", "src.governance.publish_reports"),
+    ("Build analytical PDF report", "src.governance.build_analytical_report"),
+    ("Run final QA validation", "src.validation.validate_final_outputs"),
 ]
 
 
-def run_step(step_name: str, script_parts: list[str]) -> None:
-    command = [sys.executable, *script_parts]
+def run_step(step_name: str, module: str) -> None:
+    command = [sys.executable, "-m", module]
     env = os.environ.copy()
-    if script_parts[-1].endswith((".py",)) and "visualization/" in script_parts[-1]:
+    if "visualization" in module:
         env["MPLBACKEND"] = "Agg"
         mpl_cache = PROJECT_ROOT / ".cache" / "matplotlib"
         mpl_cache.mkdir(parents=True, exist_ok=True)
@@ -39,8 +43,8 @@ def run_step(step_name: str, script_parts: list[str]) -> None:
 
 
 def main() -> None:
-    for step_name, script_parts in STEPS:
-        run_step(step_name, script_parts)
+    for step_name, module in STEPS:
+        run_step(step_name, module)
     print("[PIPELINE] Completed successfully.", flush=True)
 
 

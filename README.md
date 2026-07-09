@@ -75,6 +75,8 @@ supporting documentation + PDF report → QA gate
 
 Each stage writes reproducible outputs under `outputs/` and `data/processed/`. A central metric registry (`src/governance/metric_registry.py`) defines LTV, CAC, payback, and efficiency thresholds in one place; analysis, dashboard, and validation all read from it.
 
+For the system design — stage contracts, the on-disk data flow, determinism, and extension points — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## Metric contracts
 
 | Metric | Definition |
