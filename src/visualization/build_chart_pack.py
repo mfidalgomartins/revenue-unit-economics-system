@@ -39,10 +39,24 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
+# Palette comes from the shared design tokens so the chart pack, dashboard,
+# and PDF report cannot drift apart.
+from src.design.tokens import (
+    HAIRLINE,
+    INK,
+    INK_2,
+    MUTED,
+    NEGATIVE,
+    POSITIVE,
+    POSITIVE_SOFT,
+    SUBTLE,
+    SURFACE_2,
+    WARNING,
+)
 from src.governance.metric_registry import MARGIN_QUALITY_FLOOR
+from src.paths import PROJECT_ROOT
 from src.visualization.chart_manifest import CHART_METADATA, expected_chart_files
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 OUT_DIR = PROJECT_ROOT / "outputs" / "charts"
@@ -50,20 +64,6 @@ OUT_DIR = PROJECT_ROOT / "outputs" / "charts"
 # ---------------------------------------------------------------------------
 # Style
 # ---------------------------------------------------------------------------
-
-# Palette shared with the dashboard's Apple design language: warm near-black ink,
-# Apple system green / red / amber, neutral grays.
-INK = "#1d1d1f"
-INK_2 = "#424245"
-MUTED = "#6e6e73"
-SUBTLE = "#86868b"
-HAIRLINE = "#e6e6ea"
-POSITIVE = "#1a7f37"
-POSITIVE_SOFT = "#8fcfa3"
-NEGATIVE = "#d70015"
-NEGATIVE_SOFT = "#eaa6a6"
-WARNING = "#b25000"
-SURFACE_2 = "#f5f5f7"
 
 FONT_STACK = ["SF Pro Display", "SF Pro Text", "Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"]
 
