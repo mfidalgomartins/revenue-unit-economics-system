@@ -14,15 +14,11 @@ Outputs generated:
 
 from __future__ import annotations
 
-import sys
 from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-if str(Path(__file__).resolve().parents[2]) not in sys.path:
-    sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from src.governance.metric_registry import (
     EFFICIENCY_THRESHOLDS,
@@ -388,6 +384,12 @@ def compute_cohort_analysis(cohort_table: pd.DataFrame) -> tuple[pd.DataFrame, M
             "median_activity_retention": 6,
             "median_revenue_retention": 6,
         }
+    )
+    # Carried as a column (not just baked into the summary sentence) so downstream
+    # consumers, such as the analytical report, read it rather than re-typing it.
+    # Only defined at month 6, where it is computed; NaN elsewhere.
+    retention_summary["revenue_expansion_share_m6"] = np.where(
+        retention_summary["months_since_cohort"] == 6, round(expansion_share_m6, 6), np.nan
     )
     return retention_summary, result
 
