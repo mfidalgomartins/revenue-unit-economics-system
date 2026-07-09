@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## [2.1.0] - 2026-06-18
+## [2.1.0] - 2026-07-10
 
 ### Added
 
@@ -11,6 +11,17 @@ All notable changes to this project are documented in this file.
   display tracking, an Apple light/dark palette with system-blue accent and warm
   `#1d1d1f` ink, inset-grouped rounded cards with soft elevation, pill controls,
   and Apple motion/focus treatments. Light, dark, and mobile verified.
+- Unified that design language across every visual surface: the 19-chart PNG
+  pack, the analytical PDF report, and the GitHub Pages landing now share the
+  same Apple palette (warm ink, system green/red/amber) so the README hero,
+  report, dashboard, and site read as one product.
+- Accessibility: audited WCAG contrast across the palette and nudged the positive
+  green to `#1a7f37` so KPI delta text clears AA (4.5:1) on white; every used
+  text/background pair now meets AA in both themes. Audited semantics (heading
+  hierarchy, `header`/`main` landmarks, labeled controls, chart text alternatives,
+  skip link) and gave the filter bar a labeled `region` landmark.
+- Dashboard now ships a favicon (inline SVG mark) and Open Graph / Twitter card
+  metadata (hero chart as the share image) for a complete published-product feel.
 - Consolidated quality tooling in `pyproject.toml`: ruff, mypy, pytest, and
   branch-coverage configuration.
 - Unit and integration tests for synthetic data generation, the data catalog,
@@ -26,6 +37,12 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- Pipeline stages now run as modules (`python -m src.<stage>`) from the project
+  root, removing the per-module `sys.path` bootstrap hacks from six files.
+- Added `docs/ARCHITECTURE.md` (stage contracts, on-disk data flow, determinism,
+  extension points) and linked it from the README.
+- Dashboard now honors `prefers-reduced-motion` (transitions, animations, and the
+  chart-card hover-lift are neutralized for users who request reduced motion).
 - CI now enforces lint, type-check, dependency audit, and the coverage gate in
   addition to the full pipeline run.
 - Upgraded pytest to 9.0.3 to clear a known advisory in the test dependency.
