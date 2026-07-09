@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Is growth sustainable, or just expensive? An interactive diagnostic of channel unit economics, cohort retention, contribution margin, and a bounded spend-reallocation scenario." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%231d1d1f'/%3E%3Cpath%20d='M6%2022%20L13%2015%20L18%2019%20L26%209'%20fill='none'%20stroke='%2330d158'%20stroke-width='2.6'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3Ccircle%20cx='26'%20cy='9'%20r='2.4'%20fill='%2330d158'/%3E%3C/svg%3E" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Growth Quality Dashboard" />
+  <meta property="og:description" content="Is growth sustainable, or just expensive? Channel LTV/CAC, cohort retention, contribution margin, and a bounded reallocation scenario." />
+  <meta property="og:url" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/" />
+  <meta property="og:image" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/charts/08_channel_economics.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Growth Quality Dashboard" />
+  <meta name="twitter:description" content="Is growth sustainable, or just expensive? Channel unit economics, retention, margin, and a bounded reallocation scenario." />
+  <meta name="twitter:image" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/charts/08_channel_economics.png" />
   <title>Growth Quality Dashboard</title>
   <style>
     :root {
@@ -19,7 +30,7 @@
       --muted: #6e6e73;
       --subtle: #86868b;
       --accent: #0071e3;
-      --positive: #248a3d;
+      --positive: #1a7f37;
       --negative: #d70015;
       --warning: #b25000;
 
@@ -37,9 +48,9 @@
       /* Chart palette — used by JS via getComputedStyle. Restrained: ink + muted. */
       --rev: #1d1d1f;
       --cost: #86868b;
-      --margin: #248a3d;
+      --margin: #1a7f37;
       --bar: #1d1d1f;
-      --good: #248a3d;
+      --good: #1a7f37;
       --bad: #d70015;
       --warn: #b25000;
       --chart-grid: #eeeef0;
@@ -602,10 +613,21 @@
       .filter-group { min-width: 0; flex: 1 1 calc(50% - 9px); }
     }
 
+    /* REDUCED MOTION ---------------------------------------------- */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .chart-card:hover { transform: none; }
+    }
+
     /* PRINT -------------------------------------------------------- */
     @media print {
       :root { color-scheme: light; }
-      body { background: #ffffff; color: #0a0a0a; }
+      body { background: #ffffff; color: #1d1d1f; }
       .filters, .tool-btn, .masthead-tools { display: none !important; }
       .container { width: 100%; padding: 16px; }
       .chart-card, .kpi-card, .summary-card, .table-wrap, .decision {
@@ -632,7 +654,7 @@
       </div>
     </header>
 
-    <div class="filters" id="filters-bar">
+    <div class="filters" id="filters-bar" role="region" aria-label="Dashboard filters">
       <div class="filter-group">
         <label for="filter-start">From</label>
         <input id="filter-start" type="date" />
@@ -802,18 +824,18 @@
 
     function themeColors() {
       return {
-        rev: cssVar('--rev', '#0b4f6c'),
-        cost: cssVar('--cost', '#c44536'),
-        margin: cssVar('--margin', '#2a9d8f'),
-        accent: cssVar('--accent', '#ffb703'),
-        bar: cssVar('--bar', '#264653'),
-        good: cssVar('--good', '#059669'),
-        bad: cssVar('--bad', '#b91c1c'),
-        warn: cssVar('--warn', '#a16207'),
-        grid: cssVar('--chart-grid', '#e5e7eb'),
-        axis: cssVar('--chart-axis', '#94a3b8'),
-        text: cssVar('--chart-text', '#334155'),
-        muted: cssVar('--chart-muted', '#64748b'),
+        rev: cssVar('--rev', '#1d1d1f'),
+        cost: cssVar('--cost', '#6e6e73'),
+        margin: cssVar('--margin', '#1a7f37'),
+        accent: cssVar('--accent', '#0071e3'),
+        bar: cssVar('--bar', '#1d1d1f'),
+        good: cssVar('--good', '#1a7f37'),
+        bad: cssVar('--bad', '#d70015'),
+        warn: cssVar('--warn', '#b25000'),
+        grid: cssVar('--chart-grid', '#eeeef0'),
+        axis: cssVar('--chart-axis', '#b0b0b5'),
+        text: cssVar('--chart-text', '#424245'),
+        muted: cssVar('--chart-muted', '#6e6e73'),
       };
     }
 
