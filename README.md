@@ -1,6 +1,7 @@
 # Revenue Analytics & Unit Economics
 
 [![CI](https://github.com/mfidalgomartins/revenue-unit-economics-system/actions/workflows/ci.yml/badge.svg)](https://github.com/mfidalgomartins/revenue-unit-economics-system/actions/workflows/ci.yml)
+[![Coverage 96%](https://img.shields.io/badge/coverage-96%25-1a7f37.svg?style=flat-square)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-000000.svg?style=flat-square)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776ab.svg?style=flat-square)](https://www.python.org/)
 
@@ -12,7 +13,10 @@ Top-line revenue growth can hide weak acquisition efficiency, fragile retention,
 **→ [Read the full report (PDF)](https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/reports/revenue_unit_economics_report.pdf)**  
 Light and dark mode. No login or install required. Works on mobile.
 
-![Channel unit economics — LTV vs CAC with the 3:1 scale threshold](outputs/charts/08_channel_economics.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/dashboard-dark.png">
+  <img alt="Growth Quality Dashboard — KPI strip, decision layer, and headline signals in light and dark themes" src="docs/images/dashboard-light.png">
+</picture>
 
 ---
 
@@ -25,6 +29,8 @@ Light and dark mode. No login or install required. Works on mobile.
 | Which cohorts decay fastest? | Revenue and activity retention curves from signup through month 24 |
 | Where is margin being diluted? | Contribution margin breakdown by segment, region, and product |
 | What does the reallocation envelope look like? | Bounded scenario engine: best / base / worst case under CAC and LTV elasticities |
+
+![Channel unit economics — LTV vs CAC with the 3:1 scale threshold](outputs/charts/08_channel_economics.png)
 
 ## Run
 
@@ -39,7 +45,7 @@ Without `make`:
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
 python -m playwright install chromium
-python src/run_pipeline.py && pytest
+python -m src.run_pipeline && pytest
 ```
 
 Python 3.12. No external services or credentials required.
@@ -104,7 +110,7 @@ tests/        unit tests, metric contract tests, dashboard payload tests
 |--------|-------------|
 | [`outputs/dashboard/growth-quality-dashboard.html`](outputs/dashboard/growth-quality-dashboard.html) | Self-contained interactive dashboard — filters, tooltips, light/dark mode, embedded data |
 | [`outputs/charts/`](outputs/charts/) | Nineteen publication-ready PNGs, one per analytical question, covering trend, composition, ranking, distribution, cohort, concentration, and scenario views |
-| [`outputs/reports/revenue_unit_economics_report.pdf`](outputs/reports/revenue_unit_economics_report.pdf) | Full 30-page analytical report (PDF): findings with charts inline, methodology, risks, and prioritized recommendations |
+| [`outputs/reports/revenue_unit_economics_report.pdf`](outputs/reports/revenue_unit_economics_report.pdf) | 27-page analytical report (PDF): findings with charts inline, methodology, risks, and prioritized recommendations |
 | [`outputs/reports/qa_report.md`](outputs/reports/qa_report.md) | Final publication gate covering data consistency, calculations, analytical integrity, visual exports, and reproducibility |
 
 ## Methodology

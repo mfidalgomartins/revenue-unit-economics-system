@@ -2,6 +2,36 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.2.0] - 2026-07-10
+
+### Added
+
+- Shared design tokens (`src/design/tokens.py`) imported by the chart pack and
+  the PDF report, with a consistency test that pins the dashboard's CSS custom
+  properties to the same values — a palette change now propagates everywhere
+  or fails CI.
+- SQL parity tests: the reference SQL in `sql/` runs with DuckDB in CI and
+  must reproduce the pipeline's `customer_metrics` and `unit_economics`
+  outputs.
+- README product screenshots (light/dark via `<picture>`), a Mermaid pipeline
+  diagram and a "from synthetic to production" section in
+  `docs/ARCHITECTURE.md`, and a coverage badge.
+- Golden regression assertions for the revenue decomposition and cohort
+  retention sections.
+
+### Changed
+
+- The dashboard now embeds a columnar payload (integer day offsets, dimension
+  indexes, customer row indexes) decoded by a small shim in the browser: the
+  shipped HTML drops from 6.3 MB to 2.0 MB with identical rendering, KPIs,
+  and filters.
+- The dashboard template (~2,200 lines of HTML/CSS/JS) and the report
+  stylesheet moved to asset files; the dashboard builder is now ~130 lines of
+  tested logic at 100% coverage and no longer coverage-exempt.
+- `PROJECT_ROOT` is resolved once in `src/paths.py` instead of in every module.
+- The test suite runs warning-free (matplotlib's third-party pyparsing
+  deprecation warnings are filtered with a documented rationale).
+
 ## [2.1.0] - 2026-07-10
 
 ### Added

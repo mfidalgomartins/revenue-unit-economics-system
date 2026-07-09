@@ -14,22 +14,36 @@ registry.
 
 `src/run_pipeline.py` runs twelve stages in a fixed order. Each stage is a
 self-contained module with a `main()` entry point; the orchestrator invokes them
-as subprocesses so a failure in one stage stops the run with a clear boundary.
+as subprocesses (`python -m src.<stage>`) so a failure in one stage stops the
+run with a clear boundary.
 
+```mermaid
+flowchart LR
+    G["data generation<br/><small>data/raw/*.csv</small>"] --> V["raw validation"]
+    V --> P["profiling<br/><small>quality issues</small>"]
+    P --> F["feature engineering<br/><small>data/processed/*.csv</small>"]
+    F --> A["core analysis<br/><small>outputs/tables/*.csv</small>"]
+    A --> S["scenario engine +<br/>seed sensitivity"]
+    S --> C["chart pack<br/><small>19 PNGs</small>"]
+    S --> D["dashboard<br/><small>self-contained HTML</small>"]
+    S --> R["PDF report +<br/>governance docs"]
+    C --> QA["final QA gate"]
+    D --> QA
+    R --> QA
 ```
-data generation        src/data_generation/        → data/raw/*.csv
-raw validation         src/validation/             → outputs/tables/raw_validation_summary.csv
-profiling              src/data_profiling/         → outputs/tables/data_profile_summary.csv, data_quality_issues.csv
-feature engineering    src/feature_engineering/    → data/processed/{customer_metrics,cohort_table,unit_economics}.csv
-core analysis          src/analysis/               → outputs/tables/*.csv (monthly health, decomposition, cohorts, …)
-scenario engine        src/scenario_engine/        → outputs/tables/scenario_*.csv
-seed sensitivity       src/scenario_engine/        → outputs/tables/scenario_seed_sensitivity*.csv
-chart pack             src/visualization/          → outputs/charts/*.png
-dashboard              src/dashboard_builder/      → outputs/dashboard/growth-quality-dashboard.html
-supporting docs        src/governance/             → outputs/reports/{metric_registry,decision_brief}.md, data_catalog.csv
-analytical PDF         src/governance/             → outputs/reports/revenue_unit_economics_report.pdf
-final QA gate          src/validation/             → outputs/reports/qa_report.md, outputs/tables/qa_checks.csv
-```
+
+| Stage | Module | Writes |
+|-------|--------|--------|
+| data generation | `src/data_generation/` | `data/raw/*.csv` |
+| raw validation | `src/validation/` | `outputs/tables/raw_validation_summary.csv` |
+| profiling | `src/data_profiling/` | `outputs/tables/data_profile_summary.csv`, `data_quality_issues.csv` |
+| feature engineering | `src/feature_engineering/` | `data/processed/{customer_metrics,cohort_table,unit_economics}.csv` |
+| core analysis | `src/analysis/` | `outputs/tables/*.csv` (monthly health, decomposition, cohorts, …) |
+| scenario engine + seeds | `src/scenario_engine/` | `outputs/tables/scenario_*.csv` |
+| chart pack | `src/visualization/` | `outputs/charts/*.png` |
+| dashboard | `src/dashboard_builder/` | `outputs/dashboard/growth-quality-dashboard.html` |
+| governance docs + PDF | `src/governance/` | `outputs/reports/*` , `outputs/tables/data_catalog.csv` |
+| final QA gate | `src/validation/` | `outputs/reports/qa_report.md`, `outputs/tables/qa_checks.csv` |
 
 ## The on-disk contract
 
@@ -103,6 +117,39 @@ ruff (lint), mypy (typed, with a strict subset — `disallow_untyped_defs`,
 intentionally not fought), pytest + branch coverage, and `pip-audit`. CodeQL and
 Dependabot run on schedule.
 
+## Design tokens
+
+`src/design/tokens.py` is the palette's single source of truth. The chart pack
+and the PDF report import it directly (the report's stylesheet,
+`src/governance/assets/report.css`, is `$TOKEN`-templated and substituted at
+build time); the dashboard declares the same values as CSS custom properties in
+its template, and `tests/test_design_tokens.py` pins the two representations
+together. A color change either propagates to every surface or fails CI.
+
+## From synthetic to production
+
+The generator stage is deliberately the only thing that would change against
+real data. The swap path:
+
+1. **Replace `src/data_generation/` with a warehouse extract** producing the
+   same three contracts (`customers.csv`, `transactions.csv`,
+   `marketing_spend.csv` — or their Parquet equivalents). The reference SQL in
+   `sql/` already expresses the two core feature tables in warehouse terms, and
+   a parity test executes it with DuckDB against the pipeline's own outputs.
+2. **Raw validation and profiling run unchanged** — their checks (grain, keys,
+   referential integrity, domains, ranges) are exactly the checks real
+   extracts fail.
+3. **Volume**: the analytical stages are pandas over columnar files and scale
+   comfortably to low tens of millions of rows on one machine; past that, the
+   feature-engineering SQL moves into the warehouse (dbt model per stage
+   contract) and the pipeline consumes the modeled tables. The dashboard
+   already ships a compact columnar payload, so its size grows with the number
+   of *aggregate cells*, not raw rows, once the embed is switched from
+   transaction grain to a month × dimension cube.
+4. **What would need genuinely new work**: multi-touch attribution (CAC here is
+   single-touch by design and says so), incremental loads, and PII handling —
+   none of which change the metric contracts or the publication surfaces.
+
 ## Extending the system
 
 - **New analytical question** → add a `compute_*` function in `src/analysis/`,
@@ -115,9 +162,12 @@ Dependabot run on schedule.
 
 ## Frontend (dashboard)
 
-The dashboard is a single self-contained HTML file generated by
-`src/dashboard_builder/build_dashboard_assets.py`: embedded JSON payload, vanilla
-JS for filtering and hand-rolled SVG charts, and a CSS design system with light/
-dark themes (Apple-style typography and surfaces), a print stylesheet, and a
-reduced-motion media query. Charts use a `viewBox` so they scale responsively
-without horizontal overflow on small screens.
+The dashboard is a single self-contained HTML file. The template lives in
+`src/dashboard_builder/assets/dashboard.html` (vanilla JS filtering,
+hand-rolled SVG charts, light/dark CSS design system, print stylesheet,
+reduced-motion support); the builder injects a **columnar payload** — parallel
+arrays of integer day offsets, dimension indexes, and customer row indexes —
+which a small `decodePayload()` shim expands back into record objects in the
+browser. That encoding keeps the shipped file roughly a third of the row-wise
+size at identical fidelity. Charts render through a `viewBox` so they scale
+responsively without horizontal overflow on small screens.
