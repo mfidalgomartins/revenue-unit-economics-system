@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 import src.analysis.unit_economics_analysis as analysis
+import src.dashboard_builder.build_dashboard_assets as dashboard
 import src.data_profiling.profile_raw_data as profiling
 import src.feature_engineering.build_features as features
 import src.governance.data_catalog as data_catalog
@@ -27,6 +28,17 @@ def test_build_features_run_writes_processed_tables(
     features.run()
     for name in ("customer_metrics.csv", "cohort_table.csv", "unit_economics.csv"):
         assert (tmp_path / name).exists()
+
+
+def test_dashboard_run_writes_selfcontained_html(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(dashboard, "DASHBOARD_DIR", tmp_path)
+    dashboard.run()
+    html = (tmp_path / "growth-quality-dashboard.html").read_text(encoding="utf-8")
+    assert "__DATA_JSON__" not in html
+    assert "decodePayload" in html
+    assert html.startswith("<!DOCTYPE html>")
 
 
 def test_analysis_run_writes_all_section_tables(

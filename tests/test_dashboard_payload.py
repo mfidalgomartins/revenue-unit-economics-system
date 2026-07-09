@@ -43,6 +43,58 @@ def test_dashboard_payload_contains_policy_and_no_volatile_timestamp() -> None:
     assert "data_fingerprint" in meta
 
 
+def test_payload_columnar_encoding_round_trips() -> None:
+    customers = pd.DataFrame(
+        {
+            "customer_id": ["C1", "C2"],
+            "signup_date": pd.to_datetime(["2024-01-01", "2024-02-10"]),
+            "segment": ["SMB", "Enterprise"],
+            "region": ["EMEA", "APAC"],
+            "acquisition_channel": ["organic", "referral"],
+        }
+    )
+    transactions = pd.DataFrame(
+        {
+            "transaction_id": ["T1", "T2"],
+            "customer_id": ["C2", "C1"],
+            "transaction_date": pd.to_datetime(["2024-02-11", "2024-01-02"]),
+            "revenue": [250.0, 100.0],
+            "cost": [90.0, 60.0],
+            "product_type": ["Premium", "Core"],
+        }
+    )
+    marketing = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2024-01-01"]),
+            "acquisition_channel": ["referral"],
+            "spend": [30.0],
+        }
+    )
+
+    payload = build_embedded_payload(customers, transactions, marketing)
+    values = payload["meta"]["values"]
+
+    # Dates are integer day offsets from the Unix epoch.
+    epoch = pd.Timestamp("1970-01-01")
+    assert payload["customers"]["sd"] == [
+        (pd.Timestamp("2024-01-01") - epoch).days,
+        (pd.Timestamp("2024-02-10") - epoch).days,
+    ]
+    # Dimensions are indexes into the sorted meta.values lists.
+    assert [values["segments"][i] for i in payload["customers"]["seg"]] == ["SMB", "Enterprise"]
+    assert [values["regions"][i] for i in payload["customers"]["reg"]] == ["EMEA", "APAC"]
+    # Transactions reference customers by row index, in input order.
+    assert payload["transactions"]["ci"] == [1, 0]
+    assert [values["product_types"][i] for i in payload["transactions"]["prod"]] == [
+        "Premium",
+        "Core",
+    ]
+    assert payload["transactions"]["rev"] == [250.0, 100.0]
+    assert payload["marketing_spend"]["spend"] == [30.0]
+    assert payload["meta"]["coverage_start"] == "2024-01-01"
+    assert payload["meta"]["coverage_end"] == "2024-02-11"
+
+
 def test_dashboard_html_contains_decision_layer_and_contract_ltv_logic() -> None:
     customers = pd.DataFrame(
         {

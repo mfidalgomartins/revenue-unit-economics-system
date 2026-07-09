@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Is growth sustainable, or just expensive? An interactive diagnostic of channel unit economics, cohort retention, contribution margin, and a bounded spend-reallocation scenario." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%231d1d1f'/%3E%3Cpath%20d='M6%2022%20L13%2015%20L18%2019%20L26%209'%20fill='none'%20stroke='%2330d158'%20stroke-width='2.6'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3Ccircle%20cx='26'%20cy='9'%20r='2.4'%20fill='%2330d158'/%3E%3C/svg%3E" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Growth Quality Dashboard" />
+  <meta property="og:description" content="Is growth sustainable, or just expensive? Channel LTV/CAC, cohort retention, contribution margin, and a bounded reallocation scenario." />
+  <meta property="og:url" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/" />
+  <meta property="og:image" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/charts/08_channel_economics.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Growth Quality Dashboard" />
+  <meta name="twitter:description" content="Is growth sustainable, or just expensive? Channel unit economics, retention, margin, and a bounded reallocation scenario." />
+  <meta name="twitter:image" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/charts/08_channel_economics.png" />
+  <title>Growth Quality Dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      /* Apple-style surfaces: off-white canvas, white grouped cards. */
+      --bg: #fbfbfd;
+      --surface: #ffffff;
+      --surface-2: #f5f5f7;
+      --surface-3: #ececef;
+      --hairline: #e6e6ea;
+      --hairline-strong: #d2d2d7;
+      --ink: #1d1d1f;
+      --ink-2: #424245;
+      --muted: #6e6e73;
+      --subtle: #86868b;
+      --accent: #0071e3;
+      --positive: #1a7f37;
+      --negative: #d70015;
+      --warning: #b25000;
+
+      /* Material + type tokens (Apple HIG). */
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+        "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+      --font-num: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue",
+        "Segoe UI", sans-serif;
+      --radius-card: 18px;
+      --radius-control: 12px;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -10px rgba(0, 0, 0, 0.10);
+      --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.06), 0 16px 36px -12px rgba(0, 0, 0, 0.16);
+      --ease: cubic-bezier(0.4, 0, 0.22, 1);
+
+      /* Chart palette — used by JS via getComputedStyle. Restrained: ink + muted. */
+      --rev: #1d1d1f;
+      --cost: #86868b;
+      --margin: #1a7f37;
+      --bar: #1d1d1f;
+      --good: #1a7f37;
+      --bad: #d70015;
+      --warn: #b25000;
+      --chart-grid: #eeeef0;
+      --chart-axis: #b0b0b5;
+      --chart-text: #424245;
+      --chart-muted: #6e6e73;
+      --tooltip-bg: #1d1d1f;
+      --tooltip-ink: #f5f5f7;
+      --focus-ring: 0 0 0 4px rgba(0, 113, 227, 0.30);
+    }
+
+    body[data-theme="dark"] {
+      color-scheme: dark;
+      /* Apple dark: true-black canvas, elevated graphite cards. */
+      --bg: #000000;
+      --surface: #1c1c1e;
+      --surface-2: #2c2c2e;
+      --surface-3: #3a3a3c;
+      --hairline: #38383a;
+      --hairline-strong: #48484a;
+      --ink: #f5f5f7;
+      --ink-2: #d1d1d6;
+      --muted: #98989d;
+      --subtle: #6e6e73;
+      --accent: #0a84ff;
+      --positive: #30d158;
+      --negative: #ff453a;
+      --warning: #ff9f0a;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -10px rgba(0, 0, 0, 0.6);
+      --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 18px 40px -12px rgba(0, 0, 0, 0.7);
+
+      --rev: #f5f5f7;
+      --cost: #98989d;
+      --margin: #30d158;
+      --bar: #f5f5f7;
+      --good: #30d158;
+      --bad: #ff453a;
+      --warn: #ff9f0a;
+      --chart-grid: #2c2c2e;
+      --chart-axis: #6e6e73;
+      --chart-text: #d1d1d6;
+      --chart-muted: #98989d;
+      --tooltip-bg: #f5f5f7;
+      --tooltip-ink: #1d1d1f;
+      --focus-ring: 0 0 0 4px rgba(10, 132, 255, 0.36);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      background: var(--bg);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.47;
+      letter-spacing: -0.01em;
+      transition: background 200ms var(--ease), color 200ms var(--ease);
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -9999px;
+    }
+    .skip-link:focus {
+      left: 16px;
+      top: 16px;
+      background: var(--ink);
+      color: var(--bg);
+      padding: 8px 12px;
+      border-radius: 4px;
+      z-index: 10000;
+      font-size: 12px;
+    }
+
+    .container {
+      width: min(1320px, 92vw);
+      margin: 0 auto;
+      padding: 48px 0 80px;
+    }
+
+    /* MASTHEAD ----------------------------------------------------- */
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--hairline);
+      margin-bottom: 28px;
+    }
+    .masthead-title {
+      display: grid;
+      gap: 6px;
+      max-width: 720px;
+    }
+    .masthead h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.021em;
+      color: var(--ink);
+      line-height: 1.12;
+    }
+    .masthead .lede {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .masthead-tools {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .tool-meta {
+      font-size: 12px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0;
+    }
+    .tool-btn {
+      font-family: inherit;
+      background: var(--surface-2);
+      border: none;
+      color: var(--ink);
+      border-radius: 980px;
+      padding: 8px 16px;
+      font-size: 12.5px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: background 160ms var(--ease), transform 160ms var(--ease);
+    }
+    .tool-btn:hover {
+      background: var(--surface-3);
+    }
+    .tool-btn:active { transform: scale(0.97); }
+    .tool-btn:focus-visible,
+    input[type="date"]:focus-visible,
+    select:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+      border-color: var(--accent);
+    }
+
+    /* FILTERS ------------------------------------------------------ */
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 18px;
+      align-items: center;
+      padding: 16px 0 28px;
+      border-bottom: 1px solid var(--hairline);
+      margin-bottom: 36px;
+    }
+    .filter-group {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 130px;
+    }
+    .filter-group label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    input[type="date"], select {
+      font-family: inherit;
+      background: var(--surface);
+      border: 1px solid var(--hairline-strong);
+      border-radius: var(--radius-control);
+      padding: 8px 11px;
+      font-size: 13px;
+      color: var(--ink);
+      transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
+    }
+    input[type="date"]:hover, select:hover { border-color: var(--ink-2); }
+    select[multiple] {
+      min-height: 34px;
+      max-height: 100px;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+    .filter-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* KPI BAND ----------------------------------------------------- */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 36px;
+    }
+    .kpi-card {
+      padding: 22px 24px 24px;
+      border-right: 1px solid var(--hairline);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+    .kpi-card:last-child { border-right: none; }
+    .kpi-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .kpi-value {
+      font-family: var(--font-num);
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.022em;
+      line-height: 1.02;
+      font-variant-numeric: tabular-nums;
+      word-break: break-word;
+    }
+    .kpi-delta {
+      font-family: var(--font-num);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.005em;
+    }
+    .kpi-delta.positive { color: var(--positive); }
+    .kpi-delta.negative { color: var(--negative); }
+
+    /* DECISION STRIP ---------------------------------------------- */
+    .decision {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      margin-bottom: 48px;
+      overflow: hidden;
+    }
+    .decision .cell {
+      padding: 18px 22px 20px;
+      border-right: 1px solid var(--hairline);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .decision .cell:last-child { border-right: none; }
+    .decision .cell.lead { background: var(--surface-2); }
+    .decision .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      font-weight: 500;
+    }
+    .decision .value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .decision .copy {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* SECTION ------------------------------------------------------ */
+    .section { margin-bottom: 56px; }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .section-head h2 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .section-head .sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* SUMMARY STRIP — narrative signals --------------------------- */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .summary-card {
+      padding: 18px 22px 20px;
+      border-right: 1px solid var(--hairline);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .summary-card:last-child { border-right: none; }
+    .summary-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .summary-title {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0;
+      font-weight: 500;
+    }
+    .summary-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .summary-badge.good { color: var(--positive); }
+    .summary-badge.warn { color: var(--warning); }
+    .summary-badge.bad  { color: var(--negative); }
+    .summary-text {
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.55;
+    }
+
+    /* CHARTS ------------------------------------------------------- */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    .chart-card {
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: 22px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      /* Allow the card to shrink inside its grid track instead of being held
+         open by intrinsic SVG/table width (prevents mobile horizontal overflow). */
+      min-width: 0;
+      transition: box-shadow 220ms var(--ease), transform 220ms var(--ease);
+    }
+    .chart-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+    .chart-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+    .chart-subtitle {
+      margin: 0 0 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .chart-surface {
+      width: 100%;
+      height: 240px;
+      position: relative;
+    }
+    .chart-surface canvas, .chart-surface svg {
+      width: 100% !important;
+      height: 100% !important;
+    }
+    .chart-insight {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--hairline);
+      font-size: 12px;
+      color: var(--ink-2);
+      line-height: 1.55;
+      min-height: 30px;
+      font-variant-numeric: tabular-nums;
+    }
+    .chart-card.span-2 { grid-column: span 2; }
+    .chart-empty {
+      width: 100%;
+      height: 240px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 12px;
+      border: 1px dashed var(--hairline-strong);
+      border-radius: var(--radius-control);
+    }
+
+    /* TABLES ------------------------------------------------------- */
+    .table-wrap {
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .chart-card .table-wrap {
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow-x: auto;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--hairline);
+    }
+    th {
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      cursor: pointer;
+      user-select: none;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    th:hover { color: var(--ink); }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--surface-2); }
+    td {
+      font-variant-numeric: tabular-nums;
+      color: var(--ink-2);
+      vertical-align: middle;
+    }
+    td:first-child {
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .table-wrap.expanded { max-height: none; }
+
+    .risk-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 9px;
+      border-radius: 980px;
+      letter-spacing: 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .risk-badge.high   { color: var(--negative); background: rgba(185, 28, 28, 0.08); }
+    .risk-badge.medium { color: var(--warning);  background: rgba(180, 83, 9, 0.08); }
+    .risk-badge.low    { color: var(--positive); background: rgba(21, 128, 61, 0.08); }
+    body[data-theme="dark"] .risk-badge.high   { background: rgba(248, 113, 113, 0.14); }
+    body[data-theme="dark"] .risk-badge.medium { background: rgba(251, 191, 36, 0.14); }
+    body[data-theme="dark"] .risk-badge.low    { background: rgba(74, 222, 128, 0.14); }
+    .risk-score {
+      display: inline-block;
+      min-width: 36px;
+      font-family: var(--font-num);
+      font-weight: 500;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+    .risk-priority { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+
+    /* FOOTNOTE ----------------------------------------------------- */
+    .footnote {
+      font-size: 12px;
+      color: var(--muted);
+      padding-top: 28px;
+      border-top: 1px solid var(--hairline);
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+    .footnote code {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 11.5px;
+      background: var(--surface-2);
+      padding: 1px 6px;
+      border-radius: 6px;
+      color: var(--ink-2);
+    }
+
+    /* TOOLTIP ------------------------------------------------------ */
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: var(--tooltip-bg);
+      color: var(--tooltip-ink);
+      font-size: 12px;
+      font-family: var(--font-num);
+      border-radius: 10px;
+      padding: 8px 11px;
+      z-index: 9999;
+      display: none;
+      max-width: 320px;
+      line-height: 1.45;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* RESPONSIVE --------------------------------------------------- */
+    @media (max-width: 1180px) {
+      .kpi-row { grid-template-columns: repeat(3, 1fr); }
+      .kpi-card:nth-child(3n) { border-right: none; }
+      .kpi-card:nth-child(n+4) { border-top: 1px solid var(--hairline); }
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .summary-card:nth-child(2n) { border-right: none; }
+      .summary-card:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+      .decision { grid-template-columns: 1fr 1fr; }
+      .decision .cell:nth-child(2n) { border-right: none; }
+      .decision .cell:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+    }
+    @media (max-width: 860px) {
+      .container { padding: 32px 0 64px; }
+      .masthead { flex-direction: column; }
+      .kpi-row { grid-template-columns: repeat(2, 1fr); }
+      .kpi-card:nth-child(2n) { border-right: none; }
+      .kpi-card:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-card { border-right: none; }
+      .summary-card + .summary-card { border-top: 1px solid var(--hairline); }
+      .decision { grid-template-columns: 1fr; }
+      .decision .cell { border-right: none; }
+      .decision .cell + .cell { border-top: 1px solid var(--hairline); }
+      .chart-grid { grid-template-columns: 1fr; }
+      .chart-card.span-2 { grid-column: span 1; }
+      .filter-group { min-width: 0; flex: 1 1 calc(50% - 9px); }
+    }
+
+    /* REDUCED MOTION ---------------------------------------------- */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .chart-card:hover { transform: none; }
+    }
+
+    /* PRINT -------------------------------------------------------- */
+    @media print {
+      :root { color-scheme: light; }
+      body { background: #ffffff; color: #1d1d1f; }
+      .filters, .tool-btn, .masthead-tools { display: none !important; }
+      .container { width: 100%; padding: 16px; }
+      .chart-card, .kpi-card, .summary-card, .table-wrap, .decision {
+        box-shadow: none;
+        page-break-inside: avoid;
+      }
+      .tooltip { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to dashboard</a>
+  <main class="container" id="main-content">
+
+    <header class="masthead">
+      <div class="masthead-title">
+        <h1 id="dashboard-title">Growth Quality Dashboard</h1>
+        <p class="lede" id="dashboard-subtitle"></p>
+      </div>
+      <div class="masthead-tools">
+        <span class="tool-meta" id="coverage-chip"></span>
+        <button class="tool-btn" id="btn-theme" type="button" aria-label="Toggle theme"></button>
+        <button class="tool-btn" id="btn-print" type="button">Print</button>
+      </div>
+    </header>
+
+    <div class="filters" id="filters-bar" role="region" aria-label="Dashboard filters">
+      <div class="filter-group">
+        <label for="filter-start">From</label>
+        <input id="filter-start" type="date" />
+      </div>
+      <div class="filter-group">
+        <label for="filter-end">To</label>
+        <input id="filter-end" type="date" />
+      </div>
+      <div class="filter-group">
+        <label for="filter-segment">Segment</label>
+        <select id="filter-segment" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-region">Region</label>
+        <select id="filter-region" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-channel">Channel</label>
+        <select id="filter-channel" multiple></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-product">Product</label>
+        <select id="filter-product" multiple></select>
+      </div>
+      <div class="filter-actions">
+        <span class="tool-meta" id="filters-summary"></span>
+        <button class="tool-btn" id="btn-reset" type="button">Reset</button>
+      </div>
+    </div>
+
+    <div class="kpi-row" id="kpi-grid"></div>
+
+    <div class="decision" id="decision-command" aria-live="polite"></div>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Headline signals</h2>
+        <span class="sub" id="summary-context"></span>
+      </div>
+      <div class="summary-grid" id="summary-strip"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Primary analysis</h2>
+        <span class="sub">Revenue, margin, cost trajectory, cohort decay, channel efficiency.</span>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3 class="chart-title">Is revenue momentum real?</h3>
+          <p class="chart-subtitle">Monthly total revenue, filter-aware.</p>
+          <div id="chart-revenue" class="chart-surface"></div>
+          <div id="insight-revenue" class="chart-insight"></div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Is growth converting into margin?</h3>
+          <p class="chart-subtitle">Monthly contribution margin in dollars.</p>
+          <div id="chart-margin" class="chart-surface"></div>
+          <div id="insight-margin" class="chart-insight"></div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Are costs scaling faster than revenue?</h3>
+          <p class="chart-subtitle">Monthly revenue compared with direct cost.</p>
+          <div id="chart-revenue-cost" class="chart-surface"></div>
+          <div id="insight-revenue-cost" class="chart-insight"></div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">How fast do cohorts decay?</h3>
+          <p class="chart-subtitle">Median revenue retention by months since signup.</p>
+          <div id="chart-cohort-retention" class="chart-surface"></div>
+          <div id="insight-cohort-retention" class="chart-insight"></div>
+        </div>
+        <div class="chart-card span-2">
+          <h3 class="chart-title">Which acquisition channels deserve budget?</h3>
+          <p class="chart-subtitle">Full-coverage observed LTV versus CAC. Only the channel filter applies.</p>
+          <div id="chart-ltv-cac" class="chart-surface"></div>
+          <div id="insight-ltv-cac" class="chart-insight"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Diagnostics</h2>
+        <span class="sub">Locate where economics break first.</span>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3 class="chart-title">Which segment contributes the most margin?</h3>
+          <p class="chart-subtitle">Contribution margin dollars by segment.</p>
+          <div id="chart-segment-margin" class="chart-surface"></div>
+          <div id="insight-segment-margin" class="chart-insight"></div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Where is monetization strongest per transaction?</h3>
+          <p class="chart-subtitle">Average revenue per transaction by segment.</p>
+          <div id="chart-arpt-segment" class="chart-surface"></div>
+          <div id="insight-arpt-segment" class="chart-insight"></div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Is revenue concentrated in few customers?</h3>
+          <p class="chart-subtitle">Customer revenue distribution, clipped at P99.</p>
+          <div id="chart-revenue-distribution" class="chart-surface"></div>
+          <div id="insight-revenue-distribution" class="chart-insight"></div>
+        </div>
+        <div class="chart-card">
+          <h3 class="chart-title">Which regions dilute profitability?</h3>
+          <p class="chart-subtitle">Margin quality and revenue by region.</p>
+          <div class="table-wrap">
+            <table id="region-table"></table>
+          </div>
+          <div id="insight-region-table" class="chart-insight"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Risk ranking</h2>
+        <span class="sub">Where management attention should go next.</span>
+      </div>
+      <div class="table-wrap expanded">
+        <table id="risk-table"></table>
+      </div>
+    </section>
+
+    <div class="footnote">
+      Synthetic data. The pipeline demonstrates method, not market truth. Full methodology and validation in
+      <code>outputs/reports/decision_brief.md</code> and <code>outputs/reports/qa_report.md</code>.
+    </div>
+  </main>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    // The build embeds a columnar payload: parallel arrays with integer day
+    // offsets, dimension indexes into meta.values, and customer row indexes.
+    // decodePayload() expands it back into the record objects the rest of
+    // this script works with, so all filtering logic below is unchanged.
+    function decodePayload(raw) {
+      const iso = d => new Date(d * 864e5).toISOString().slice(0, 10);
+      const v = raw.meta.values;
+      const customers = raw.customers.sd.map((sd, i) => ({
+        cid: i,
+        sd: iso(sd),
+        seg: v.segments[raw.customers.seg[i]],
+        reg: v.regions[raw.customers.reg[i]],
+        ch: v.acquisition_channels[raw.customers.ch[i]],
+      }));
+      const transactions = raw.transactions.d.map((d, i) => ({
+        d: iso(d),
+        cid: raw.transactions.ci[i],
+        prod: v.product_types[raw.transactions.prod[i]],
+        rev: raw.transactions.rev[i],
+        cost: raw.transactions.cost[i],
+      }));
+      const marketing_spend = raw.marketing_spend.d.map((d, i) => ({
+        d: iso(d),
+        ch: v.acquisition_channels[raw.marketing_spend.ch[i]],
+        spend: raw.marketing_spend.spend[i],
+      }));
+      return { meta: raw.meta, customers, transactions, marketing_spend };
+    }
+
+    const DASHBOARD_DATA = decodePayload(__DATA_JSON__);
+    const CUSTOMER_BY_ID = new Map((DASHBOARD_DATA.customers || []).map(c => [c.cid, c]));
+    const METRIC_POLICY = DASHBOARD_DATA.meta.metric_policy || {};
+    const MARGIN_QUALITY_FLOOR = METRIC_POLICY.margin_quality_floor || 0.30;
+    const EFF_THRESH = METRIC_POLICY.efficiency_thresholds || {
+      ltv_cac_target: 3.0,
+      payback_target_months: 12.0,
+      ineff_ltv_cac: 1.0,
+      ineff_payback_months: 24.0
+    };
+    const RISK_WEIGHTS = METRIC_POLICY.risk_score_weights || {
+      low_efficiency_base: 90.0,
+      borderline_base: 60.0,
+      payback_cap_points: 40.0,
+      segment_margin_floor: 0.35,
+      segment_base: 60.0,
+      cohort_base: 55.0
+    };
+    const THEME_KEY = 'exec_dashboard_theme';
+
+    const state = {
+      regionSort: { key: 'marginPct', dir: 'desc' },
+      riskSort: { key: 'priorityScore', dir: 'desc' },
+    };
+
+    const tooltipEl = document.getElementById('tooltip');
+
+    function cssVar(name, fallback) {
+      const value = getComputedStyle(document.body).getPropertyValue(name).trim();
+      return value || fallback;
+    }
+
+    function themeColors() {
+      return {
+        rev: cssVar('--rev', '#1d1d1f'),
+        cost: cssVar('--cost', '#6e6e73'),
+        margin: cssVar('--margin', '#1a7f37'),
+        accent: cssVar('--accent', '#0071e3'),
+        bar: cssVar('--bar', '#1d1d1f'),
+        good: cssVar('--good', '#1a7f37'),
+        bad: cssVar('--bad', '#d70015'),
+        warn: cssVar('--warn', '#b25000'),
+        grid: cssVar('--chart-grid', '#eeeef0'),
+        axis: cssVar('--chart-axis', '#b0b0b5'),
+        text: cssVar('--chart-text', '#424245'),
+        muted: cssVar('--chart-muted', '#6e6e73'),
+      };
+    }
+
+    function applyTheme(theme) {
+      const normalized = theme === 'dark' ? 'dark' : 'light';
+      document.body.setAttribute('data-theme', normalized);
+      const btn = document.getElementById('btn-theme');
+      btn.textContent = normalized === 'dark' ? 'Light Mode' : 'Dark Mode';
+      btn.setAttribute(
+        'aria-label',
+        normalized === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+      );
+    }
+
+    function resolveInitialTheme() {
+      const saved = window.localStorage.getItem(THEME_KEY);
+      if (saved === 'dark' || saved === 'light') return saved;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function toggleTheme() {
+      const current = document.body.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      window.localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+      computeAndRender();
+    }
+
+    function summarizeSelectedValues(set, allValues, label) {
+      const selected = allValues.filter(v => set.has(v));
+      if (selected.length === allValues.length) return null;
+      if (selected.length === 0) return `${label}: none`;
+      if (selected.length === 1) return `${label}: ${selected[0]}`;
+      return `${label}: ${selected.length}`;
+    }
+
+    function renderFilterSummary(startDate, endDate, selected) {
+      const wrap = document.getElementById('filters-summary');
+      if (!wrap) return;
+      const parts = [
+        summarizeSelectedValues(selected.segments, DASHBOARD_DATA.meta.values.segments, 'Segment'),
+        summarizeSelectedValues(selected.regions, DASHBOARD_DATA.meta.values.regions, 'Region'),
+        summarizeSelectedValues(selected.channels, DASHBOARD_DATA.meta.values.acquisition_channels, 'Channel'),
+        summarizeSelectedValues(selected.products, DASHBOARD_DATA.meta.values.product_types, 'Product'),
+      ].filter(Boolean);
+      wrap.textContent = parts.length ? parts.join(' · ') : '';
+    }
+
+    function fmtCurrency(value) {
+      if (!Number.isFinite(value)) return 'n/a';
+      const abs = Math.abs(value);
+      if (abs >= 1_000_000) return '$' + (value / 1_000_000).toFixed(2) + 'M';
+      if (abs >= 1_000) return '$' + (value / 1_000).toFixed(1) + 'K';
+      return '$' + value.toFixed(0);
+    }
+
+    function fmtCurrencyFull(value) {
+      if (!Number.isFinite(value)) return 'n/a';
+      return '$' + value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+
+    function fmtPct(value) {
+      if (!Number.isFinite(value)) return 'n/a';
+      return (value * 100).toFixed(1) + '%';
+    }
+
+    function fmtNum(value, digits = 2) {
+      if (!Number.isFinite(value)) return 'n/a';
+      return value.toLocaleString(undefined, { maximumFractionDigits: digits });
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+      })[char]);
+    }
+
+    function dateToTs(dateStr) {
+      return new Date(dateStr + 'T00:00:00').getTime();
+    }
+
+    function monthKey(dateStr) {
+      return dateStr.slice(0, 7);
+    }
+
+    function monthLabel(monthStr) {
+      const parts = monthStr.split('-');
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short' });
+    }
+
+    function diffMonths(startMonth, endMonth) {
+      const sy = Number(startMonth.slice(0, 4));
+      const sm = Number(startMonth.slice(5, 7));
+      const ey = Number(endMonth.slice(0, 4));
+      const em = Number(endMonth.slice(5, 7));
+      return (ey - sy) * 12 + (em - sm);
+    }
+
+    function median(values) {
+      if (!values.length) return NaN;
+      const arr = [...values].sort((a, b) => a - b);
+      const mid = Math.floor(arr.length / 2);
+      return arr.length % 2 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+    }
+
+    function quantile(values, q) {
+      if (!values.length) return NaN;
+      const arr = [...values].sort((a, b) => a - b);
+      const pos = (arr.length - 1) * q;
+      const base = Math.floor(pos);
+      const rest = pos - base;
+      if (arr[base + 1] !== undefined) return arr[base] + rest * (arr[base + 1] - arr[base]);
+      return arr[base];
+    }
+
+    // Choose a clean gridline step so axis labels land on human-readable
+    // numbers (e.g. $3M rather than $3.44M). `targetTicks` guides the step
+    // size; the actual line count is derived so the axis hugs the data
+    // instead of leaving wasted headroom.
+    function niceScale(dataMax, targetTicks) {
+      if (!(dataMax > 0)) return { max: 1, step: 1, count: 1 };
+      const rawStep = dataMax / targetTicks;
+      const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const norm = rawStep / mag;
+      let nice;
+      if (norm <= 1) nice = 1;
+      else if (norm <= 2) nice = 2;
+      else if (norm <= 2.5) nice = 2.5;
+      else if (norm <= 5) nice = 5;
+      else nice = 10;
+      const step = nice * mag;
+      const count = Math.max(1, Math.ceil(dataMax / step - 1e-9));
+      return { max: step * count, step, count };
+    }
+
+    function setTooltip(target, html) {
+      target.addEventListener('mouseenter', () => {
+        tooltipEl.innerHTML = html;
+        tooltipEl.style.display = 'block';
+      });
+      target.addEventListener('mousemove', (e) => {
+        tooltipEl.style.left = (e.clientX + 14) + 'px';
+        tooltipEl.style.top = (e.clientY + 14) + 'px';
+      });
+      target.addEventListener('mouseleave', () => {
+        tooltipEl.style.display = 'none';
+      });
+    }
+
+    function clearNode(id) {
+      const el = document.getElementById(id);
+      el.innerHTML = '';
+      return el;
+    }
+
+    function renderNoData(id, message = 'No data for selected filters') {
+      const container = clearNode(id);
+      const div = document.createElement('div');
+      div.className = 'chart-empty';
+      div.textContent = message;
+      container.appendChild(div);
+    }
+
+    function createSvg(container, height = 248) {
+      // Keep a 340-unit floor for the drawing coordinate space (label legibility),
+      // but map it to the element via a viewBox so the chart scales to the real
+      // container width. Without this, narrow (mobile) containers overflow the page.
+      const width = Math.max(340, container.clientWidth - 6);
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+      svg.setAttribute('preserveAspectRatio', 'none');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('focusable', 'false');
+      svg.style.width = '100%';
+      svg.style.maxWidth = '100%';
+      svg.style.height = height + 'px';
+      svg.style.display = 'block';
+      container.appendChild(svg);
+      return { svg, width, height };
+    }
+
+    function addSvgLine(svg, x1, y1, x2, y2, color, width = 1, dash = null, opacity = 1) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+      line.setAttribute('stroke', color);
+      line.setAttribute('stroke-width', width);
+      line.setAttribute('opacity', opacity);
+      if (dash) line.setAttribute('stroke-dasharray', dash);
+      svg.appendChild(line);
+      return line;
+    }
+
+    function addSvgText(svg, x, y, text, opts = {}) {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', x);
+      t.setAttribute('y', y);
+      t.setAttribute('fill', opts.color || cssVar('--chart-text', '#475569'));
+      t.setAttribute('font-size', opts.size || '11');
+      t.setAttribute('text-anchor', opts.anchor || 'start');
+      t.setAttribute('font-weight', opts.weight || '400');
+      t.textContent = text;
+      svg.appendChild(t);
+      return t;
+    }
+
+    function linePath(points) {
+      if (!points.length) return '';
+      let d = `M ${points[0].x} ${points[0].y}`;
+      for (let i = 1; i < points.length; i += 1) d += ` L ${points[i].x} ${points[i].y}`;
+      return d;
+    }
+
+    function renderLineChart(id, rows, series, yFormatter) {
+      if (!rows.length) {
+        renderNoData(id);
+        return;
+      }
+      const palette = themeColors();
+
+      const container = clearNode(id);
+      const { svg, width, height } = createSvg(container);
+      const m = { top: 14, right: 18, bottom: 36, left: 58 };
+      const innerW = width - m.left - m.right;
+      const innerH = height - m.top - m.bottom;
+
+      const xVals = rows.map(r => r.x);
+      const xMin = Math.min(...xVals);
+      const xMax = Math.max(...xVals);
+
+      let dataMax = 0;
+      series.forEach(s => {
+        rows.forEach(r => { dataMax = Math.max(dataMax, Number(r[s.key]) || 0); });
+      });
+      const yScale = niceScale(dataMax, 5);
+      const yMax = yScale.max;
+
+      const sx = (x) => m.left + ((x - xMin) / Math.max(1, (xMax - xMin))) * innerW;
+      const sy = (y) => m.top + innerH - (y / yMax) * innerH;
+
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const y = m.top + (i / yScale.count) * innerH;
+        addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
+        addSvgText(svg, m.left - 8, y + 4, yFormatter(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
+      }
+
+      const tickCount = Math.min(6, rows.length);
+      for (let i = 0; i < tickCount; i += 1) {
+        const idx = Math.round((i / Math.max(1, tickCount - 1)) * (rows.length - 1));
+        const row = rows[idx];
+        const x = sx(row.x);
+        addSvgLine(svg, x, height - m.bottom, x, height - m.bottom + 4, palette.axis, 1);
+        addSvgText(svg, x, height - m.bottom + 16, row.label, { anchor: 'middle', size: '10' });
+      }
+
+      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
+      addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
+
+      series.forEach(s => {
+        const pts = rows.map(r => ({ x: sx(r.x), y: sy(r[s.key]), raw: r[s.key], label: r.label }));
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', linePath(pts));
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', s.color);
+        path.setAttribute('stroke-width', s.width || 2.3);
+        svg.appendChild(path);
+
+        pts.forEach(p => {
+          const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          c.setAttribute('cx', p.x);
+          c.setAttribute('cy', p.y);
+          c.setAttribute('r', 3);
+          c.setAttribute('fill', s.color);
+          c.setAttribute('opacity', '0.95');
+          svg.appendChild(c);
+          setTooltip(c, `<strong>${escapeHtml(s.label)}</strong><br>${escapeHtml(p.label)}: ${escapeHtml(yFormatter(p.raw))}`);
+        });
+      });
+
+      if (series.length > 1) {
+        let lx = m.left;
+        const ly = m.top - 2;
+        series.forEach(s => {
+          addSvgLine(svg, lx, ly, lx + 18, ly, s.color, 2.4);
+          addSvgText(svg, lx + 22, ly + 4, s.label, { size: '10' });
+          lx += 100;
+        });
+      }
+    }
+
+    function renderScatterChart(id, rows) {
+      if (!rows.length) {
+        renderNoData(id);
+        return;
+      }
+      const palette = themeColors();
+
+      const container = clearNode(id);
+      const { svg, width, height } = createSvg(container);
+      const m = { top: 16, right: 18, bottom: 40, left: 60 };
+      const innerW = width - m.left - m.right;
+      const innerH = height - m.top - m.bottom;
+
+      const xScale = niceScale(Math.max(0, ...rows.map(r => r.CAC)) * 1.1, 5);
+      const yScale = niceScale(Math.max(0, ...rows.map(r => r.avgLTV)) * 1.1, 5);
+      const xMax = xScale.max;
+      const yMax = yScale.max;
+
+      const sx = (x) => m.left + (x / xMax) * innerW;
+      const sy = (y) => m.top + innerH - (y / yMax) * innerH;
+
+      for (let i = 0; i <= xScale.count; i += 1) {
+        const x = m.left + (i / xScale.count) * innerW;
+        addSvgLine(svg, x, m.top + innerH, x, m.top + innerH + 4, palette.axis, 1);
+        addSvgText(svg, x, m.top + innerH + 16, fmtCurrency(xScale.step * i), { anchor: 'middle', size: '10' });
+      }
+
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const y = m.top + (i / yScale.count) * innerH;
+        addSvgLine(svg, m.left - 4, y, m.left, y, palette.axis, 1);
+        addSvgText(svg, m.left - 8, y + 4, fmtCurrency(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
+      }
+
+      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
+      addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
+
+      // Break-even reference (LTV = CAC) — faint, just a floor of viability.
+      const beEnd = Math.min(xMax, yMax);
+      addSvgLine(svg, sx(0), sy(0), sx(beEnd), sy(beEnd), palette.axis, 1, '3 4', 0.55);
+      addSvgText(svg, sx(beEnd) - 4, sy(beEnd) - 6, '1:1 break-even', { anchor: 'end', size: '9.5', color: palette.muted });
+
+      // Scale threshold (LTV/CAC target) — the rule that governs the decision.
+      const target = EFF_THRESH.ltv_cac_target || 3.0;
+      const tEndX = (yMax / target <= xMax) ? yMax / target : xMax;
+      const tEndY = tEndX * target;
+      addSvgLine(svg, sx(0), sy(0), sx(tEndX), sy(tEndY), palette.good, 1.4, '5 4', 0.9);
+      addSvgText(svg, sx(tEndX) - 4, sy(tEndY) - 6, fmtNum(target, 0) + ':1 scale target', { anchor: 'end', size: '9.5', weight: '500', color: palette.good });
+
+      rows.forEach(r => {
+        const cx = sx(r.CAC);
+        const cy = sy(r.avgLTV);
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', cx);
+        c.setAttribute('cy', cy);
+        c.setAttribute('r', 6);
+        c.setAttribute('fill', r.status === 'inefficient' ? palette.bad : (r.status === 'efficient' ? palette.good : palette.warn));
+        c.setAttribute('opacity', '0.9');
+        svg.appendChild(c);
+        addSvgText(svg, cx + 7, cy - 8, r.channel, { size: '10', color: palette.text });
+        setTooltip(c,
+          `<strong>${escapeHtml(r.channel)}</strong><br>` +
+          `CAC: ${escapeHtml(fmtCurrencyFull(r.CAC))}<br>` +
+          `Avg LTV: ${escapeHtml(fmtCurrencyFull(r.avgLTV))}<br>` +
+          `LTV/CAC: ${escapeHtml(fmtNum(r.ltvToCac, 2))}<br>` +
+          `Payback: ${escapeHtml(Number.isFinite(r.payback) ? fmtNum(r.payback, 1) + ' months' : 'n/a')}`
+        );
+      });
+    }
+
+    function renderBarChart(id, rows, key, labelKey, yFormatter, color) {
+      if (!rows.length) {
+        renderNoData(id);
+        return;
+      }
+      const palette = themeColors();
+
+      const container = clearNode(id);
+      const { svg, width, height } = createSvg(container);
+      const m = { top: 16, right: 18, bottom: 44, left: 60 };
+      const innerW = width - m.left - m.right;
+      const innerH = height - m.top - m.bottom;
+
+      const yScale = niceScale(Math.max(0, ...rows.map(r => Number(r[key]) || 0)), 5);
+      const yMax = yScale.max;
+      const barW = innerW / rows.length * 0.65;
+      const gap = innerW / rows.length;
+
+      const sy = (y) => m.top + innerH - (y / yMax) * innerH;
+
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const y = m.top + (i / yScale.count) * innerH;
+        addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
+        addSvgText(svg, m.left - 8, y + 4, yFormatter(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
+      }
+
+      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
+      addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
+
+      rows.forEach((r, idx) => {
+        const x = m.left + idx * gap + (gap - barW) / 2;
+        const y = sy(Number(r[key]) || 0);
+        const h = m.top + innerH - y;
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', barW);
+        rect.setAttribute('height', Math.max(1, h));
+        rect.setAttribute('fill', color);
+        rect.setAttribute('opacity', '0.9');
+        svg.appendChild(rect);
+
+        addSvgText(svg, x + barW / 2, m.top + innerH + 16, String(r[labelKey]), { anchor: 'middle', size: '10' });
+        setTooltip(rect, `<strong>${escapeHtml(r[labelKey])}</strong><br>${escapeHtml(yFormatter(r[key]))}` + (r.marginPct !== undefined ? `<br>Margin %: ${escapeHtml(fmtPct(r.marginPct))}` : ''));
+      });
+    }
+
+    function renderHistogram(id, values) {
+      if (!values.length) {
+        renderNoData(id);
+        return;
+      }
+      const palette = themeColors();
+
+      const clean = values.filter(v => Number.isFinite(v) && v > 0);
+      if (!clean.length) {
+        renderNoData(id, 'No positive revenue observations in selected scope');
+        return;
+      }
+
+      const p99 = quantile(clean, 0.99);
+      const clipped = clean.map(v => Math.min(v, p99));
+      const bins = 24;
+      const min = Math.min(...clipped);
+      const max = Math.max(...clipped);
+      const step = Math.max(1e-9, (max - min) / bins);
+      const counts = new Array(bins).fill(0);
+      clipped.forEach(v => {
+        const idx = Math.min(bins - 1, Math.floor((v - min) / step));
+        counts[idx] += 1;
+      });
+
+      const rows = counts.map((c, i) => ({
+        bucketStart: min + i * step,
+        bucketEnd: min + (i + 1) * step,
+        count: c,
+        label: i,
+      }));
+
+      const container = clearNode(id);
+      const { svg, width, height } = createSvg(container);
+      const m = { top: 16, right: 18, bottom: 40, left: 52 };
+      const innerW = width - m.left - m.right;
+      const innerH = height - m.top - m.bottom;
+
+      const yScale = niceScale(Math.max(0, ...rows.map(r => r.count)), 4);
+      const yMax = yScale.max;
+      const barW = innerW / rows.length;
+
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const y = m.top + (i / yScale.count) * innerH;
+        addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
+        addSvgText(svg, m.left - 8, y + 4, Math.round(yScale.step * (yScale.count - i)).toString(), { anchor: 'end', size: '10' });
+      }
+
+      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
+      addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
+
+      rows.forEach((r, i) => {
+        const h = (r.count / yMax) * innerH;
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', m.left + i * barW + 0.5);
+        rect.setAttribute('y', m.top + innerH - h);
+        rect.setAttribute('width', Math.max(1, barW - 1));
+        rect.setAttribute('height', Math.max(1, h));
+        rect.setAttribute('fill', palette.bar);
+        rect.setAttribute('opacity', '0.88');
+        svg.appendChild(rect);
+        setTooltip(rect, `Revenue bucket: ${fmtCurrencyFull(r.bucketStart)} - ${fmtCurrencyFull(r.bucketEnd)}<br>Customers: ${r.count}`);
+      });
+
+      addSvgText(svg, m.left, height - 8, 'Distribution clipped at P99 to reduce outlier distortion', { size: '10', color: palette.muted });
+    }
+
+    function populateMultiSelect(id, values) {
+      const select = document.getElementById(id);
+      select.innerHTML = '';
+      values.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        // Leave unselected by default — empty selection is treated as "all".
+        opt.selected = false;
+        select.appendChild(opt);
+      });
+      select.size = Math.min(3, values.length);
+    }
+
+    function getSelectedSet(id, allValues) {
+      const options = Array.from(document.getElementById(id).options);
+      const selected = options.filter(o => o.selected).map(o => o.value);
+      if (!selected.length) return new Set(allValues);
+      return new Set(selected);
+    }
+
+    function applyFilters(startDate, endDate, selected) {
+      const startTs = dateToTs(startDate);
+      const endTs = dateToTs(endDate);
+
+      const filteredTx = [];
+      for (const r of DASHBOARD_DATA.transactions) {
+        const customer = CUSTOMER_BY_ID.get(r.cid);
+        if (!customer) continue;
+        const ts = dateToTs(r.d);
+        if (ts < startTs || ts > endTs) continue;
+        if (!selected.segments.has(customer.seg)) continue;
+        if (!selected.regions.has(customer.reg)) continue;
+        if (!selected.channels.has(customer.ch)) continue;
+        if (!selected.products.has(r.prod)) continue;
+        filteredTx.push({
+          ...r,
+          sd: customer.sd,
+          seg: customer.seg,
+          reg: customer.reg,
+          ch: customer.ch,
+        });
+      }
+
+      const filteredCustomers = [];
+      for (const c of DASHBOARD_DATA.customers) {
+        const ts = dateToTs(c.sd);
+        if (ts < startTs || ts > endTs) continue;
+        if (!selected.segments.has(c.seg)) continue;
+        if (!selected.regions.has(c.reg)) continue;
+        if (!selected.channels.has(c.ch)) continue;
+        filteredCustomers.push(c);
+      }
+
+      const filteredSpend = [];
+      for (const m of DASHBOARD_DATA.marketing_spend) {
+        const ts = dateToTs(m.d);
+        if (ts < startTs || ts > endTs) continue;
+        if (!selected.channels.has(m.ch)) continue;
+        filteredSpend.push(m);
+      }
+
+      return { tx: filteredTx, customers: filteredCustomers, spend: filteredSpend };
+    }
+
+    function aggregateMonthly(tx) {
+      const map = new Map();
+      tx.forEach(r => {
+        const k = monthKey(r.d);
+        if (!map.has(k)) map.set(k, { month: k, revenue: 0, cost: 0, customers: new Set() });
+        const o = map.get(k);
+        o.revenue += r.rev;
+        o.cost += r.cost;
+        o.customers.add(r.cid);
+      });
+
+      const rows = Array.from(map.values())
+        .map(o => ({
+          month: o.month,
+          revenue: o.revenue,
+          cost: o.cost,
+          margin: o.revenue - o.cost,
+          activeCustomers: o.customers.size,
+        }))
+        .sort((a, b) => a.month.localeCompare(b.month));
+      return rows;
+    }
+
+    function computeSnapshot(tx, customers) {
+      const revenue = tx.reduce((s, r) => s + r.rev, 0);
+      const cost = tx.reduce((s, r) => s + r.cost, 0);
+      const margin = revenue - cost;
+      const marginPct = revenue > 0 ? margin / revenue : NaN;
+      const activeCustomers = new Set(tx.map(r => r.cid)).size;
+      const acquiredCustomers = new Set(customers.map(c => c.cid)).size;
+
+      return {
+        revenue,
+        cost,
+        margin,
+        marginPct,
+        activeCustomers,
+        acquiredCustomers,
+        transactionCount: tx.length,
+      };
+    }
+
+    function shiftDate(dateStr, days) {
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() + days);
+      return d.toISOString().slice(0, 10);
+    }
+
+    function dayDiff(startDate, endDate) {
+      const ms = dateToTs(endDate) - dateToTs(startDate);
+      return Math.floor(ms / 86400000) + 1;
+    }
+
+    function computeUnitEconomicsByChannel(selected) {
+      const channels = Array.from(selected.channels);
+      const customerByChannel = new Map();
+      channels.forEach(ch => customerByChannel.set(ch, new Set()));
+      DASHBOARD_DATA.customers.forEach(c => {
+        if (!selected.channels.has(c.ch)) return;
+        if (!customerByChannel.has(c.ch)) customerByChannel.set(c.ch, new Set());
+        customerByChannel.get(c.ch).add(c.cid);
+      });
+
+      const spendByChannel = new Map();
+      channels.forEach(ch => spendByChannel.set(ch, 0));
+      DASHBOARD_DATA.marketing_spend.forEach(m => {
+        if (!selected.channels.has(m.ch)) return;
+        spendByChannel.set(m.ch, (spendByChannel.get(m.ch) || 0) + m.spend);
+      });
+
+      const cmByChannel = new Map();
+      channels.forEach(ch => cmByChannel.set(ch, 0));
+      DASHBOARD_DATA.transactions.forEach(t => {
+        const customer = CUSTOMER_BY_ID.get(t.cid);
+        if (!customer) return;
+        if (!selected.channels.has(customer.ch)) return;
+        cmByChannel.set(customer.ch, (cmByChannel.get(customer.ch) || 0) + (t.rev - t.cost));
+      });
+
+      const months = Math.max(
+        1,
+        diffMonths(monthKey(DASHBOARD_DATA.meta.coverage_start), monthKey(DASHBOARD_DATA.meta.coverage_end)) + 1
+      );
+
+      const rows = channels.map(ch => {
+        const cCount = (customerByChannel.get(ch) || new Set()).size;
+        const spend = spendByChannel.get(ch) || 0;
+        const cm = cmByChannel.get(ch) || 0;
+        const CAC = cCount > 0 ? spend / cCount : NaN;
+        const avgLTV = cCount > 0 ? cm / cCount : NaN;
+        const ltvToCac = (Number.isFinite(CAC) && CAC > 0) ? avgLTV / CAC : NaN;
+        const monthlyCmPerCustomer = cCount > 0 ? (cm / cCount) / months : NaN;
+        const payback = (Number.isFinite(monthlyCmPerCustomer) && monthlyCmPerCustomer > 0 && Number.isFinite(CAC))
+          ? CAC / monthlyCmPerCustomer
+          : NaN;
+
+        let status = 'borderline';
+        if (!Number.isFinite(ltvToCac) || !Number.isFinite(payback)) status = 'undefined';
+        else if (ltvToCac >= EFF_THRESH.ltv_cac_target && payback <= EFF_THRESH.payback_target_months) status = 'efficient';
+        else if (ltvToCac < EFF_THRESH.ineff_ltv_cac || payback > EFF_THRESH.ineff_payback_months) status = 'inefficient';
+
+        return { channel: ch, customersAcquired: cCount, totalSpend: spend, CAC, avgLTV, ltvToCac, payback, status };
+      });
+
+      return rows.sort((a, b) => (b.ltvToCac || -Infinity) - (a.ltvToCac || -Infinity));
+    }
+
+    function computeCohortRetention(tx) {
+      const agg = new Map();
+      tx.forEach(r => {
+        const cohort = monthKey(r.sd);
+        const activity = monthKey(r.d);
+        const key = cohort + '|' + activity;
+        if (!agg.has(key)) agg.set(key, { cohort, activity, revenue: 0, customers: new Set() });
+        const o = agg.get(key);
+        o.revenue += r.rev;
+        o.customers.add(r.cid);
+      });
+
+      const rows = Array.from(agg.values()).map(o => ({
+        cohort: o.cohort,
+        activity: o.activity,
+        revenue: o.revenue,
+        activeCustomers: o.customers.size,
+        monthsSince: diffMonths(o.cohort, o.activity),
+      }));
+
+      const baselineMap = new Map();
+      rows.forEach(r => {
+        if (r.monthsSince === 0) baselineMap.set(r.cohort, { revenue: r.revenue, customers: r.activeCustomers });
+      });
+
+      const byMonths = new Map();
+      rows.forEach(r => {
+        const base = baselineMap.get(r.cohort);
+        if (!base || base.revenue <= 0 || base.customers <= 0) return;
+        const revRet = r.revenue / base.revenue;
+        const actRet = r.activeCustomers / base.customers;
+        if (!byMonths.has(r.monthsSince)) byMonths.set(r.monthsSince, { rev: [], act: [] });
+        byMonths.get(r.monthsSince).rev.push(revRet);
+        byMonths.get(r.monthsSince).act.push(actRet);
+      });
+
+      const summary = Array.from(byMonths.entries())
+        .map(([monthsSince, vals]) => ({
+          monthsSince,
+          medianRevenueRetention: median(vals.rev),
+          medianActivityRetention: median(vals.act),
+        }))
+        .sort((a, b) => a.monthsSince - b.monthsSince);
+
+      const decayByCohort = [];
+      baselineMap.forEach((base, cohort) => {
+        const m6 = rows.find(r => r.cohort === cohort && r.monthsSince === 6);
+        if (m6) {
+          decayByCohort.push({ cohort, month6RevenueRetention: m6.revenue / base.revenue });
+        }
+      });
+
+      return { summary, decayByCohort };
+    }
+
+    function computeSegmentProfitability(tx) {
+      const map = new Map();
+      tx.forEach(r => {
+        if (!map.has(r.seg)) map.set(r.seg, { segment: r.seg, revenue: 0, cost: 0, transactions: 0 });
+        const o = map.get(r.seg);
+        o.revenue += r.rev;
+        o.cost += r.cost;
+        o.transactions += 1;
+      });
+      return Array.from(map.values()).map(r => ({
+        ...r,
+        margin: r.revenue - r.cost,
+        marginPct: r.revenue > 0 ? (r.revenue - r.cost) / r.revenue : NaN,
+      })).sort((a, b) => b.margin - a.margin);
+    }
+
+    function computeRegionProfitability(tx) {
+      const map = new Map();
+      tx.forEach(r => {
+        if (!map.has(r.reg)) map.set(r.reg, { region: r.reg, revenue: 0, cost: 0, transactions: 0 });
+        const o = map.get(r.reg);
+        o.revenue += r.rev;
+        o.cost += r.cost;
+        o.transactions += 1;
+      });
+      return Array.from(map.values()).map(r => ({
+        ...r,
+        margin: r.revenue - r.cost,
+        marginPct: r.revenue > 0 ? (r.revenue - r.cost) / r.revenue : NaN,
+      }));
+    }
+
+    function computeAvgRevenuePerTxBySegment(tx) {
+      const map = new Map();
+      tx.forEach(r => {
+        if (!map.has(r.seg)) map.set(r.seg, { segment: r.seg, revenue: 0, txCount: 0 });
+        const o = map.get(r.seg);
+        o.revenue += r.rev;
+        o.txCount += 1;
+      });
+      return Array.from(map.values()).map(r => ({
+        segment: r.segment,
+        avgRevTx: r.txCount > 0 ? r.revenue / r.txCount : NaN,
+      })).sort((a, b) => b.avgRevTx - a.avgRevTx);
+    }
+
+    function computeRevenueByCustomer(tx) {
+      const map = new Map();
+      tx.forEach(r => {
+        map.set(r.cid, (map.get(r.cid) || 0) + r.rev);
+      });
+      return Array.from(map.values());
+    }
+
+    function computeRiskRows(unitRows, segmentRows, cohortDecayRows) {
+      const rows = [];
+      const priorityBand = (score) => {
+        if (score >= 95) return 'high';
+        if (score >= 70) return 'medium';
+        return 'low';
+      };
+
+      unitRows
+        .filter(r => Number.isFinite(r.ltvToCac))
+        .sort((a, b) => a.ltvToCac - b.ltvToCac)
+        .slice(0, 3)
+        .forEach(r => {
+          const score = (r.ltvToCac < EFF_THRESH.ineff_ltv_cac ? RISK_WEIGHTS.low_efficiency_base : RISK_WEIGHTS.borderline_base)
+            + (Number.isFinite(r.payback) ? Math.min(RISK_WEIGHTS.payback_cap_points, r.payback) : 15);
+          rows.push({
+            entity: `Channel: ${r.channel}`,
+            metricValues: `LTV/CAC ${fmtNum(r.ltvToCac, 2)} | Payback ${Number.isFinite(r.payback) ? fmtNum(r.payback, 1) + 'm' : 'n/a'}`,
+            riskInterpretation: r.ltvToCac < 1
+              ? 'Customer value does not recover acquisition spend.'
+              : 'Channel is borderline with slow capital recovery.',
+            recommendedAction: r.ltvToCac < 1
+              ? 'Reduce budget share and tighten bid/creative efficiency tests.'
+              : 'Run CAC reduction plan before scaling spend.',
+            priorityScore: score,
+            priorityBand: priorityBand(score),
+          });
+        });
+
+      segmentRows
+        .filter(r => Number.isFinite(r.marginPct))
+        .sort((a, b) => a.marginPct - b.marginPct)
+        .slice(0, 2)
+        .forEach(r => {
+          const score = RISK_WEIGHTS.segment_base + Math.max(0, (RISK_WEIGHTS.segment_margin_floor - r.marginPct) * 100);
+          rows.push({
+            entity: `Segment: ${r.segment}`,
+            metricValues: `Margin ${fmtPct(r.marginPct)} | Contribution ${fmtCurrency(r.margin)}`,
+            riskInterpretation: 'Low margin rate weakens growth quality as segment scales.',
+            recommendedAction: 'Improve packaging, pricing discipline, and service delivery cost controls.',
+            priorityScore: score,
+            priorityBand: priorityBand(score),
+          });
+        });
+
+      cohortDecayRows
+        .sort((a, b) => a.month6RevenueRetention - b.month6RevenueRetention)
+        .slice(0, 2)
+        .forEach(r => {
+          const score = RISK_WEIGHTS.cohort_base + Math.max(0, (1 - r.month6RevenueRetention) * 100);
+          rows.push({
+            entity: `Cohort: ${r.cohort}`,
+            metricValues: `Month-6 Revenue Retention ${fmtPct(r.month6RevenueRetention)}`,
+            riskInterpretation: 'Fast cohort decay implies dependence on constant new acquisition.',
+            recommendedAction: 'Strengthen early lifecycle activation and expansion motions for this cohort profile.',
+            priorityScore: score,
+            priorityBand: priorityBand(score),
+          });
+        });
+
+      return rows.sort((a, b) => b.priorityScore - a.priorityScore);
+    }
+
+    function renderSummaryStrip(insights) {
+      const wrap = document.getElementById('summary-strip');
+      wrap.innerHTML = '';
+      insights.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'summary-card';
+        card.dataset.tone = item.tone || 'warn';
+        card.innerHTML = `
+          <div class="summary-head">
+            <div class="summary-title">${escapeHtml(item.title)}</div>
+            <div class="summary-badge ${item.tone || 'warn'}">${escapeHtml(item.badge || '')}</div>
+          </div>
+          <div class="summary-text">${escapeHtml(item.text)}</div>
+        `;
+        wrap.appendChild(card);
+      });
+    }
+
+    function renderKpis(cards) {
+      const wrap = document.getElementById('kpi-grid');
+      wrap.innerHTML = '';
+      cards.forEach(card => {
+        const deltaClass = !Number.isFinite(card.delta)
+          ? 'kpi-delta'
+          : (card.delta >= 0 ? 'kpi-delta positive' : 'kpi-delta negative');
+        const el = document.createElement('div');
+        el.className = 'kpi-card';
+        el.dataset.tone = card.tone || 'warn';
+        el.innerHTML = `
+          <div class="kpi-label">${escapeHtml(card.label)}</div>
+          <div class="kpi-value">${escapeHtml(card.value)}</div>
+          <div class="${deltaClass}">${escapeHtml(card.deltaText)}</div>
+        `;
+        wrap.appendChild(el);
+      });
+    }
+
+    function renderDecisionCommand(command) {
+      const wrap = document.getElementById('decision-command');
+      wrap.innerHTML = `
+        <div class="cell lead">
+          <div class="label">Decision now</div>
+          <div class="value">${escapeHtml(command.decision)}</div>
+          <div class="copy">${escapeHtml(command.decisionText)}</div>
+        </div>
+        <div class="cell">
+          <div class="label">Scale</div>
+          <div class="value">${escapeHtml(command.scale)}</div>
+          <div class="copy">${escapeHtml(command.scaleText)}</div>
+        </div>
+        <div class="cell">
+          <div class="label">Intervene</div>
+          <div class="value">${escapeHtml(command.intervene)}</div>
+          <div class="copy">${escapeHtml(command.interveneText)}</div>
+        </div>
+        <div class="cell">
+          <div class="label">Impact</div>
+          <div class="value">${escapeHtml(command.impact)}</div>
+          <div class="copy">${escapeHtml(command.impactText)}</div>
+        </div>
+      `;
+    }
+
+    function setInsight(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function renderRegionTable(rows) {
+      const table = document.getElementById('region-table');
+      if (!rows.length) {
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Region</th>
+              <th>Revenue</th>
+              <th>Cost</th>
+              <th>Contribution Margin</th>
+              <th>Margin %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5">No regional profitability view is available for the current filter scope.</td></tr>
+          </tbody>
+        `;
+        return;
+      }
+      const sorted = [...rows].sort((a, b) => {
+        const k = state.regionSort.key;
+        const dir = state.regionSort.dir === 'asc' ? 1 : -1;
+        return ((a[k] > b[k]) ? 1 : -1) * dir;
+      });
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th data-key="region">Region</th>
+            <th data-key="revenue">Revenue</th>
+            <th data-key="cost">Cost</th>
+            <th data-key="margin">Contribution Margin</th>
+            <th data-key="marginPct">Margin %</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sorted.map(r => `
+            <tr>
+              <td>${escapeHtml(r.region)}</td>
+              <td>${escapeHtml(fmtCurrencyFull(r.revenue))}</td>
+              <td>${escapeHtml(fmtCurrencyFull(r.cost))}</td>
+              <td>${escapeHtml(fmtCurrencyFull(r.margin))}</td>
+              <td>${escapeHtml(fmtPct(r.marginPct))}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+
+      table.querySelectorAll('th').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.key;
+          if (state.regionSort.key === key) {
+            state.regionSort.dir = state.regionSort.dir === 'asc' ? 'desc' : 'asc';
+          } else {
+            state.regionSort.key = key;
+            state.regionSort.dir = 'desc';
+          }
+          renderRegionTable(rows);
+        });
+      });
+    }
+
+    function renderRiskTable(rows) {
+      const table = document.getElementById('risk-table');
+      if (!rows.length) {
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Entity</th>
+              <th>Metric Values</th>
+              <th>Risk Interpretation</th>
+              <th>Recommended Action</th>
+              <th>Priority Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="5">No ranked risks are available for the current filter scope.</td></tr>
+          </tbody>
+        `;
+        return;
+      }
+      const sorted = [...rows].sort((a, b) => {
+        const k = state.riskSort.key;
+        const dir = state.riskSort.dir === 'asc' ? 1 : -1;
+        return ((a[k] > b[k]) ? 1 : -1) * dir;
+      });
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th data-key="entity">Entity</th>
+            <th data-key="metricValues">Metric Values</th>
+            <th data-key="riskInterpretation">Risk Interpretation</th>
+            <th data-key="recommendedAction">Recommended Action</th>
+            <th data-key="priorityScore">Priority Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${sorted.map(r => `
+            <tr>
+              <td>${escapeHtml(r.entity)}</td>
+              <td>${escapeHtml(r.metricValues)}</td>
+              <td>${escapeHtml(r.riskInterpretation)}</td>
+              <td>${escapeHtml(r.recommendedAction)}</td>
+              <td>
+                <div class="risk-priority">
+                  <div class="risk-score">${escapeHtml(fmtNum(r.priorityScore, 1))}</div>
+                  <span class="risk-badge ${r.priorityBand}">${escapeHtml(r.priorityBand)}</span>
+                </div>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+
+      table.querySelectorAll('th').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.key;
+          if (state.riskSort.key === key) {
+            state.riskSort.dir = state.riskSort.dir === 'asc' ? 'desc' : 'asc';
+          } else {
+            state.riskSort.key = key;
+            state.riskSort.dir = key === 'priorityScore' ? 'desc' : 'asc';
+          }
+          renderRiskTable(rows);
+        });
+      });
+    }
+
+    function computeAndRender() {
+      const startDate = document.getElementById('filter-start').value;
+      const endDate = document.getElementById('filter-end').value;
+
+      const selected = {
+        segments: getSelectedSet('filter-segment', DASHBOARD_DATA.meta.values.segments),
+        regions: getSelectedSet('filter-region', DASHBOARD_DATA.meta.values.regions),
+        channels: getSelectedSet('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels),
+        products: getSelectedSet('filter-product', DASHBOARD_DATA.meta.values.product_types),
+      };
+      renderFilterSummary(startDate, endDate, selected);
+
+      const current = applyFilters(startDate, endDate, selected);
+      const curSnap = computeSnapshot(current.tx, current.customers);
+
+      // Comparison baseline. Prefer the immediately prior period of equal length;
+      // when it holds no data (e.g. the full-coverage default view) compare the
+      // second half of the visible window against the first half so every metric
+      // still carries an honest, readable trend instead of an empty dash.
+      const duration = dayDiff(startDate, endDate);
+      const priorEnd = shiftDate(startDate, -1);
+      const priorStart = shiftDate(priorEnd, -(duration - 1));
+      const prior = applyFilters(priorStart, priorEnd, selected);
+      const priorSnap = computeSnapshot(prior.tx, prior.customers);
+
+      const midDate = new Date(Math.floor((dateToTs(startDate) + dateToTs(endDate)) / 2))
+        .toISOString().slice(0, 10);
+      const secondStart = shiftDate(midDate, 1);
+      const firstHalf = applyFilters(startDate, midDate, selected);
+      const secondHalf = applyFilters(secondStart, endDate, selected);
+      const firstSnap = computeSnapshot(firstHalf.tx, firstHalf.customers);
+      const secondSnap = computeSnapshot(secondHalf.tx, secondHalf.customers);
+
+      let baseSnap, cmpSnap, cmpLabel;
+      if (Number.isFinite(priorSnap.revenue) && priorSnap.revenue > 0) {
+        baseSnap = priorSnap; cmpSnap = curSnap; cmpLabel = 'vs prior period';
+      } else {
+        baseSnap = firstSnap; cmpSnap = secondSnap; cmpLabel = 'vs 1st half';
+      }
+
+      const growthRate = Number.isFinite(baseSnap.revenue) && baseSnap.revenue > 0
+        ? (cmpSnap.revenue / baseSnap.revenue) - 1
+        : NaN;
+
+      const delta = (cur, prev) => (Number.isFinite(prev) && prev !== 0 ? (cur / prev) - 1 : NaN);
+      const arrow = d => (d >= 0 ? '▲' : '▼');
+      const deltaPct = (cur, prev) => {
+        const d = delta(cur, prev);
+        return Number.isFinite(d) ? `${arrow(d)} ${fmtPct(Math.abs(d))} ${cmpLabel}` : '—';
+      };
+      const deltaPp = (cur, prev) => {
+        if (!Number.isFinite(cur) || !Number.isFinite(prev)) return '—';
+        const d = cur - prev;
+        return `${arrow(d)} ${(Math.abs(d) * 100).toFixed(1)}pp ${cmpLabel}`;
+      };
+      const kpis = [
+        {
+          label: 'Revenue',
+          value: fmtCurrency(curSnap.revenue),
+          delta: delta(cmpSnap.revenue, baseSnap.revenue),
+          deltaText: deltaPct(cmpSnap.revenue, baseSnap.revenue),
+          tone: Number.isFinite(growthRate) ? (growthRate > 0 ? 'good' : 'bad') : 'warn',
+        },
+        {
+          label: 'Contribution Margin',
+          value: fmtCurrency(curSnap.margin),
+          delta: delta(cmpSnap.margin, baseSnap.margin),
+          deltaText: deltaPct(cmpSnap.margin, baseSnap.margin),
+          tone: Number.isFinite(curSnap.marginPct)
+            ? (curSnap.marginPct >= MARGIN_QUALITY_FLOOR ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
+            : 'warn',
+        },
+        {
+          label: 'Margin %',
+          value: fmtPct(curSnap.marginPct),
+          delta: Number.isFinite(cmpSnap.marginPct) && Number.isFinite(baseSnap.marginPct)
+            ? cmpSnap.marginPct - baseSnap.marginPct : NaN,
+          deltaText: deltaPp(cmpSnap.marginPct, baseSnap.marginPct),
+          tone: Number.isFinite(curSnap.marginPct)
+            ? (curSnap.marginPct >= MARGIN_QUALITY_FLOOR ? 'good' : (curSnap.marginPct >= 0.20 ? 'warn' : 'bad'))
+            : 'warn',
+        },
+        {
+          label: 'Active Customers',
+          value: fmtNum(curSnap.activeCustomers, 0),
+          delta: delta(cmpSnap.activeCustomers, baseSnap.activeCustomers),
+          deltaText: deltaPct(cmpSnap.activeCustomers, baseSnap.activeCustomers),
+          tone: 'neutral',
+        },
+        {
+          label: 'Transactions',
+          value: fmtNum(curSnap.transactionCount, 0),
+          delta: delta(cmpSnap.transactionCount, baseSnap.transactionCount),
+          deltaText: deltaPct(cmpSnap.transactionCount, baseSnap.transactionCount),
+          tone: 'neutral',
+        },
+        {
+          label: 'Customers Acquired',
+          value: fmtNum(curSnap.acquiredCustomers, 0),
+          delta: delta(cmpSnap.acquiredCustomers, baseSnap.acquiredCustomers),
+          deltaText: deltaPct(cmpSnap.acquiredCustomers, baseSnap.acquiredCustomers),
+          tone: 'neutral',
+        },
+      ];
+      renderKpis(kpis);
+      const palette = themeColors();
+
+      const monthly = aggregateMonthly(current.tx);
+      const monthlyRows = monthly.map(r => ({ x: dateToTs(r.month + '-01'), label: monthLabel(r.month), ...r }));
+
+      renderLineChart('chart-revenue', monthlyRows, [{ key: 'revenue', label: 'Revenue', color: palette.rev }], fmtCurrency);
+      renderLineChart('chart-margin', monthlyRows, [{ key: 'margin', label: 'Contribution Margin', color: palette.margin }], fmtCurrency);
+      renderLineChart(
+        'chart-revenue-cost',
+        monthlyRows,
+        [
+          { key: 'revenue', label: 'Revenue', color: palette.rev },
+          { key: 'cost', label: 'Cost', color: palette.cost },
+        ],
+        fmtCurrency
+      );
+
+      const cohort = computeCohortRetention(current.tx);
+      const cohortRows = cohort.summary
+        .filter(r => r.monthsSince <= 24)
+        .map(r => ({ x: r.monthsSince, label: 'M' + r.monthsSince, retention: r.medianRevenueRetention || 0 }));
+      renderLineChart('chart-cohort-retention', cohortRows, [{ key: 'retention', label: 'Revenue Retention', color: palette.bar }], fmtPct);
+
+      const unitRows = computeUnitEconomicsByChannel(selected);
+      renderScatterChart('chart-ltv-cac', unitRows);
+
+      const segmentRows = computeSegmentProfitability(current.tx);
+      renderBarChart('chart-segment-margin', segmentRows, 'margin', 'segment', fmtCurrency, palette.margin);
+
+      const arptRows = computeAvgRevenuePerTxBySegment(current.tx);
+      renderBarChart('chart-arpt-segment', arptRows, 'avgRevTx', 'segment', fmtCurrency, palette.bar);
+
+      const customerRevenue = computeRevenueByCustomer(current.tx);
+      renderHistogram('chart-revenue-distribution', customerRevenue);
+
+      const regionRows = computeRegionProfitability(current.tx);
+      renderRegionTable(regionRows.map(r => ({
+        region: r.region,
+        revenue: r.revenue,
+        cost: r.cost,
+        margin: r.margin,
+        marginPct: r.marginPct,
+      })));
+
+      const risks = computeRiskRows(unitRows, segmentRows, cohort.decayByCohort);
+      renderRiskTable(risks);
+
+      const inefficient = unitRows.filter(r => r.status === 'inefficient').map(r => r.channel);
+      const efficient = unitRows.filter(r => r.status === 'efficient').map(r => r.channel);
+      const m6 = cohort.summary.find(r => r.monthsSince === 6);
+      const m12 = cohort.summary.find(r => r.monthsSince === 12);
+      const weakestSegment = [...segmentRows].sort((a, b) => a.marginPct - b.marginPct)[0];
+      const strongestSegment = [...segmentRows].sort((a, b) => b.margin - a.margin)[0];
+      const weakestRegion = [...regionRows].sort((a, b) => a.marginPct - b.marginPct)[0];
+      const bestChannel = unitRows.filter(r => Number.isFinite(r.ltvToCac))[0];
+      const worstChannel = [...unitRows].filter(r => Number.isFinite(r.ltvToCac)).sort((a, b) => a.ltvToCac - b.ltvToCac)[0];
+      const revenueShareTop10 = (() => {
+        const vals = [...customerRevenue].sort((a, b) => b - a);
+        if (!vals.length) return NaN;
+        const topN = Math.max(1, Math.floor(vals.length * 0.1));
+        const total = vals.reduce((s, v) => s + v, 0);
+        const top = vals.slice(0, topN).reduce((s, v) => s + v, 0);
+        return total > 0 ? top / total : NaN;
+      })();
+
+      const revenueTrendText = (() => {
+        if (monthly.length < 2) return 'Not enough monthly observations to read momentum.';
+        const first = monthly[0];
+        const last = monthly[monthly.length - 1];
+        const change = first.revenue > 0 ? (last.revenue / first.revenue) - 1 : NaN;
+        return `Revenue moved ${fmtPct(change)} from ${monthLabel(first.month)} to ${monthLabel(last.month)}; inspect whether the same window also improves margin and payback.`;
+      })();
+
+      const marginTrendText = (() => {
+        if (monthly.length < 2) return 'Not enough monthly observations to read margin direction.';
+        const first = monthly[0];
+        const last = monthly[monthly.length - 1];
+        const firstRate = first.revenue > 0 ? first.margin / first.revenue : NaN;
+        const lastRate = last.revenue > 0 ? last.margin / last.revenue : NaN;
+        const shift = Number.isFinite(firstRate) && Number.isFinite(lastRate) ? (lastRate - firstRate) * 100 : NaN;
+        return `Margin rate shifted ${Number.isFinite(shift) ? shift.toFixed(1) + 'pp' : 'n/a'} across the window; negative movement means growth is getting less valuable.`;
+      })();
+
+      const costLeverageText = (() => {
+        if (monthly.length < 2) return 'Not enough monthly observations to compare cost leverage.';
+        const first = monthly[0];
+        const last = monthly[monthly.length - 1];
+        const revChange = first.revenue > 0 ? (last.revenue / first.revenue) - 1 : NaN;
+        const costChange = first.cost > 0 ? (last.cost / first.cost) - 1 : NaN;
+        const reading = Number.isFinite(revChange) && Number.isFinite(costChange)
+          ? (costChange > revChange
+            ? 'Cost is growing faster; investigate operating leverage.'
+            : 'Revenue is outpacing cost; monitor whether margin leverage persists.')
+          : 'Cost leverage comparison is unavailable for this scope.';
+        return `Revenue changed ${fmtPct(revChange)} while cost changed ${fmtPct(costChange)}. ${reading}`;
+      })();
+
+      const command = (() => {
+        let decision = 'Hold broad scaling; reallocate by channel quality';
+        let decisionText = 'Use the full-coverage channel view below to reallocate budget without mixing period revenue with new-customer denominators.';
+        if (efficient.length && !inefficient.length) {
+          decision = 'Scale selectively with guardrails';
+          decisionText = 'Selected channel economics clear the scale rule. Add budget gradually and monitor retention and margin mix.';
+        }
+        if (inefficient.length) {
+          decision = 'Cut weak acquisition before scaling winners';
+          decisionText = `${inefficient.join(', ')} breach efficiency rules; reallocate spend only after CAC/payback recovery tests are defined.`;
+        }
+        return {
+          decision,
+          decisionText,
+          scale: efficient.length ? efficient.join(', ') : 'No channel clears all guardrails',
+          scaleText: bestChannel ? `${bestChannel.channel} leads with LTV/CAC ${fmtNum(bestChannel.ltvToCac, 2)} and payback ${fmtNum(bestChannel.payback, 1)}m.` : 'No channel-level efficiency signal is available.',
+          intervene: inefficient.length ? inefficient.join(', ') : (worstChannel ? worstChannel.channel : 'No active breach'),
+          interveneText: worstChannel ? `${worstChannel.channel} is weakest at LTV/CAC ${fmtNum(worstChannel.ltvToCac, 2)}; require a recovery plan before budget growth.` : 'No channel breach is visible under current filters.',
+          impact: weakestSegment ? `${weakestSegment.segment} margin ${fmtPct(weakestSegment.marginPct)}` : 'No segment signal',
+          impactText: weakestRegion ? `${weakestRegion.region} is the lowest-margin region at ${fmtPct(weakestRegion.marginPct)}; check pricing, support load, and delivery cost.` : 'Regional profitability is unavailable for this filter scope.',
+        };
+      })();
+      renderDecisionCommand(command);
+
+      setInsight('insight-revenue', revenueTrendText);
+      setInsight('insight-margin', marginTrendText);
+      setInsight('insight-revenue-cost', costLeverageText);
+      setInsight('insight-cohort-retention', `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12; faster decay increases dependence on new acquisition.`);
+      setInsight('insight-ltv-cac', bestChannel && worstChannel ? `${bestChannel.channel} is the best scaling candidate; ${worstChannel.channel} is the budget risk to cap or repair. This full-coverage view responds only to the channel filter.` : 'No channel efficiency comparison is available.');
+      setInsight('insight-segment-margin', strongestSegment && weakestSegment ? `${strongestSegment.segment} contributes the most margin; ${weakestSegment.segment} has the weakest margin rate at ${fmtPct(weakestSegment.marginPct)}.` : 'No segment profitability comparison is available.');
+      setInsight('insight-arpt-segment', arptRows.length ? `${arptRows[0].segment} has the highest average transaction value at ${fmtCurrency(arptRows[0].avgRevTx)}; verify margin before prioritizing volume.` : 'No ticket-size comparison is available.');
+      setInsight('insight-revenue-distribution', `Top-decile customers contribute ${fmtPct(revenueShareTop10)} of revenue; high concentration increases account-risk sensitivity.`);
+      setInsight('insight-region-table', weakestRegion ? `${weakestRegion.region} has the lowest margin rate at ${fmtPct(weakestRegion.marginPct)}; treat it as the first regional operating review.` : 'No regional profitability comparison is available.');
+
+      const insights = [
+        {
+          title: 'Growth vs Margin Quality',
+          badge: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= MARGIN_QUALITY_FLOOR ? 'Healthy' : 'Watch',
+          tone: Number.isFinite(curSnap.marginPct) && curSnap.marginPct >= MARGIN_QUALITY_FLOOR ? 'good' : 'warn',
+          text: (() => {
+            const phrase = Number.isFinite(growthRate)
+              ? `Revenue moved ${fmtPct(growthRate)} ${cmpLabel}`
+              : `Revenue trend cannot be measured for this scope`;
+            return `${phrase}; margin rate is ${fmtPct(curSnap.marginPct)}. This is the first test of whether scale is creating value or just volume.`;
+          })()
+        },
+        {
+          title: 'Channel Efficiency Risk',
+          badge: inefficient.length ? 'Action' : 'Contained',
+          tone: inefficient.length ? 'bad' : 'good',
+          text: inefficient.length
+            ? `Inefficient channels detected: ${inefficient.join(', ')} (LTV/CAC < ${fmtNum(EFF_THRESH.ineff_ltv_cac, 1)} or payback > ${fmtNum(EFF_THRESH.ineff_payback_months, 0)} months).`
+            : 'No channels flagged as inefficient under current filters.'
+        },
+        {
+          title: 'Cohort Durability',
+          badge: m6 && Number.isFinite(m6.medianRevenueRetention) && m6.medianRevenueRetention >= 0.75 ? 'Stable' : 'Decay',
+          tone: m6 && Number.isFinite(m6.medianRevenueRetention) && m6.medianRevenueRetention >= 0.75 ? 'good' : 'bad',
+          text: `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12. Early decay here creates dependence on continual acquisition.`
+        },
+        {
+          title: 'Profitability Concentration',
+          badge: weakestSegment && Number.isFinite(weakestSegment.marginPct) && weakestSegment.marginPct < 0.25 ? 'Fragile' : 'Concentrated',
+          tone: weakestSegment && Number.isFinite(weakestSegment.marginPct) && weakestSegment.marginPct < 0.25 ? 'bad' : 'warn',
+          text: weakestSegment
+            ? `${weakestSegment.segment} is the weakest-margin segment at ${fmtPct(weakestSegment.marginPct)}; top decile customers contribute ${fmtPct(revenueShareTop10)} of revenue.`
+            : 'Segment profitability view unavailable for current filters.'
+        },
+      ];
+      renderSummaryStrip(insights);
+
+      document.getElementById('summary-context').textContent =
+        `Current scope: ${fmtNum(current.tx.length, 0)} transactions | ${fmtNum(new Set(current.tx.map(r => r.cid)).size, 0)} active customers`;
+    }
+
+    function clearAllFilters() {
+      ['filter-segment', 'filter-region', 'filter-channel', 'filter-product'].forEach(id => {
+        Array.from(document.getElementById(id).options).forEach(o => { o.selected = false; });
+      });
+    }
+
+    function resetFilters() {
+      document.getElementById('filter-start').value = DASHBOARD_DATA.meta.coverage_start;
+      document.getElementById('filter-end').value = DASHBOARD_DATA.meta.coverage_end;
+      clearAllFilters();
+      computeAndRender();
+    }
+
+    function init() {
+      applyTheme(resolveInitialTheme());
+      document.getElementById('dashboard-title').textContent = DASHBOARD_DATA.meta.dashboard_title;
+      document.getElementById('dashboard-subtitle').textContent = DASHBOARD_DATA.meta.question;
+      const coverageText = `Data coverage: ${DASHBOARD_DATA.meta.coverage_start} to ${DASHBOARD_DATA.meta.coverage_end}`;
+      document.getElementById('coverage-chip').textContent = coverageText;
+      populateMultiSelect('filter-segment', DASHBOARD_DATA.meta.values.segments);
+      populateMultiSelect('filter-region', DASHBOARD_DATA.meta.values.regions);
+      populateMultiSelect('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels);
+      populateMultiSelect('filter-product', DASHBOARD_DATA.meta.values.product_types);
+
+      document.getElementById('filter-start').value = DASHBOARD_DATA.meta.coverage_start;
+      document.getElementById('filter-end').value = DASHBOARD_DATA.meta.coverage_end;
+      document.getElementById('filter-start').min = DASHBOARD_DATA.meta.coverage_start;
+      document.getElementById('filter-start').max = DASHBOARD_DATA.meta.coverage_end;
+      document.getElementById('filter-end').min = DASHBOARD_DATA.meta.coverage_start;
+      document.getElementById('filter-end').max = DASHBOARD_DATA.meta.coverage_end;
+
+      ['filter-start', 'filter-end', 'filter-segment', 'filter-region', 'filter-channel', 'filter-product']
+        .forEach(id => document.getElementById(id).addEventListener('change', () => {
+          const start = document.getElementById('filter-start').value;
+          const end = document.getElementById('filter-end').value;
+          if (start > end) {
+            document.getElementById('filter-end').value = start;
+          }
+          computeAndRender();
+        }));
+
+      document.getElementById('btn-reset').addEventListener('click', resetFilters);
+      document.getElementById('btn-theme').addEventListener('click', toggleTheme);
+      document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+      computeAndRender();
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => computeAndRender(), 120);
+      });
+
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      mediaQuery.addEventListener('change', (event) => {
+        const hasManualChoice = !!window.localStorage.getItem(THEME_KEY);
+        if (!hasManualChoice) {
+          applyTheme(event.matches ? 'dark' : 'light');
+          computeAndRender();
+        }
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
