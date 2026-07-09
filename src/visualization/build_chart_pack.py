@@ -30,7 +30,6 @@ grade (1600 x 960 @ 144 dpi) with a uniform look across the whole pack.
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -39,9 +38,6 @@ import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-
-if str(Path(__file__).resolve().parents[2]) not in sys.path:
-    sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from src.governance.metric_registry import MARGIN_QUALITY_FLOOR
 from src.visualization.chart_manifest import CHART_METADATA, expected_chart_files
@@ -55,19 +51,21 @@ OUT_DIR = PROJECT_ROOT / "outputs" / "charts"
 # Style
 # ---------------------------------------------------------------------------
 
-INK = "#0a0a0a"
-INK_2 = "#262626"
-MUTED = "#737373"
-SUBTLE = "#a3a3a3"
-HAIRLINE = "#ececec"
-POSITIVE = "#15803d"
-POSITIVE_SOFT = "#86c79b"
-NEGATIVE = "#b91c1c"
-NEGATIVE_SOFT = "#e09b9b"
-WARNING = "#b45309"
-SURFACE_2 = "#fafafa"
+# Palette shared with the dashboard's Apple design language: warm near-black ink,
+# Apple system green / red / amber, neutral grays.
+INK = "#1d1d1f"
+INK_2 = "#424245"
+MUTED = "#6e6e73"
+SUBTLE = "#86868b"
+HAIRLINE = "#e6e6ea"
+POSITIVE = "#1a7f37"
+POSITIVE_SOFT = "#8fcfa3"
+NEGATIVE = "#d70015"
+NEGATIVE_SOFT = "#eaa6a6"
+WARNING = "#b25000"
+SURFACE_2 = "#f5f5f7"
 
-FONT_STACK = ["Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"]
+FONT_STACK = ["SF Pro Display", "SF Pro Text", "Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"]
 
 
 def _apply_style() -> None:
