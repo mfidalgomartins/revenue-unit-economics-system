@@ -2,7 +2,7 @@ PYTHON ?= python3
 VENV ?= .venv
 ACTIVATE = . $(VENV)/bin/activate
 
-.PHONY: setup run test lint type audit fmt check qa clean
+.PHONY: setup run dashboard report test lint type audit fmt check qa clean
 
 setup:
 	$(PYTHON) -m venv $(VENV)
@@ -11,6 +11,13 @@ setup:
 
 run:
 	$(ACTIVATE) && python -m src.run_pipeline
+
+# Rebuild a single publication surface against the committed tables.
+dashboard:
+	$(ACTIVATE) && python -m src.dashboard_builder.build_dashboard_assets
+
+report:
+	$(ACTIVATE) && python -m src.governance.build_analytical_report
 
 test:
 	$(ACTIVATE) && pytest

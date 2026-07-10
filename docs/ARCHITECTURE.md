@@ -102,10 +102,14 @@ gate asserts the substantive invariants rather than file bytes.
 - **Stage `run()` entry points** are exercised against the committed data with
   their output directory redirected to a temp path, so orchestration and writers
   are covered without mutating tracked artifacts.
-- **Output renderers** (chart pack, dashboard HTML, PDF, final QA) are excluded
-  from coverage (`tool.coverage.run.omit` in `pyproject.toml`) because their value
-  is the produced artifact, validated end to end by the pipeline run in CI rather
-  than by branch-level unit tests.
+- **Output renderers** (chart pack, PDF report, final QA) are excluded from
+  coverage (`tool.coverage.run.omit` in `pyproject.toml`) because their value is
+  the produced artifact, validated end to end by the pipeline run in CI rather
+  than by branch-level unit tests. The dashboard builder is regular tested code.
+- **Cross-representation parity** pins every place a definition exists twice:
+  the reference SQL must reproduce the pandas feature tables (DuckDB), the
+  dashboard's CSS custom properties must equal the design tokens, and a Python
+  mirror of the dashboard's KPI math must match on the committed data.
 
 The enforced branch-coverage gate is 90% (currently ~96%).
 

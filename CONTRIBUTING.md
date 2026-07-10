@@ -39,10 +39,10 @@ intact.
   (`src/governance/metric_registry.py`), not scattered across modules.
 - New analytical logic needs unit tests. Pure helpers get direct tests; section
   builders are exercised against the committed deterministic data.
-- Coverage must stay at or above 90%. Output renderers (charts, dashboard HTML,
-  PDF, final QA) are excluded from coverage because they are validated
+- Coverage must stay at or above 90%. Output renderers (the chart pack, the
+  PDF report, final QA) are excluded from coverage because they are validated
   end-to-end by the pipeline run, not by unit tests — see the `omit` list in
-  `pyproject.toml`.
+  `pyproject.toml`. The dashboard builder is regular tested code.
 
 ## Changing analytical methodology or thresholds
 
