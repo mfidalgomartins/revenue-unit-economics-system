@@ -97,11 +97,12 @@ For the system design — stage contracts, the on-disk data flow, determinism, a
 ## Layout
 
 ```
-src/          pipeline stages, one package per stage
+src/          pipeline stages, one package per stage; shared design tokens and paths
 data/         synthetic raw inputs and processed customer-level feature tables
-sql/          reference SQL for the core feature tables
+sql/          reference SQL for the core feature tables, parity-tested with DuckDB
 outputs/      analytical tables, graphs, reports, and the dashboard
-tests/        unit tests, metric contract tests, dashboard payload tests
+docs/         architecture guide and README screenshots
+tests/        unit, contract, parity, and stage-integration tests
 ```
 
 ## Key outputs
@@ -132,7 +133,7 @@ tests/        unit tests, metric contract tests, dashboard payload tests
 
 ## Stack
 
-Python 3.12 · pandas · NumPy · matplotlib · Playwright · vanilla JS/SVG for the dashboard · ruff · mypy · pytest + coverage · pip-audit · GitHub Actions for CI, CodeQL, and tagged releases
+Python 3.12 · pandas · NumPy · matplotlib · Playwright · vanilla JS/SVG for the dashboard · DuckDB for SQL parity tests · ruff · mypy · pytest + coverage · pip-audit · GitHub Actions for CI, CodeQL, and tagged releases
 
 ## License
 
