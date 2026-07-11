@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.3.0] - 2026-07-10
+
+### Added
+
+- Reallocation stress lab in the dashboard: CAC and LTV response sliders apply
+  the pipeline's stress formula to the embedded per-channel plan, with
+  Best / Base / Worst presets that reproduce the report's stress table.
+  Verified in-browser against the scenario engine's numbers and pinned by a
+  payload parity test.
+
+### Fixed
+
+- Report prose said the stress multipliers apply "to the scaled channels";
+  the engine applies them across every channel in the plan. The two captions
+  now match the code.
+
 ## [2.2.0] - 2026-07-10
 
 ### Added

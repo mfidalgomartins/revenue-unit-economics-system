@@ -109,7 +109,7 @@ tests/        unit, contract, parity, and stage-integration tests
 
 | Output | Description |
 |--------|-------------|
-| [`outputs/dashboard/growth-quality-dashboard.html`](outputs/dashboard/growth-quality-dashboard.html) | Self-contained interactive dashboard — filters, tooltips, light/dark mode, embedded data |
+| [`outputs/dashboard/growth-quality-dashboard.html`](outputs/dashboard/growth-quality-dashboard.html) | Self-contained interactive dashboard — filters, tooltips, light/dark mode, embedded data, and a what-if stress lab that mirrors the pipeline's scenario engine |
 | [`outputs/charts/`](outputs/charts/) | Nineteen publication-ready PNGs, one per analytical question, covering trend, composition, ranking, distribution, cohort, concentration, and scenario views |
 | [`outputs/reports/revenue_unit_economics_report.pdf`](outputs/reports/revenue_unit_economics_report.pdf) | 27-page analytical report (PDF): findings with charts inline, methodology, risks, and prioritized recommendations |
 | [`outputs/reports/qa_report.md`](outputs/reports/qa_report.md) | Final publication gate covering data consistency, calculations, analytical integrity, visual exports, and reproducibility |
