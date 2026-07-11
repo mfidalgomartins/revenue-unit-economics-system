@@ -336,6 +336,48 @@
       line-height: 1.5;
     }
 
+    .whatif-card {
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: 18px 22px 16px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 10px 28px;
+      align-items: center;
+    }
+    .whatif-controls { display: grid; gap: 12px; min-width: 0; }
+    .whatif-control label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 11px; font-weight: 500; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 6px;
+    }
+    .whatif-mult { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; text-transform: none; }
+    .whatif-control input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .whatif-presets { display: flex; gap: 8px; }
+    .whatif-preset {
+      font: inherit; font-size: 12px; font-weight: 500; padding: 5px 12px;
+      border-radius: 980px; border: 1px solid var(--hairline-strong);
+      background: var(--surface); color: var(--ink); cursor: pointer;
+      transition: background 160ms var(--ease);
+    }
+    .whatif-preset:hover { background: var(--surface-2); }
+    .whatif-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .whatif-stat .l {
+      font-size: 11px; font-weight: 500; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.02em;
+    }
+    .whatif-stat .v {
+      font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+    .whatif-stat .v.positive { color: var(--positive); }
+    .whatif-stat .v.negative { color: var(--negative); }
+    .whatif-note { grid-column: 1 / -1; margin: 4px 0 0; font-size: 11.5px; color: var(--subtle); }
+    @media (max-width: 860px) { .whatif-card { grid-template-columns: 1fr; } }
+
+
     /* SECTION ------------------------------------------------------ */
     .section { margin-bottom: 56px; }
     .section-head {
@@ -689,6 +731,37 @@
 
     <div class="decision" id="decision-command" aria-live="polite"></div>
 
+    <section class="section" id="whatif-section" aria-label="Reallocation stress lab">
+      <div class="section-head">
+        <h2>Reallocation stress lab</h2>
+        <span class="sub">Full-coverage policy view; page filters do not apply.</span>
+      </div>
+      <div class="whatif-card">
+        <div class="whatif-controls">
+          <div class="whatif-control">
+            <label for="whatif-cac">CAC response <span class="whatif-mult" id="whatif-cac-value">1.00&times;</span></label>
+            <input type="range" id="whatif-cac" min="0.85" max="1.20" step="0.01" value="1.00">
+          </div>
+          <div class="whatif-control">
+            <label for="whatif-ltv">LTV response <span class="whatif-mult" id="whatif-ltv-value">1.00&times;</span></label>
+            <input type="range" id="whatif-ltv" min="0.85" max="1.10" step="0.01" value="1.00">
+          </div>
+          <div class="whatif-presets" role="group" aria-label="Stress presets">
+            <button type="button" class="whatif-preset" data-cac="0.90" data-ltv="1.08">Best</button>
+            <button type="button" class="whatif-preset" data-cac="1.00" data-ltv="1.00">Base</button>
+            <button type="button" class="whatif-preset" data-cac="1.15" data-ltv="0.88">Worst</button>
+          </div>
+        </div>
+        <div class="whatif-readout">
+          <div class="whatif-stat"><div class="l">Scenario contribution</div><div class="v" id="whatif-contribution">&ndash;</div></div>
+          <div class="whatif-stat"><div class="l">Uplift vs baseline</div><div class="v" id="whatif-uplift">&ndash;</div></div>
+        </div>
+        <p class="whatif-note">Applies the pipeline's stress formula to the embedded reallocation plan:
+        contribution = &Sigma; spend &divide; (CAC &times; m<sub>CAC</sub>) &times; LTV &times; m<sub>LTV</sub>.
+        The Best / Base / Worst presets reproduce the report's stress table.</p>
+      </div>
+    </section>
+
     <section class="section">
       <div class="section-head">
         <h2>Headline signals</h2>
@@ -816,7 +889,7 @@
         ch: v.acquisition_channels[raw.marketing_spend.ch[i]],
         spend: raw.marketing_spend.spend[i],
       }));
-      return { meta: raw.meta, customers, transactions, marketing_spend };
+      return { meta: raw.meta, whatif: raw.whatif, customers, transactions, marketing_spend };
     }
 
     const DASHBOARD_DATA = decodePayload(__DATA_JSON__);
@@ -2175,6 +2248,40 @@
       computeAndRender();
     }
 
+    function renderWhatIf() {
+      const plan = DASHBOARD_DATA.whatif;
+      const mc = Number(document.getElementById('whatif-cac').value);
+      const ml = Number(document.getElementById('whatif-ltv').value);
+      document.getElementById('whatif-cac-value').textContent = mc.toFixed(2) + '\u00d7';
+      document.getElementById('whatif-ltv-value').textContent = ml.toFixed(2) + '\u00d7';
+      let total = 0;
+      for (let i = 0; i < plan.spend.length; i += 1) {
+        total += (plan.spend[i] / (plan.cac[i] * mc)) * (plan.ltv[i] * ml);
+      }
+      const uplift = total - plan.baseline_total;
+      document.getElementById('whatif-contribution').textContent = fmtCurrency(total);
+      const upliftEl = document.getElementById('whatif-uplift');
+      upliftEl.textContent = (uplift >= 0 ? '+' : '\u2212') + fmtCurrency(Math.abs(uplift));
+      upliftEl.classList.toggle('positive', uplift >= 0);
+      upliftEl.classList.toggle('negative', uplift < 0);
+    }
+
+    function initWhatIf() {
+      if (!DASHBOARD_DATA.whatif) {
+        document.getElementById('whatif-section').remove();
+        return;
+      }
+      ['whatif-cac', 'whatif-ltv'].forEach(id =>
+        document.getElementById(id).addEventListener('input', renderWhatIf));
+      document.querySelectorAll('.whatif-preset').forEach(btn =>
+        btn.addEventListener('click', () => {
+          document.getElementById('whatif-cac').value = btn.dataset.cac;
+          document.getElementById('whatif-ltv').value = btn.dataset.ltv;
+          renderWhatIf();
+        }));
+      renderWhatIf();
+    }
+
     function init() {
       applyTheme(resolveInitialTheme());
       document.getElementById('dashboard-title').textContent = DASHBOARD_DATA.meta.dashboard_title;
@@ -2206,6 +2313,8 @@
       document.getElementById('btn-reset').addEventListener('click', resetFilters);
       document.getElementById('btn-theme').addEventListener('click', toggleTheme);
       document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+      initWhatIf();
 
       computeAndRender();
       let resizeTimer = null;
