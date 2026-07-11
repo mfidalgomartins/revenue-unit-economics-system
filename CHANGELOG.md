@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.3.1] - 2026-07-11
+
+### Added
+
+- Property-based tests (Hypothesis) for the metric registry: channel
+  classification is total and monotone in both LTV/CAC and payback, NaN inputs
+  always classify as undefined, and the risk score stays inside the registry's
+  weight bounds for any finite input.
+
 ## [2.3.0] - 2026-07-10
 
 ### Added

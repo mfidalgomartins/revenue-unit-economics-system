@@ -108,8 +108,12 @@ gate asserts the substantive invariants rather than file bytes.
   than by branch-level unit tests. The dashboard builder is regular tested code.
 - **Cross-representation parity** pins every place a definition exists twice:
   the reference SQL must reproduce the pandas feature tables (DuckDB), the
-  dashboard's CSS custom properties must equal the design tokens, and a Python
-  mirror of the dashboard's KPI math must match on the committed data.
+  dashboard's CSS custom properties must equal the design tokens, a Python
+  mirror of the dashboard's KPI math must match on the committed data, and the
+  embedded what-if plan must land on the stress engine's numbers.
+- **Policy shape** is property-tested with Hypothesis: channel classification
+  is total and monotone in both LTV/CAC and payback, and the risk score stays
+  inside the registry's weight bounds for any finite input.
 
 The enforced branch-coverage gate is 90% (currently ~96%).
 
