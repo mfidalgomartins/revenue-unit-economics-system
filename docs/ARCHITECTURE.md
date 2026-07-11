@@ -175,3 +175,8 @@ which a small `decodePayload()` shim expands back into record objects in the
 browser. That encoding keeps the shipped file roughly a third of the row-wise
 size at identical fidelity. Charts render through a `viewBox` so they scale
 responsively without horizontal overflow on small screens.
+
+The reallocation stress lab embeds the per-channel policy outputs and applies
+the pipeline's own stress formula client-side; its Best / Base / Worst presets
+reproduce the report's stress table, and a parity test pins the embedded plan
+to the scenario engine's numbers.

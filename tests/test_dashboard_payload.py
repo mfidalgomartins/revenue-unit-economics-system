@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import pandas as pd
+import pytest
 from src.dashboard_builder.build_dashboard_assets import (
     build_dashboard_html,
     build_embedded_payload,
 )
+from src.paths import PROJECT_ROOT
 
 
 def test_dashboard_payload_contains_policy_and_no_volatile_timestamp() -> None:
@@ -93,6 +95,46 @@ def test_payload_columnar_encoding_round_trips() -> None:
     assert payload["marketing_spend"]["spend"] == [30.0]
     assert payload["meta"]["coverage_start"] == "2024-01-01"
     assert payload["meta"]["coverage_end"] == "2024-02-11"
+    # No plan supplied, no what-if block.
+    assert "whatif" not in payload
+
+
+def test_whatif_payload_reproduces_the_stress_engine() -> None:
+    """The browser's what-if formula over the embedded plan must land on the
+    same numbers as the pipeline's stress engine for the canonical cases."""
+    plan = pd.read_csv(PROJECT_ROOT / "outputs" / "tables" / "scenario_reallocation_plan.csv")
+    stress = pd.read_csv(
+        PROJECT_ROOT / "outputs" / "tables" / "scenario_stress_test_summary.csv"
+    )
+    customers = pd.read_csv(
+        PROJECT_ROOT / "data" / "raw" / "customers.csv", parse_dates=["signup_date"]
+    )
+    transactions = pd.read_csv(
+        PROJECT_ROOT / "data" / "raw" / "transactions.csv", parse_dates=["transaction_date"]
+    )
+    marketing = pd.read_csv(
+        PROJECT_ROOT / "data" / "raw" / "marketing_spend.csv", parse_dates=["date"]
+    )
+
+    payload = build_embedded_payload(customers, transactions, marketing, plan=plan)
+    whatif = payload["whatif"]
+    channels = payload["meta"]["values"]["acquisition_channels"]
+    assert [channels[i] for i in whatif["ch"]] == plan["acquisition_channel"].tolist()
+
+    for _, case in stress.iterrows():
+        mc, ml = float(case["cac_multiplier"]), float(case["ltv_multiplier"])
+        total = sum(
+            (spend / (cac * mc)) * (ltv * ml)
+            for spend, cac, ltv in zip(
+                whatif["spend"], whatif["cac"], whatif["ltv"], strict=True
+            )
+        )
+        assert total == pytest.approx(
+            float(case["scenario_contribution_est"]), rel=1e-4
+        ), case["scenario_name"]
+        assert total - whatif["baseline_total"] == pytest.approx(
+            float(case["estimated_uplift_vs_baseline"]), rel=1e-4
+        ), case["scenario_name"]
 
 
 def test_dashboard_html_contains_decision_layer_and_contract_ltv_logic() -> None:

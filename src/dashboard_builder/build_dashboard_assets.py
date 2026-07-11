@@ -12,6 +12,7 @@ from src.governance.metric_registry import to_payload_dict
 from src.paths import PROJECT_ROOT
 
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
+TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 DASHBOARD_DIR = PROJECT_ROOT / "outputs" / "dashboard"
 ASSETS_DIR = Path(__file__).resolve().parent / "assets"
 
@@ -34,6 +35,7 @@ def build_embedded_payload(
     customers: pd.DataFrame,
     transactions: pd.DataFrame,
     marketing: pd.DataFrame,
+    plan: pd.DataFrame | None = None,
 ) -> Mapping[str, object]:
     """Encode the three tables as compact parallel arrays.
 
@@ -103,6 +105,18 @@ def build_embedded_payload(
         "transactions": transaction_cols,
         "marketing_spend": marketing_cols,
     }
+
+    if plan is not None:
+        # Per-channel policy outputs for the what-if stress card. The browser
+        # applies CAC/LTV multipliers with the same formula as the pipeline's
+        # stress engine: sum(spend / (cac * m_c) * ltv * m_l) - baseline.
+        payload["whatif"] = {
+            "ch": [ch_ix[c] for c in plan["acquisition_channel"]],
+            "spend": plan["scenario_spend"].round(2).tolist(),
+            "cac": plan["scenario_cac_assumed"].round(4).tolist(),
+            "ltv": plan["scenario_ltv_assumed"].round(4).tolist(),
+            "baseline_total": round(float(plan["baseline_contribution_est"].sum()), 2),
+        }
     return payload
 
 
@@ -118,7 +132,8 @@ def run() -> None:
     DASHBOARD_DIR.mkdir(parents=True, exist_ok=True)
 
     customers, transactions, marketing = load_inputs()
-    payload = build_embedded_payload(customers, transactions, marketing)
+    plan = pd.read_csv(TABLES_DIR / "scenario_reallocation_plan.csv")
+    payload = build_embedded_payload(customers, transactions, marketing, plan=plan)
     html = build_dashboard_html(payload)
 
     out_path = DASHBOARD_DIR / "growth-quality-dashboard.html"

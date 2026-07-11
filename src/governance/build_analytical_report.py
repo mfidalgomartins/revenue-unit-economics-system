@@ -951,13 +951,13 @@ the inefficient ones.</p>
 <figure class="figure">
 <img class="chart" src="{_img('18_scenario_envelope.png')}">
 <p class="cap"><b>Figure 18.</b> Contribution under the reallocation across stress cases. Every case
-clears the baseline; even the worst case, with CAC up 15% and LTV down 12% on the scaled channels,
-adds {_usd(float(worst['estimated_uplift_vs_baseline'])/1e6,1)}M.</p>
+clears the baseline; even the worst case, with CAC up 15% and LTV down 12% across the reallocated
+portfolio, adds {_usd(float(worst['estimated_uplift_vs_baseline'])/1e6,1)}M.</p>
 </figure>
 <table><thead><tr><th>Scenario</th><th class="num">CAC mult.</th><th class="num">LTV mult.</th>
 <th class="num">Contribution</th><th class="num">Uplift vs baseline</th></tr></thead><tbody>{stress_rows}</tbody></table>
-<p>The worst case, with CAC inflated 15% and LTV cut 12% on the channels being scaled, still returns
-{_usd(float(worst['estimated_uplift_vs_baseline'])/1e6,1)}M above baseline. The policy is also stable
+<p>The worst case, with CAC inflated 15% and LTV cut 12% across every channel in the plan, still
+returns {_usd(float(worst['estimated_uplift_vs_baseline'])/1e6,1)}M above baseline. The policy is also stable
 across random draws. Repeating it across {n_seeds} deterministic seeds, the uplift averages
 {_usd(seed_mean/1e6,1)}M with a standard deviation of {_usd(seed_std/1e3)}K, a coefficient of
 variation of {seed_cv:.1%}, and it is positive in {n_seeds} of {n_seeds} seeds. The range runs from
