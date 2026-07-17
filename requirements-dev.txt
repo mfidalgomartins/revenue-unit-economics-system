@@ -1,22 +1,22 @@
 -r requirements.txt
 
 # Direct development dependencies
-pytest==9.0.3
+pytest==9.1.1
 pytest-cov==7.1.0
-ruff==0.15.17
+ruff==0.15.22
 # mypy 1.19 is the latest line compatible with dbt-core's pathspec<0.13 cap.
-mypy==1.19.1
+mypy==2.3.0
 pip-audit==2.10.1
 hypothesis==6.156.6
 
 # Locked development-only dependency closure
 boolean.py==5.0
 CacheControl==0.14.4
-coverage==7.14.1
+coverage==7.15.2
 cyclonedx-python-lib==11.11.0
 defusedxml==0.7.1
 iniconfig==2.3.0
-librt==0.11.0
+librt==0.13.0
 license-expression==30.4.4
 markdown-it-py==4.2.0
 mdurl==0.1.2
