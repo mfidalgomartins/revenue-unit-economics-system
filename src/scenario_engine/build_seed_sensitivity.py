@@ -2,38 +2,32 @@
 
 from __future__ import annotations
 
-import os
-import subprocess
-import sys
+from collections.abc import Iterable
 
 import pandas as pd
 
+from src.data_generation.generate_synthetic_data import generate_datasets
+from src.feature_engineering.build_features import build_customer_metrics, build_unit_economics
 from src.paths import PROJECT_ROOT
+from src.scenario_engine.build_scenarios import build_reallocation_plan
 
 OUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 
-SENSITIVITY_SEEDS = [7, 21, 42, 84, 126]
-BASELINE_SEED = 42
+SENSITIVITY_SEEDS = (7, 21, 42, 84, 126)
 
 
-def _run_module(module: str, seed: int) -> None:
-    env = os.environ.copy()
-    env["SYNTHETIC_SEED"] = str(seed)
-    subprocess.run(
-        [sys.executable, "-m", module],
-        cwd=PROJECT_ROOT,
-        check=True,
-        env=env,
+def _evaluate_seed(seed: int) -> dict[str, float | int | str]:
+    """Evaluate one seed without reading or mutating canonical pipeline artifacts."""
+    customers, transactions, marketing_spend = generate_datasets(seed=seed)
+    customer_metrics = build_customer_metrics(customers, transactions)
+    unit_economics = build_unit_economics(
+        customers,
+        marketing_spend,
+        customer_metrics,
+        transactions,
     )
-
-
-def _run_seed(seed: int) -> dict[str, float | int | str]:
-    _run_module("src.data_generation.generate_synthetic_data", seed)
-    _run_module("src.feature_engineering.build_features", seed)
-    _run_module("src.scenario_engine.build_scenarios", seed)
-
-    summary = pd.read_csv(OUT_TABLES_DIR / "scenario_outcomes_summary.csv").iloc[0]
-    plan = pd.read_csv(OUT_TABLES_DIR / "scenario_reallocation_plan.csv")
+    plan, summary_table = build_reallocation_plan(unit_economics, marketing_spend)
+    summary = summary_table.iloc[0]
 
     efficient_count = int((plan["efficiency_status"] == "efficient").sum())
     inefficient_count = int((plan["efficiency_status"] == "inefficient").sum())
@@ -56,8 +50,14 @@ def _run_seed(seed: int) -> dict[str, float | int | str]:
     }
 
 
-def build_seed_sensitivity() -> pd.DataFrame:
-    rows = [_run_seed(seed) for seed in SENSITIVITY_SEEDS]
+def build_seed_sensitivity(seeds: Iterable[int] = SENSITIVITY_SEEDS) -> pd.DataFrame:
+    seed_values = tuple(int(seed) for seed in seeds)
+    if not seed_values:
+        raise ValueError("At least one sensitivity seed is required")
+    if len(seed_values) != len(set(seed_values)):
+        raise ValueError("Sensitivity seeds must be unique")
+
+    rows = [_evaluate_seed(seed) for seed in seed_values]
     return pd.DataFrame(rows).sort_values("seed", ignore_index=True)
 
 
@@ -97,23 +97,13 @@ def write_outputs(sensitivity: pd.DataFrame) -> None:
     )
 
 
-def restore_baseline_seed() -> None:
-    _run_module("src.data_generation.generate_synthetic_data", BASELINE_SEED)
-    _run_module("src.feature_engineering.build_features", BASELINE_SEED)
-    _run_module("src.scenario_engine.build_scenarios", BASELINE_SEED)
-
-
 def run() -> None:
-    try:
-        sensitivity = build_seed_sensitivity()
-        write_outputs(sensitivity)
-    finally:
-        restore_baseline_seed()
+    sensitivity = build_seed_sensitivity()
+    write_outputs(sensitivity)
 
     print("Scenario seed sensitivity completed.")
     print(f"sensitivity_table: {OUT_TABLES_DIR / 'scenario_seed_sensitivity.csv'}")
     print(f"summary_table: {OUT_TABLES_DIR / 'scenario_seed_sensitivity_summary.csv'}")
-    print("baseline_seed_restored: 42")
 
 
 def main() -> None:

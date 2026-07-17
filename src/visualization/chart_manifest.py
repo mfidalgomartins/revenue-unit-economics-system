@@ -8,7 +8,7 @@ CHART_METADATA = [
     ("03_revenue_growth_mom.png", "How steady is month-on-month revenue growth?"),
     ("04_active_customers_arpu.png", "Is the active base growing faster than monetization?"),
     ("05_revenue_decomposition.png", "Is growth driven by volume, monetization, or mix?"),
-    ("06_cohort_retention.png", "How fast do cohorts decay after signup?"),
+    ("06_cohort_retention.png", "How do mature cohorts retain activity and revenue?"),
     ("07_cohort_heatmap.png", "Do all cohorts decay the same way?"),
     ("08_channel_economics.png", "Which acquisition channels deserve budget?"),
     ("09_channel_ltv_cac_ranking.png", "How wide is the channel efficiency gap?"),
@@ -18,10 +18,13 @@ CHART_METADATA = [
     ("13_product_margin.png", "Where are the low-margin product pockets?"),
     ("14_revenue_concentration.png", "How concentrated is revenue across customers?"),
     ("15_revenue_distribution.png", "What does the customer revenue distribution look like?"),
-    ("16_revenue_lifetime_corr.png", "How strongly does tenure drive revenue?"),
+    (
+        "16_revenue_lifetime_corr.png",
+        "How is revenue associated with observed transaction activity span?",
+    ),
     ("17_reallocation_waterfall.png", "How does the reallocation build its uplift?"),
     ("18_scenario_envelope.png", "How wide is the scenario envelope?"),
-    ("19_scenario_seed_stability.png", "Is the uplift stable across random seeds?"),
+    ("19_scenario_seed_stability.png", "How stable is modeled uplift across sampled seeds?"),
 ]
 
 

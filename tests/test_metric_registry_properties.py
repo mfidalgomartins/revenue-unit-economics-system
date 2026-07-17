@@ -59,9 +59,7 @@ def test_slower_payback_never_upgrades_a_channel(
 
 
 @given(ltv_to_cac=finite_ratio, payback=finite_payback)
-def test_priority_score_is_bounded_by_the_policy_weights(
-    ltv_to_cac: float, payback: float
-) -> None:
+def test_priority_score_is_bounded_by_the_policy_weights(ltv_to_cac: float, payback: float) -> None:
     score = channel_priority_score(ltv_to_cac, payback)
     assert RISK_SCORE_WEIGHTS.borderline_base <= score
     assert score <= RISK_SCORE_WEIGHTS.low_efficiency_base + RISK_SCORE_WEIGHTS.payback_cap_points

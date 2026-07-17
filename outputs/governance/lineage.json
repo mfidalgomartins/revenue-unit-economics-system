@@ -1,0 +1,830 @@
+{
+  "edges": [
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "model.revenue_analytics.mart_channel_unit_economics"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.not_null_dim_customers_acquisition_channel.efb27d0847"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.not_null_dim_customers_customer_id.dd91cd1c8d"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.not_null_dim_customers_region.f63d03500c"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.not_null_dim_customers_segment.6643314026"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.not_null_dim_customers_signup_date.7f7d0227dd"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.relationships_fct_transactions_customer_id__customer_id__ref_dim_customers_.dc3637e25d"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.relationships_stg_marketing_experiments_customer_id__customer_id__ref_dim_customers_.dc02a0002b"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.relationships_stg_marketing_touchpoints_customer_id__customer_id__ref_dim_customers_.db6c46451e"
+    },
+    {
+      "from": "model.revenue_analytics.dim_customers",
+      "to": "test.revenue_analytics.unique_dim_customers_customer_id.15c9f1e2fd"
+    },
+    {
+      "from": "model.revenue_analytics.fct_marketing_spend",
+      "to": "model.revenue_analytics.mart_channel_unit_economics"
+    },
+    {
+      "from": "model.revenue_analytics.fct_marketing_spend",
+      "to": "model.revenue_analytics.mart_monthly_performance"
+    },
+    {
+      "from": "model.revenue_analytics.fct_marketing_spend",
+      "to": "test.revenue_analytics.not_null_fct_marketing_spend_acquisition_channel.1e22687216"
+    },
+    {
+      "from": "model.revenue_analytics.fct_marketing_spend",
+      "to": "test.revenue_analytics.not_null_fct_marketing_spend_spend.cb855b51a3"
+    },
+    {
+      "from": "model.revenue_analytics.fct_marketing_spend",
+      "to": "test.revenue_analytics.not_null_fct_marketing_spend_spend_date.79cf9dc52e"
+    },
+    {
+      "from": "model.revenue_analytics.fct_marketing_spend",
+      "to": "test.revenue_analytics.unique_fct_marketing_spend_cast_spend_date_as_varchar_acquisition_channel.22e543fc19"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "model.revenue_analytics.mart_channel_unit_economics"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "model.revenue_analytics.mart_monthly_performance"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "test.revenue_analytics.not_null_fct_transactions_cost.e0c3680797"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "test.revenue_analytics.not_null_fct_transactions_customer_id.350b0d28fc"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "test.revenue_analytics.not_null_fct_transactions_product_type.bc0dcb5c0a"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "test.revenue_analytics.not_null_fct_transactions_revenue.e71c549866"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "test.revenue_analytics.not_null_fct_transactions_transaction_date.2ffe475785"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "test.revenue_analytics.not_null_fct_transactions_transaction_id.2c6b5372aa"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "test.revenue_analytics.relationships_fct_transactions_customer_id__customer_id__ref_dim_customers_.dc3637e25d"
+    },
+    {
+      "from": "model.revenue_analytics.fct_transactions",
+      "to": "test.revenue_analytics.unique_fct_transactions_transaction_id.c963611c53"
+    },
+    {
+      "from": "model.revenue_analytics.mart_channel_unit_economics",
+      "to": "exposure.revenue_analytics.growth_quality_dashboard"
+    },
+    {
+      "from": "model.revenue_analytics.mart_channel_unit_economics",
+      "to": "test.revenue_analytics.not_null_mart_channel_unit_economics_acquisition_channel.43754e9ffa"
+    },
+    {
+      "from": "model.revenue_analytics.mart_channel_unit_economics",
+      "to": "test.revenue_analytics.not_null_mart_channel_unit_economics_customers_acquired.d027c32c46"
+    },
+    {
+      "from": "model.revenue_analytics.mart_channel_unit_economics",
+      "to": "test.revenue_analytics.not_null_mart_channel_unit_economics_total_spend.9a884b1890"
+    },
+    {
+      "from": "model.revenue_analytics.mart_channel_unit_economics",
+      "to": "test.revenue_analytics.unique_mart_channel_unit_economics_acquisition_channel.6f37c720a9"
+    },
+    {
+      "from": "model.revenue_analytics.mart_monthly_performance",
+      "to": "exposure.revenue_analytics.growth_quality_dashboard"
+    },
+    {
+      "from": "model.revenue_analytics.mart_monthly_performance",
+      "to": "test.revenue_analytics.not_null_mart_monthly_performance_contribution_margin.f6a48acfac"
+    },
+    {
+      "from": "model.revenue_analytics.mart_monthly_performance",
+      "to": "test.revenue_analytics.not_null_mart_monthly_performance_metric_month.a762722c08"
+    },
+    {
+      "from": "model.revenue_analytics.mart_monthly_performance",
+      "to": "test.revenue_analytics.not_null_mart_monthly_performance_revenue.23544ec882"
+    },
+    {
+      "from": "model.revenue_analytics.mart_monthly_performance",
+      "to": "test.revenue_analytics.unique_mart_monthly_performance_metric_month.0a612403ef"
+    },
+    {
+      "from": "model.revenue_analytics.stg_customers",
+      "to": "model.revenue_analytics.dim_customers"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_experiments",
+      "to": "test.revenue_analytics.accepted_values_stg_marketing_experiments_assignment__control__treatment.cae35843d9"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_experiments",
+      "to": "test.revenue_analytics.not_null_stg_marketing_experiments_assignment.ce2a2a8f50"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_experiments",
+      "to": "test.revenue_analytics.not_null_stg_marketing_experiments_customer_id.78f9c3d45b"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_experiments",
+      "to": "test.revenue_analytics.not_null_stg_marketing_experiments_experiment_id.598220602a"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_experiments",
+      "to": "test.revenue_analytics.relationships_stg_marketing_experiments_customer_id__customer_id__ref_dim_customers_.dc02a0002b"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_experiments",
+      "to": "test.revenue_analytics.unique_stg_marketing_experiments_experiment_id_customer_id.7bd537ab45"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_spend",
+      "to": "model.revenue_analytics.fct_marketing_spend"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_touchpoints",
+      "to": "test.revenue_analytics.not_null_stg_marketing_touchpoints_acquisition_channel.7eb9739038"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_touchpoints",
+      "to": "test.revenue_analytics.not_null_stg_marketing_touchpoints_customer_id.63aff8a667"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_touchpoints",
+      "to": "test.revenue_analytics.not_null_stg_marketing_touchpoints_is_conversion_touch.4c8cbf68b3"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_touchpoints",
+      "to": "test.revenue_analytics.not_null_stg_marketing_touchpoints_touchpoint_date.e53eb68494"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_touchpoints",
+      "to": "test.revenue_analytics.not_null_stg_marketing_touchpoints_touchpoint_id.4e3ce7efa6"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_touchpoints",
+      "to": "test.revenue_analytics.not_null_stg_marketing_touchpoints_touchpoint_order.fc81c500df"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_touchpoints",
+      "to": "test.revenue_analytics.relationships_stg_marketing_touchpoints_customer_id__customer_id__ref_dim_customers_.db6c46451e"
+    },
+    {
+      "from": "model.revenue_analytics.stg_marketing_touchpoints",
+      "to": "test.revenue_analytics.unique_stg_marketing_touchpoints_touchpoint_id.9d09b7522c"
+    },
+    {
+      "from": "model.revenue_analytics.stg_pricing_interventions",
+      "to": "test.revenue_analytics.accepted_values_stg_pricing_interventions_assignment__price_down_10__control__price_up_10.d8de74e487"
+    },
+    {
+      "from": "model.revenue_analytics.stg_pricing_interventions",
+      "to": "test.revenue_analytics.not_null_stg_pricing_interventions_assignment.d312eddf4c"
+    },
+    {
+      "from": "model.revenue_analytics.stg_pricing_interventions",
+      "to": "test.revenue_analytics.not_null_stg_pricing_interventions_intervention_id.f71d69776e"
+    },
+    {
+      "from": "model.revenue_analytics.stg_pricing_interventions",
+      "to": "test.revenue_analytics.not_null_stg_pricing_interventions_week_start.6c68437e26"
+    },
+    {
+      "from": "model.revenue_analytics.stg_pricing_interventions",
+      "to": "test.revenue_analytics.unique_stg_pricing_interventions_intervention_id.252a5df3ed"
+    },
+    {
+      "from": "model.revenue_analytics.stg_transactions",
+      "to": "model.revenue_analytics.fct_transactions"
+    },
+    {
+      "from": "source.revenue_analytics.raw.customers",
+      "to": "model.revenue_analytics.stg_customers"
+    },
+    {
+      "from": "source.revenue_analytics.raw.marketing_experiments",
+      "to": "model.revenue_analytics.stg_marketing_experiments"
+    },
+    {
+      "from": "source.revenue_analytics.raw.marketing_spend",
+      "to": "model.revenue_analytics.stg_marketing_spend"
+    },
+    {
+      "from": "source.revenue_analytics.raw.marketing_touchpoints",
+      "to": "model.revenue_analytics.stg_marketing_touchpoints"
+    },
+    {
+      "from": "source.revenue_analytics.raw.pricing_interventions",
+      "to": "model.revenue_analytics.stg_pricing_interventions"
+    },
+    {
+      "from": "source.revenue_analytics.raw.transactions",
+      "to": "model.revenue_analytics.stg_transactions"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "exposure.revenue_analytics.growth_quality_dashboard",
+      "name": "growth_quality_dashboard",
+      "owner": "Miguel Fidalgo Martins",
+      "package": "revenue_analytics",
+      "resource_type": "exposure",
+      "schema": null,
+      "sla_hours": null
+    },
+    {
+      "id": "model.revenue_analytics.dim_customers",
+      "name": "dim_customers",
+      "owner": "analytics-engineering",
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_core",
+      "sla_hours": 24
+    },
+    {
+      "id": "model.revenue_analytics.fct_marketing_spend",
+      "name": "fct_marketing_spend",
+      "owner": "growth-analytics",
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_core",
+      "sla_hours": 24
+    },
+    {
+      "id": "model.revenue_analytics.fct_transactions",
+      "name": "fct_transactions",
+      "owner": "analytics-engineering",
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_core",
+      "sla_hours": 6
+    },
+    {
+      "id": "model.revenue_analytics.mart_channel_unit_economics",
+      "name": "mart_channel_unit_economics",
+      "owner": "growth-analytics",
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_marts",
+      "sla_hours": 24
+    },
+    {
+      "id": "model.revenue_analytics.mart_monthly_performance",
+      "name": "mart_monthly_performance",
+      "owner": "revenue-analytics",
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_marts",
+      "sla_hours": 24
+    },
+    {
+      "id": "model.revenue_analytics.stg_customers",
+      "name": "stg_customers",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_staging",
+      "sla_hours": null
+    },
+    {
+      "id": "model.revenue_analytics.stg_marketing_experiments",
+      "name": "stg_marketing_experiments",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_staging",
+      "sla_hours": null
+    },
+    {
+      "id": "model.revenue_analytics.stg_marketing_spend",
+      "name": "stg_marketing_spend",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_staging",
+      "sla_hours": null
+    },
+    {
+      "id": "model.revenue_analytics.stg_marketing_touchpoints",
+      "name": "stg_marketing_touchpoints",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_staging",
+      "sla_hours": null
+    },
+    {
+      "id": "model.revenue_analytics.stg_pricing_interventions",
+      "name": "stg_pricing_interventions",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_staging",
+      "sla_hours": null
+    },
+    {
+      "id": "model.revenue_analytics.stg_transactions",
+      "name": "stg_transactions",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "model",
+      "schema": "analytics_staging",
+      "sla_hours": null
+    },
+    {
+      "id": "source.revenue_analytics.raw.customers",
+      "name": "customers",
+      "owner": "analytics-engineering",
+      "package": "revenue_analytics",
+      "resource_type": "source",
+      "schema": "raw",
+      "sla_hours": null
+    },
+    {
+      "id": "source.revenue_analytics.raw.marketing_experiments",
+      "name": "marketing_experiments",
+      "owner": "analytics-engineering",
+      "package": "revenue_analytics",
+      "resource_type": "source",
+      "schema": "raw",
+      "sla_hours": null
+    },
+    {
+      "id": "source.revenue_analytics.raw.marketing_spend",
+      "name": "marketing_spend",
+      "owner": "analytics-engineering",
+      "package": "revenue_analytics",
+      "resource_type": "source",
+      "schema": "raw",
+      "sla_hours": null
+    },
+    {
+      "id": "source.revenue_analytics.raw.marketing_touchpoints",
+      "name": "marketing_touchpoints",
+      "owner": "analytics-engineering",
+      "package": "revenue_analytics",
+      "resource_type": "source",
+      "schema": "raw",
+      "sla_hours": null
+    },
+    {
+      "id": "source.revenue_analytics.raw.pricing_interventions",
+      "name": "pricing_interventions",
+      "owner": "analytics-engineering",
+      "package": "revenue_analytics",
+      "resource_type": "source",
+      "schema": "raw",
+      "sla_hours": null
+    },
+    {
+      "id": "source.revenue_analytics.raw.transactions",
+      "name": "transactions",
+      "owner": "analytics-engineering",
+      "package": "revenue_analytics",
+      "resource_type": "source",
+      "schema": "raw",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.accepted_values_stg_marketing_experiments_assignment__control__treatment.cae35843d9",
+      "name": "accepted_values_stg_marketing_experiments_assignment__control__treatment",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.accepted_values_stg_pricing_interventions_assignment__price_down_10__control__price_up_10.d8de74e487",
+      "name": "accepted_values_stg_pricing_interventions_assignment__price_down_10__control__price_up_10",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_dim_customers_acquisition_channel.efb27d0847",
+      "name": "not_null_dim_customers_acquisition_channel",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_dim_customers_customer_id.dd91cd1c8d",
+      "name": "not_null_dim_customers_customer_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_dim_customers_region.f63d03500c",
+      "name": "not_null_dim_customers_region",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_dim_customers_segment.6643314026",
+      "name": "not_null_dim_customers_segment",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_dim_customers_signup_date.7f7d0227dd",
+      "name": "not_null_dim_customers_signup_date",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_marketing_spend_acquisition_channel.1e22687216",
+      "name": "not_null_fct_marketing_spend_acquisition_channel",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_marketing_spend_spend.cb855b51a3",
+      "name": "not_null_fct_marketing_spend_spend",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_marketing_spend_spend_date.79cf9dc52e",
+      "name": "not_null_fct_marketing_spend_spend_date",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_transactions_cost.e0c3680797",
+      "name": "not_null_fct_transactions_cost",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_transactions_customer_id.350b0d28fc",
+      "name": "not_null_fct_transactions_customer_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_transactions_product_type.bc0dcb5c0a",
+      "name": "not_null_fct_transactions_product_type",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_transactions_revenue.e71c549866",
+      "name": "not_null_fct_transactions_revenue",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_transactions_transaction_date.2ffe475785",
+      "name": "not_null_fct_transactions_transaction_date",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_fct_transactions_transaction_id.2c6b5372aa",
+      "name": "not_null_fct_transactions_transaction_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_mart_channel_unit_economics_acquisition_channel.43754e9ffa",
+      "name": "not_null_mart_channel_unit_economics_acquisition_channel",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_mart_channel_unit_economics_customers_acquired.d027c32c46",
+      "name": "not_null_mart_channel_unit_economics_customers_acquired",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_mart_channel_unit_economics_total_spend.9a884b1890",
+      "name": "not_null_mart_channel_unit_economics_total_spend",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_mart_monthly_performance_contribution_margin.f6a48acfac",
+      "name": "not_null_mart_monthly_performance_contribution_margin",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_mart_monthly_performance_metric_month.a762722c08",
+      "name": "not_null_mart_monthly_performance_metric_month",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_mart_monthly_performance_revenue.23544ec882",
+      "name": "not_null_mart_monthly_performance_revenue",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_experiments_assignment.ce2a2a8f50",
+      "name": "not_null_stg_marketing_experiments_assignment",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_experiments_customer_id.78f9c3d45b",
+      "name": "not_null_stg_marketing_experiments_customer_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_experiments_experiment_id.598220602a",
+      "name": "not_null_stg_marketing_experiments_experiment_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_touchpoints_acquisition_channel.7eb9739038",
+      "name": "not_null_stg_marketing_touchpoints_acquisition_channel",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_touchpoints_customer_id.63aff8a667",
+      "name": "not_null_stg_marketing_touchpoints_customer_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_touchpoints_is_conversion_touch.4c8cbf68b3",
+      "name": "not_null_stg_marketing_touchpoints_is_conversion_touch",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_touchpoints_touchpoint_date.e53eb68494",
+      "name": "not_null_stg_marketing_touchpoints_touchpoint_date",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_touchpoints_touchpoint_id.4e3ce7efa6",
+      "name": "not_null_stg_marketing_touchpoints_touchpoint_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_marketing_touchpoints_touchpoint_order.fc81c500df",
+      "name": "not_null_stg_marketing_touchpoints_touchpoint_order",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_pricing_interventions_assignment.d312eddf4c",
+      "name": "not_null_stg_pricing_interventions_assignment",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_pricing_interventions_intervention_id.f71d69776e",
+      "name": "not_null_stg_pricing_interventions_intervention_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.not_null_stg_pricing_interventions_week_start.6c68437e26",
+      "name": "not_null_stg_pricing_interventions_week_start",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.relationships_fct_transactions_customer_id__customer_id__ref_dim_customers_.dc3637e25d",
+      "name": "relationships_fct_transactions_customer_id__customer_id__ref_dim_customers_",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.relationships_stg_marketing_experiments_customer_id__customer_id__ref_dim_customers_.dc02a0002b",
+      "name": "relationships_stg_marketing_experiments_customer_id__customer_id__ref_dim_customers_",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.relationships_stg_marketing_touchpoints_customer_id__customer_id__ref_dim_customers_.db6c46451e",
+      "name": "relationships_stg_marketing_touchpoints_customer_id__customer_id__ref_dim_customers_",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.unique_dim_customers_customer_id.15c9f1e2fd",
+      "name": "unique_dim_customers_customer_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.unique_fct_marketing_spend_cast_spend_date_as_varchar_acquisition_channel.22e543fc19",
+      "name": "unique_fct_marketing_spend_cast_spend_date_as_varchar_acquisition_channel",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.unique_fct_transactions_transaction_id.c963611c53",
+      "name": "unique_fct_transactions_transaction_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.unique_mart_channel_unit_economics_acquisition_channel.6f37c720a9",
+      "name": "unique_mart_channel_unit_economics_acquisition_channel",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.unique_mart_monthly_performance_metric_month.0a612403ef",
+      "name": "unique_mart_monthly_performance_metric_month",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.unique_stg_marketing_experiments_experiment_id_customer_id.7bd537ab45",
+      "name": "unique_stg_marketing_experiments_experiment_id_customer_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.unique_stg_marketing_touchpoints_touchpoint_id.9d09b7522c",
+      "name": "unique_stg_marketing_touchpoints_touchpoint_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    },
+    {
+      "id": "test.revenue_analytics.unique_stg_pricing_interventions_intervention_id.252a5df3ed",
+      "name": "unique_stg_pricing_interventions_intervention_id",
+      "owner": null,
+      "package": "revenue_analytics",
+      "resource_type": "test",
+      "schema": "analytics_dbt_test__audit",
+      "sla_hours": null
+    }
+  ],
+  "schema_version": "1.0.0"
+}

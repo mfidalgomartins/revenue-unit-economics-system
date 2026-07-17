@@ -1,0 +1,18 @@
+revenue_analytics:
+  target: "{{ env_var('DBT_TARGET', 'dev') }}"
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH', '../outputs/warehouse/revenue_analytics.duckdb') }}"
+      schema: analytics
+      threads: 4
+    prod:
+      type: postgres
+      host: "{{ env_var('WAREHOUSE_HOST', 'localhost') }}"
+      port: "{{ env_var('WAREHOUSE_PORT', '5432') | int }}"
+      user: "{{ env_var('WAREHOUSE_USER', 'revenue_analytics') }}"
+      password: "{{ env_var('DBT_ENV_SECRET_WAREHOUSE_PASSWORD', '') }}"
+      dbname: "{{ env_var('WAREHOUSE_DATABASE', 'analytics') }}"
+      schema: "{{ env_var('WAREHOUSE_SCHEMA', 'analytics') }}"
+      sslmode: "{{ env_var('WAREHOUSE_SSLMODE', 'require') }}"
+      threads: "{{ env_var('WAREHOUSE_THREADS', '8') | int }}"

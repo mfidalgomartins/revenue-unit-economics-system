@@ -8,9 +8,9 @@ import pandas as pd
 from src.governance.metric_registry import (
     classify_channel_efficiency,
 )
-from src.paths import PROJECT_ROOT
+from src.paths import PROJECT_ROOT, RAW_DATA_DIR
 
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
+RAW_DIR = RAW_DATA_DIR
 PROC_DIR = PROJECT_ROOT / "data" / "processed"
 OUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 
@@ -47,21 +47,38 @@ def load_inputs() -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def _redistribute_budget(
     delta_budget: float,
-    efficient_scores: np.ndarray,
+    allocation_scores: np.ndarray,
     baseline_spend: pd.Series,
     preliminary_spend: pd.Series,
 ) -> np.ndarray:
     """Allocate budget to efficient channels while capacity remains."""
     redistribution = np.zeros(len(preliminary_spend), dtype=float)
-    score_sum = float(efficient_scores.sum())
+    score_sum = float(allocation_scores.sum())
     if np.isclose(delta_budget, 0.0) or score_sum <= 0:
         return redistribution
 
     if delta_budget < 0:
-        return delta_budget * (efficient_scores / score_sum)
+        removable = np.clip(preliminary_spend.to_numpy(dtype=float), 0.0, None)
+        remaining_reduction = -delta_budget
+        while remaining_reduction > 1e-6:
+            eligible = (removable > 1e-6) & (allocation_scores > 0)
+            if not eligible.any():
+                break
+
+            eligible_scores = np.where(eligible, allocation_scores, 0.0)
+            proposals = remaining_reduction * (eligible_scores / eligible_scores.sum())
+            reductions = np.minimum(proposals, removable)
+            reduced = float(reductions.sum())
+            if reduced <= 0:
+                break
+
+            redistribution -= reductions
+            removable -= reductions
+            remaining_reduction -= reduced
+        return redistribution
 
     capacity = np.where(
-        efficient_scores > 0,
+        allocation_scores > 0,
         baseline_spend.to_numpy() * (1 + MAX_SCALE_UPLIFT) - preliminary_spend.to_numpy(),
         0.0,
     )
@@ -73,7 +90,7 @@ def _redistribute_budget(
         if not eligible.any():
             break
 
-        eligible_scores = np.where(eligible, efficient_scores, 0.0)
+        eligible_scores = np.where(eligible, allocation_scores, 0.0)
         proposals = remaining * (eligible_scores / eligible_scores.sum())
         allocations = np.minimum(proposals, capacity)
         allocated = float(allocations.sum())
@@ -93,7 +110,11 @@ def build_reallocation_plan(
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     ue = unit_economics.copy()
     ue["efficiency_status"] = ue.apply(
-        lambda r: classify_channel_efficiency(r["LTV_to_CAC"], r["approximate_payback_period"]),
+        lambda r: classify_channel_efficiency(
+            r["LTV_to_CAC"],
+            r["approximate_payback_period"],
+            r.get("payback_status"),
+        ),
         axis=1,
     )
 
@@ -108,30 +129,38 @@ def build_reallocation_plan(
     delta_budget = total_budget - prelim_total
 
     efficient_mask = ue["efficiency_status"] == "efficient"
-    efficient_scores = np.where(
+    ue["allocation_score"] = np.where(
         efficient_mask,
-        np.where(ue["CAC"] > 0, ue["LTV_to_CAC"] / ue["CAC"], 0.0),
+        np.maximum(ue["LTV_to_CAC"].fillna(0.0), 0.0),
         0.0,
     )
     ue["redistribution_spend"] = _redistribute_budget(
         delta_budget,
-        efficient_scores,
+        ue["allocation_score"].to_numpy(dtype=float),
         ue["baseline_spend"],
         ue["preliminary_spend"],
     )
-    ue["scenario_spend"] = ue["preliminary_spend"] + ue["redistribution_spend"]
+    ue["scenario_spend"] = np.clip(
+        ue["preliminary_spend"] + ue["redistribution_spend"],
+        0.0,
+        None,
+    )
     ue["spend_change_pct"] = np.where(
         ue["baseline_spend"] > 0,
         (ue["scenario_spend"] / ue["baseline_spend"]) - 1,
         0.0,
     )
 
-    ue["cac_elasticity"] = ue["efficiency_status"].map(
-        {k: v["cac_elasticity"] for k, v in RESPONSE_ASSUMPTIONS.items()}
-    ).fillna(RESPONSE_ASSUMPTIONS["undefined"]["cac_elasticity"])
-    ue["ltv_elasticity"] = ue["efficiency_status"].map(
-        {k: v["ltv_elasticity"] for k, v in RESPONSE_ASSUMPTIONS.items()}
-    ).fillna(RESPONSE_ASSUMPTIONS["undefined"]["ltv_elasticity"])
+    ue["cac_elasticity"] = (
+        ue["efficiency_status"]
+        .map({k: v["cac_elasticity"] for k, v in RESPONSE_ASSUMPTIONS.items()})
+        .fillna(RESPONSE_ASSUMPTIONS["undefined"]["cac_elasticity"])
+    )
+    ue["ltv_elasticity"] = (
+        ue["efficiency_status"]
+        .map({k: v["ltv_elasticity"] for k, v in RESPONSE_ASSUMPTIONS.items()})
+        .fillna(RESPONSE_ASSUMPTIONS["undefined"]["ltv_elasticity"])
+    )
 
     scenario_cac_factor = np.clip(1 + ue["spend_change_pct"] * ue["cac_elasticity"], 0.75, 1.60)
     scenario_ltv_factor = np.clip(1 + ue["spend_change_pct"] * ue["ltv_elasticity"], 0.65, 1.20)
@@ -150,7 +179,9 @@ def build_reallocation_plan(
     ue["scenario_contribution_est"] = ue["scenario_customers_est"] * ue["scenario_ltv_assumed"]
 
     ue["spend_change"] = ue["scenario_spend"] - ue["baseline_spend"]
-    ue["contribution_change_est"] = ue["scenario_contribution_est"] - ue["baseline_contribution_est"]
+    ue["contribution_change_est"] = (
+        ue["scenario_contribution_est"] - ue["baseline_contribution_est"]
+    )
 
     ue["recommended_action"] = np.select(
         [
@@ -173,6 +204,7 @@ def build_reallocation_plan(
         "scenario_spend",
         "spend_change",
         "spend_change_pct",
+        "allocation_score",
         "CAC",
         "cac_elasticity",
         "scenario_cac_assumed",
@@ -188,6 +220,15 @@ def build_reallocation_plan(
         "contribution_change_est",
         "recommended_action",
     ]
+    payback_evidence_cols = [
+        "payback_status",
+        "payback_is_censored",
+        "payback_horizon_months",
+        "payback_mature_customers",
+        "payback_mature_customer_share",
+        "payback_horizon_contribution_per_customer",
+    ]
+    out_cols.extend(col for col in payback_evidence_cols if col in ue.columns)
     plan = ue[out_cols].sort_values("contribution_change_est", ascending=False, ignore_index=True)
 
     summary = pd.DataFrame(
@@ -202,8 +243,12 @@ def build_reallocation_plan(
                 "baseline_contribution_est": float(plan["baseline_contribution_est"].sum()),
                 "scenario_contribution_est": float(plan["scenario_contribution_est"].sum()),
                 "estimated_contribution_uplift": float(plan["contribution_change_est"].sum()),
-                "efficient_channels_after_policy": int((plan["efficiency_status"] == "efficient").sum()),
-                "inefficient_channels_after_policy": int((plan["efficiency_status"] == "inefficient").sum()),
+                "efficient_channels_selected": int(
+                    (plan["efficiency_status"] == "efficient").sum()
+                ),
+                "inefficient_channels_selected": int(
+                    (plan["efficiency_status"] == "inefficient").sum()
+                ),
             }
         ]
     )
@@ -233,7 +278,9 @@ def build_stress_test_summary(plan: pd.DataFrame) -> pd.DataFrame:
                 "ltv_multiplier": ltv_multiplier,
                 "scenario_customers_est": float(np.nansum(scenario_customers)),
                 "scenario_contribution_est": float(np.nansum(scenario_contribution)),
-                "estimated_uplift_vs_baseline": float(np.nansum(scenario_contribution) - baseline_total),
+                "estimated_uplift_vs_baseline": float(
+                    np.nansum(scenario_contribution) - baseline_total
+                ),
             }
         )
 
@@ -262,6 +309,7 @@ def write_outputs(plan: pd.DataFrame, summary: pd.DataFrame, stress_summary: pd.
         "scenario_spend",
         "spend_change",
         "spend_change_pct",
+        "allocation_score",
         "CAC",
         "cac_elasticity",
         "scenario_cac_assumed",
@@ -282,7 +330,6 @@ def write_outputs(plan: pd.DataFrame, summary: pd.DataFrame, stress_summary: pd.
     plan_out.to_csv(OUT_TABLES_DIR / "scenario_reallocation_plan.csv", index=False)
     summary_out.to_csv(OUT_TABLES_DIR / "scenario_outcomes_summary.csv", index=False)
     stress_out.round(4).to_csv(OUT_TABLES_DIR / "scenario_stress_test_summary.csv", index=False)
-
 
 
 def run() -> None:

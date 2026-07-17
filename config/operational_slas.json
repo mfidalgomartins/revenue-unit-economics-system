@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "pipeline": {
+    "availability_target": 0.99,
+    "completion_deadline_utc": "08:00",
+    "duration_minutes_max": 15,
+    "schedule": "0 6 * * *"
+  },
+  "data_products": [
+    {
+      "id": "dashboard_snapshot",
+      "max_freshness_hours": 26,
+      "owner": "revenue-analytics",
+      "path": "outputs/dashboard/growth-quality-dashboard.html",
+      "severity": "critical"
+    },
+    {
+      "id": "unit_economics",
+      "max_freshness_hours": 26,
+      "owner": "growth-analytics",
+      "path": "data/processed/unit_economics.csv",
+      "severity": "critical"
+    },
+    {
+      "id": "causal_measurement",
+      "max_freshness_hours": 168,
+      "owner": "decision-science",
+      "path": "outputs/tables/pricing_elasticity.csv",
+      "severity": "high"
+    },
+    {
+      "id": "analytical_report",
+      "max_freshness_hours": 168,
+      "owner": "revenue-analytics",
+      "path": "outputs/reports/revenue_unit_economics_report.pdf",
+      "severity": "high"
+    }
+  ],
+  "api": {
+    "availability_target": 0.999,
+    "latency_p95_ms_max": 500,
+    "minimum_privacy_cell_size": 10
+  }
+}

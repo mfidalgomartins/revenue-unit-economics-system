@@ -31,6 +31,5 @@ def test_payload_dict_includes_expected_policy_keys() -> None:
     assert payload["margin_quality_floor"] == MARGIN_QUALITY_FLOOR
     assert "risk_score_weights" in payload
     assert (
-        payload["efficiency_thresholds"]["ltv_cac_target"]
-        == EFFICIENCY_THRESHOLDS.ltv_cac_target
+        payload["efficiency_thresholds"]["ltv_cac_target"] == EFFICIENCY_THRESHOLDS.ltv_cac_target
     )

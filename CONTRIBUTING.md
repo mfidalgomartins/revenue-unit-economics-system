@@ -1,9 +1,10 @@
 # Contributing
 
 Thanks for taking a look. This project is a deterministic, self-contained
-analytics pipeline: it generates synthetic data, computes unit economics, and
-publishes a dashboard, chart pack, and report. Contributions should keep it
-reproducible, well-tested, and honest about its synthetic scope.
+analytics system: it supports synthetic or normalized real-source inputs,
+incremental dbt models, causal measurement, governed decision outputs, and
+static or authenticated aggregate publication. Contributions should preserve
+reproducibility, contract compatibility, privacy controls, and claim boundaries.
 
 ## Development setup
 
@@ -28,15 +29,19 @@ make check    # lint + type + audit (static only, fast)
 make qa       # full gate: check + pipeline run + test
 ```
 
-`make fmt` applies `ruff format` if you want it, but formatting is not enforced
-in CI — the existing hand-tuned layout in the chart and report builders is kept
-intact.
+`make fmt` applies `ruff format`; `make fmt-check` and CI enforce the result.
+Visual renderers retain their existing layout and are verified through generated
+artifacts and browser/PDF checks.
 
 ### Conventions
 
 - Type hints on public functions; `from __future__ import annotations` at the top.
 - Keep analytical thresholds and policy in the metric registry
   (`src/governance/metric_registry.py`), not scattered across modules.
+- Preserve source-contract compatibility or version the contract explicitly.
+- Treat attribution as descriptive unless a randomized or otherwise justified
+  identification design supports a causal claim.
+- Never add identifiers or sub-threshold cells to aggregate API responses.
 - New analytical logic needs unit tests. Pure helpers get direct tests; section
   builders are exercised against the committed deterministic data.
 - Coverage must stay at or above 90%. Output renderers (the chart pack, the

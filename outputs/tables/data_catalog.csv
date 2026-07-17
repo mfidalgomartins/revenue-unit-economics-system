@@ -1,10 +1,65 @@
 layer,dataset,column,dtype,role,owner,definition,business_use
+output,cohort_retention_summary,cohorts_observed,int64,metric,Analytics Lead,Number of mature signup cohorts contributing to the age-level estimate.,Maturity and sample-size context for retention.
+output,cohort_retention_summary,median_month_0_activation_rate,float64,metric,Analytics Lead,Median month-0 activation rate across cohorts mature to the evaluated age.,Activation-quality benchmark with cohort maturity context.
+output,cohort_retention_summary,median_retained_from_month_0_rate,float64,metric,Analytics Lead,Median retained-from-month-0 rate across cohorts mature to the evaluated age.,Like-for-like activated-customer retention benchmark by cohort age.
+output,cohort_retention_summary,median_revenue_retention,float64,metric,Analytics Lead,Median cohort revenue ratio to month-0 revenue across eligible mature cohorts.,Revenue-retention and expansion monitoring by cohort age.
+output,cohort_retention_summary,median_signup_activity_rate,float64,metric,Analytics Lead,Median signup activity rate across cohorts mature to the evaluated age.,Whole-cohort activity benchmark by cohort age.
+output,cohort_retention_summary,months_since_cohort,int64,metric,Analytics Lead,Completed months between signup cohort and activity month.,Cohort-retention age axis.
+output,cohort_retention_summary,revenue_expansion_share_m6,float64,metric,Analytics Lead,Share of mature cohorts with month-six revenue above signup-month revenue.,Early-life expansion assessment.
+output,data_profile_summary,candidate_primary_key,object,temporal,Analytics Lead,Column or column set expected to identify the table grain.,Uniqueness validation.
+output,data_profile_summary,column_count,int64,metric,Analytics Lead,Number of columns in the profiled table.,Schema-width monitoring.
+output,data_profile_summary,date_max,object,temporal,Analytics Lead,Latest observed date in the profiled table.,Coverage and freshness review.
+output,data_profile_summary,date_min,object,temporal,Analytics Lead,Earliest observed date in the profiled table.,Coverage and freshness review.
+output,data_profile_summary,duplicate_candidate_key_rows,int64,metric,Analytics Lead,Count of rows duplicated on the candidate primary key.,Grain and uniqueness control.
+output,data_profile_summary,duplicate_rows,int64,metric,Analytics Lead,Count of fully duplicated rows.,Duplicate-data quality control.
+output,data_profile_summary,grain,object,dimension,Analytics Lead,Intended business grain of one table row.,Key and duplicate validation.
+output,data_profile_summary,likely_useful_dimensions,object,dimension,Analytics Lead,Profiled categorical fields suitable for slicing metrics.,Analytical discovery and modeling.
+output,data_profile_summary,likely_useful_metrics,object,dimension,Analytics Lead,Profiled numeric fields suitable for aggregation.,Analytical discovery and modeling.
+output,data_profile_summary,row_count,int64,metric,Analytics Lead,Number of rows in the profiled table.,Volume reconciliation and monitoring.
+output,data_profile_summary,table_name,object,dimension,Analytics Lead,Name of the profiled source table.,Dataset-level quality traceability.
+output,data_quality_issues,check_name,object,dimension,Analytics Lead,Stable identifier for a validation or quality check.,Audit and failure traceability.
+output,data_quality_issues,column_name,object,dimension,Analytics Lead,Column evaluated by the data-quality check.,Field-level issue traceability.
+output,data_quality_issues,description,object,dimension,Analytics Lead,Plain-language description of a data-quality issue.,Reviewer interpretation.
+output,data_quality_issues,issue_count,int64,metric,Analytics Lead,Rows affected by the data-quality issue.,Issue prioritization and triage.
+output,data_quality_issues,issue_rate,float64,metric,Analytics Lead,Affected rows divided by rows evaluated for the check.,Comparable data-quality severity.
+output,data_quality_issues,severity,object,dimension,Analytics Lead,Assigned materiality of a data-quality issue.,Issue prioritization.
+output,data_quality_issues,table_name,object,dimension,Analytics Lead,Name of the profiled source table.,Dataset-level quality traceability.
+output,low_margin_growth_pockets,contribution_margin,float64,metric,Analytics Lead,Revenue minus direct cost.,Primary profitability measure.
+output,low_margin_growth_pockets,dimension_type,object,dimension,Analytics Lead,Dimension family used for the profitability aggregate.,Cross-dimension comparison.
+output,low_margin_growth_pockets,dimension_value,object,dimension,Analytics Lead,Member value within the dimension family.,Profitability drill-down.
+output,low_margin_growth_pockets,margin_pct,float64,metric,Analytics Lead,Contribution margin divided by revenue.,Profitability quality by dimension.
+output,low_margin_growth_pockets,record_count,int64,metric,Analytics Lead,Number of source records represented by the aggregate.,Aggregate-volume context.
+output,low_margin_growth_pockets,revenue_share,float64,metric,Analytics Lead,Dimension revenue divided by total revenue in scope.,Mix and concentration analysis.
+output,low_margin_growth_pockets,total_cost,float64,metric,Analytics Lead,Sum of direct cost over the grouping window.,Margin measurement.
+output,low_margin_growth_pockets,total_revenue,float64,metric,Analytics Lead,Sum of revenue over the grouping window.,Top-line measurement.
 output,main_analysis_findings,business_interpretation,object,dimension,Analytics Lead,Plain-English interpretation of the result.,Stakeholder communication.
 output,main_analysis_findings,caveats,object,dimension,Analytics Lead,Known limitations or assumptions.,Honest framing of confidence.
 output,main_analysis_findings,metrics_used,object,dimension,Analytics Lead,Metrics referenced to produce the result.,Auditability.
 output,main_analysis_findings,question,object,dimension,Analytics Lead,Business question the finding answers.,Decision framing.
 output,main_analysis_findings,result,object,dimension,Analytics Lead,Quantitative or qualitative result.,Headline figure.
 output,main_analysis_findings,section,object,dimension,Analytics Lead,Analysis section the finding belongs to.,Narrative grouping.
+output,marketing_incrementality,acquisition_channel,object,dimension,Analytics Lead,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+output,marketing_incrementality,control_contribution_per_customer,float64,metric,Analytics Lead,CUPED-adjusted mean contribution in the control arm.,Baseline experiment economics.
+output,marketing_incrementality,control_conversion_rate,float64,metric,Analytics Lead,Conversion rate in the randomized control arm.,Baseline conversion performance.
+output,marketing_incrementality,control_customers,int64,metric,Analytics Lead,Customers assigned to the experiment control arm.,Experiment balance and uncertainty assessment.
+output,marketing_incrementality,conversion_lift_ci_95_high,float64,metric,Analytics Lead,Upper bound of the 95% interval for conversion-rate lift.,Uncertainty-aware experiment interpretation.
+output,marketing_incrementality,conversion_lift_ci_95_low,float64,metric,Analytics Lead,Lower bound of the 95% interval for conversion-rate lift.,Uncertainty-aware experiment interpretation.
+output,marketing_incrementality,conversion_rate_lift,float64,metric,Analytics Lead,Treatment conversion rate minus control conversion rate.,Randomized incremental conversion estimate.
+output,marketing_incrementality,cuped_theta,float64,metric,Analytics Lead,Pre-period adjustment coefficient used by CUPED.,Variance-reduction auditability.
+output,marketing_incrementality,diagnostic_status,object,dimension,Analytics Lead,Pass or review status for experiment integrity checks.,Claim-readiness gate.
+output,marketing_incrementality,experiment_id,object,identifier,Analytics Lead,Stable identifier for a randomized marketing holdout.,Experiment-level balance and lift estimation.
+output,marketing_incrementality,identification,object,dimension,Analytics Lead,Design that identifies the reported causal coefficient.,Prevents descriptive attribution from being read as incrementality.
+output,marketing_incrementality,incremental_contribution_ci_95_high,float64,metric,Analytics Lead,Upper 95% bound for incremental contribution per treated customer.,Decision upside under experiment uncertainty.
+output,marketing_incrementality,incremental_contribution_ci_95_low,float64,metric,Analytics Lead,Lower 95% bound for incremental contribution per treated customer.,Decision downside under experiment uncertainty.
+output,marketing_incrementality,incremental_contribution_per_treated_customer,float64,metric,Analytics Lead,Adjusted treatment-minus-control contribution per treated customer.,Customer-level randomized incremental value.
+output,marketing_incrementality,incremental_contribution_total,float64,metric,Analytics Lead,Per-treated-customer lift multiplied by treated customers.,Realized experiment-scale incremental contribution.
+output,marketing_incrementality,p_value,float64,metric,Analytics Lead,Two-sided normal-approximation p-value for the primary coefficient.,Evidence-strength context alongside confidence intervals.
+output,marketing_incrementality,pre_period_standardized_mean_difference,float64,metric,Analytics Lead,Treatment-control standardized difference in pre-period contribution.,Baseline balance diagnostic.
+output,marketing_incrementality,sample_ratio_mismatch_p_value,float64,metric,Analytics Lead,Balanced-allocation sample-ratio mismatch p-value.,Randomization integrity diagnostic.
+output,marketing_incrementality,standard_error,float64,metric,Analytics Lead,Estimated standard error for the primary causal contrast.,Statistical uncertainty and significance assessment.
+output,marketing_incrementality,treatment_contribution_per_customer,float64,metric,Analytics Lead,CUPED-adjusted mean contribution in the treatment arm.,Treatment experiment economics.
+output,marketing_incrementality,treatment_conversion_rate,float64,metric,Analytics Lead,Conversion rate in the randomized treatment arm.,Treatment conversion performance.
+output,marketing_incrementality,treatment_customers,int64,metric,Analytics Lead,Customers assigned to the experiment treatment arm.,Experiment balance and incremental-impact scaling.
 output,monthly_revenue_health,active_customers,int64,metric,Analytics Lead,Distinct customers active in the period.,Engagement measure.
 output,monthly_revenue_health,contribution_margin,float64,metric,Analytics Lead,Revenue minus direct cost.,Primary profitability measure.
 output,monthly_revenue_health,contribution_margin_growth_mom,float64,metric,Analytics Lead,Month-over-month change in contribution margin.,Margin trend monitoring.
@@ -15,26 +70,111 @@ output,monthly_revenue_health,revenue_growth_mom,float64,metric,Analytics Lead,M
 output,monthly_revenue_health,total_cost,float64,metric,Analytics Lead,Sum of direct cost over the grouping window.,Margin measurement.
 output,monthly_revenue_health,total_revenue,float64,metric,Analytics Lead,Sum of revenue over the grouping window.,Top-line measurement.
 output,monthly_revenue_health,transaction_count,int64,metric,Analytics Lead,Number of transactions in the grouping.,Volume measure.
+output,multi_touch_attribution,acquisition_channel,object,dimension,Analytics Lead,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+output,multi_touch_attribution,attributed_contribution,float64,metric,Analytics Lead,Observed contribution allocated by position-based journey weights.,Descriptive contribution allocation across touches.
+output,multi_touch_attribution,attributed_contribution_share,float64,metric,Analytics Lead,Channel attributed contribution divided by total attributed contribution.,Cross-channel descriptive allocation share.
+output,multi_touch_attribution,attributed_customer_equivalents,float64,metric,Analytics Lead,Sum of position-based fractional customer credits.,Fully reconciling descriptive acquisition allocation.
+output,multi_touch_attribution,claim_scope,object,dimension,Analytics Lead,Explicit boundary on the inference supported by the model.,Guards against treating attribution as causal lift.
+output,multi_touch_attribution,customers_reached,int64,metric,Analytics Lead,Distinct customers with at least one touch assigned to the channel.,Descriptive channel reach.
+output,multi_touch_attribution,model,object,dimension,Analytics Lead,Named analytical model used to produce the output.,Method provenance and reproducibility.
+output,multi_touch_attribution,touchpoints,int64,metric,Analytics Lead,Governed marketing interactions assigned to the channel.,Journey-volume context for descriptive attribution.
+output,pricing_elasticity,ci_95_high,float64,metric,Analytics Lead,Upper bound of the coefficient's 95% confidence interval.,Uncertainty-aware pricing decisions.
+output,pricing_elasticity,ci_95_low,float64,metric,Analytics Lead,Lower bound of the coefficient's 95% confidence interval.,Uncertainty-aware pricing decisions.
+output,pricing_elasticity,clustered_standard_error,float64,metric,Analytics Lead,CR1 standard error clustered by intervention week.,Primary pricing-coefficient uncertainty measure.
+output,pricing_elasticity,clusters,int64,metric,Analytics Lead,Distinct intervention weeks used as covariance clusters.,Cluster-count adequacy check.
+output,pricing_elasticity,condition_number,float64,metric,Analytics Lead,Condition number of the fitted design matrix.,Numerical-stability diagnostic.
+output,pricing_elasticity,hc1_standard_error,float64,metric,Analytics Lead,HC1 standard error retained as a model diagnostic.,Sensitivity comparison for coefficient uncertainty.
+output,pricing_elasticity,identification,object,dimension,Analytics Lead,Design that identifies the reported causal coefficient.,Prevents descriptive attribution from being read as incrementality.
+output,pricing_elasticity,observations,int64,metric,Analytics Lead,Intervention cells included in the elasticity regression.,Evidence-volume context.
+output,pricing_elasticity,p_value,float64,metric,Analytics Lead,Two-sided normal-approximation p-value for the primary coefficient.,Evidence-strength context alongside confidence intervals.
+output,pricing_elasticity,price_elasticity,float64,metric,Analytics Lead,Estimated percent change in units for a 1% price change.,Observed-intervention demand response.
+output,pricing_elasticity,price_variants,int64,metric,Analytics Lead,Distinct randomized price assignments included in the model.,Identification coverage check.
+output,pricing_elasticity,product_scope,object,dimension,Analytics Lead,Product population represented by the elasticity coefficient.,Global versus product-specific decision use.
+output,pricing_elasticity,r_squared,float64,metric,Analytics Lead,Share of log-demand variation explained by the fitted model.,Model-fit context rather than causal proof.
+output,pricing_elasticity,residual_dof,int64,metric,Analytics Lead,Regression observations minus estimated parameters.,Model degrees-of-freedom diagnostic.
+output,pricing_elasticity,robust_standard_error,float64,metric,Analytics Lead,CR1 week-clustered standard error used for elasticity inference.,Pricing-coefficient uncertainty.
+output,pricing_elasticity,standard_error_method,object,dimension,Analytics Lead,Named covariance estimator used for the published interval.,Inference-method provenance.
+output,pricing_elasticity,valid_range,object,dimension,Analytics Lead,Observed price-index range supporting the elasticity estimate.,Prevents unsupported extrapolation.
+output,pricing_recommendations,decision_rule,object,dimension,Analytics Lead,Documented rule selecting the recommended price candidate.,Decision reproducibility and guardrails.
+output,pricing_recommendations,estimated_elasticity,float64,metric,Analytics Lead,Product elasticity used by the bounded pricing decision rule.,Traceable model input for pricing recommendations.
+output,pricing_recommendations,predicted_weekly_contribution,float64,metric,Analytics Lead,Weekly contribution predicted at the recommended price.,Pricing objective value.
+output,pricing_recommendations,predicted_weekly_contribution_uplift,float64,metric,Analytics Lead,Predicted contribution difference from the control price.,Expected pricing decision impact.
+output,pricing_recommendations,predicted_weekly_units,float64,metric,Analytics Lead,Weekly units predicted at the recommended in-range price.,Volume trade-off for the pricing decision.
+output,pricing_recommendations,product_type,object,dimension,Analytics Lead,Product line for the transaction.,Product mix and profitability analysis.
+output,pricing_recommendations,recommended_price,float64,metric,Analytics Lead,Recommended product price implied by the selected price index.,Operational pricing input.
+output,pricing_recommendations,recommended_price_index,float64,metric,Analytics Lead,In-range price multiplier maximizing predicted contribution.,Bounded pricing recommendation.
+output,pricing_recommendations,tested_price_index_max,float64,metric,Analytics Lead,Highest randomized price index observed in the experiment.,Recommendation upper bound.
+output,pricing_recommendations,tested_price_index_min,float64,metric,Analytics Lead,Lowest randomized price index observed in the experiment.,Recommendation lower bound.
+output,product_profitability,contribution_margin,float64,metric,Analytics Lead,Revenue minus direct cost.,Primary profitability measure.
+output,product_profitability,dimension_type,object,dimension,Analytics Lead,Dimension family used for the profitability aggregate.,Cross-dimension comparison.
+output,product_profitability,dimension_value,object,dimension,Analytics Lead,Member value within the dimension family.,Profitability drill-down.
+output,product_profitability,margin_pct,float64,metric,Analytics Lead,Contribution margin divided by revenue.,Profitability quality by dimension.
+output,product_profitability,record_count,int64,metric,Analytics Lead,Number of source records represented by the aggregate.,Aggregate-volume context.
+output,product_profitability,revenue_share,float64,metric,Analytics Lead,Dimension revenue divided by total revenue in scope.,Mix and concentration analysis.
+output,product_profitability,total_cost,float64,metric,Analytics Lead,Sum of direct cost over the grouping window.,Margin measurement.
+output,product_profitability,total_revenue,float64,metric,Analytics Lead,Sum of revenue over the grouping window.,Top-line measurement.
+output,raw_validation_summary,check_name,object,dimension,Analytics Lead,Stable identifier for a validation or quality check.,Audit and failure traceability.
+output,raw_validation_summary,detail,object,dimension,Analytics Lead,Measured evidence produced by a validation check.,Failure diagnosis and auditability.
+output,raw_validation_summary,status,object,dimension,Analytics Lead,Outcome of a validation check.,Publication gating and triage.
+output,region_profitability,contribution_margin,float64,metric,Analytics Lead,Revenue minus direct cost.,Primary profitability measure.
+output,region_profitability,dimension_type,object,dimension,Analytics Lead,Dimension family used for the profitability aggregate.,Cross-dimension comparison.
+output,region_profitability,dimension_value,object,dimension,Analytics Lead,Member value within the dimension family.,Profitability drill-down.
+output,region_profitability,margin_pct,float64,metric,Analytics Lead,Contribution margin divided by revenue.,Profitability quality by dimension.
+output,region_profitability,record_count,int64,metric,Analytics Lead,Number of source records represented by the aggregate.,Aggregate-volume context.
+output,region_profitability,revenue_share,float64,metric,Analytics Lead,Dimension revenue divided by total revenue in scope.,Mix and concentration analysis.
+output,region_profitability,total_cost,float64,metric,Analytics Lead,Sum of direct cost over the grouping window.,Margin measurement.
+output,region_profitability,total_revenue,float64,metric,Analytics Lead,Sum of revenue over the grouping window.,Top-line measurement.
+output,revenue_decomposition_effects,effect,object,dimension,Analytics Lead,Named component of the revenue decomposition.,Growth-driver attribution.
+output,revenue_decomposition_effects,effect_value,float64,metric,Analytics Lead,Revenue change assigned to the decomposition component.,Growth-driver sizing.
+output,revenue_decomposition_effects,share_of_total_change,float64,metric,Analytics Lead,Decomposition component divided by total revenue change.,Relative growth-driver contribution.
+output,scenario_outcomes_summary,baseline_contribution_est,float64,metric,Analytics Lead,Modeled contribution under the baseline allocation and observed-window economics.,Scenario reconciliation baseline.
+output,scenario_outcomes_summary,efficient_channels_selected,int64,metric,Analytics Lead,Channels classified efficient and selected for scaling by the scenario policy.,Scenario portfolio composition and allocation traceability.
+output,scenario_outcomes_summary,estimated_contribution_uplift,float64,metric,Analytics Lead,Scenario contribution estimate minus the reconciled baseline.,Portfolio-level scenario impact.
+output,scenario_outcomes_summary,inefficient_channels_selected,int64,metric,Analytics Lead,Channels classified inefficient and selected for reduction by the scenario policy.,Scenario portfolio risk and allocation traceability.
+output,scenario_outcomes_summary,scenario_contribution_est,float64,metric,Analytics Lead,Modeled contribution under the scenario allocation and response assumptions.,Scenario outcome estimate.
+output,scenario_outcomes_summary,scenario_name,object,dimension,Analytics Lead,Stable name of the modeled policy or stress case.,Scenario comparison.
+output,scenario_outcomes_summary,total_budget_baseline,float64,metric,Analytics Lead,Total observed acquisition spend before reallocation.,Budget-neutrality reconciliation.
+output,scenario_outcomes_summary,total_budget_scenario,float64,metric,Analytics Lead,Total acquisition spend assigned by the scenario.,Budget-neutrality reconciliation.
+output,scenario_outcomes_summary,unallocated_budget,float64,metric,Analytics Lead,Budget held back when efficient-channel scale capacity is exhausted.,Scenario allocation control.
 output,scenario_reallocation_plan,CAC,float64,metric,Analytics Lead,Channel marketing spend divided by customers acquired.,Channel efficiency.
 output,scenario_reallocation_plan,LTV_to_CAC,float64,metric,Analytics Lead,Average observed LTV divided by CAC.,Scaling guardrail.
 output,scenario_reallocation_plan,acquisition_channel,object,dimension,Analytics Lead,Channel attributed to customer acquisition.,Unit economics and budget allocation.
-output,scenario_reallocation_plan,approximate_payback_period,float64,metric,Analytics Lead,Months of margin needed to recover CAC.,Capital efficiency proxy.
+output,scenario_reallocation_plan,allocation_score,float64,metric,Analytics Lead,Non-negative observed LTV/CAC for efficient channels and zero for all other channels.,Proportional weight for redistributing available scenario budget.
+output,scenario_reallocation_plan,approximate_payback_period,float64,metric,Analytics Lead,Earliest acquisition-age month when cumulative contribution per mature customer reaches CAC.,Empirical CAC recovery timing; null when maturity is insufficient or CAC is not recovered.
 output,scenario_reallocation_plan,average_LTV,float64,metric,Analytics Lead,Mean contribution margin per acquired customer.,Value side of LTV/CAC.
-output,scenario_reallocation_plan,baseline_contribution_est,float64,metric,Analytics Lead,,
-output,scenario_reallocation_plan,baseline_customers_est,float64,metric,Analytics Lead,,
+output,scenario_reallocation_plan,baseline_contribution_est,float64,metric,Analytics Lead,Modeled contribution under the baseline allocation and observed-window economics.,Scenario reconciliation baseline.
+output,scenario_reallocation_plan,baseline_customers_est,float64,metric,Analytics Lead,Customers implied by baseline spend and observed CAC.,Scenario baseline volume reconciliation.
 output,scenario_reallocation_plan,baseline_spend,float64,metric,Analytics Lead,Observed channel spend before reallocation.,Scenario budget baseline.
 output,scenario_reallocation_plan,cac_elasticity,float64,metric,Analytics Lead,Illustrative CAC response to a 1% spend change.,Scenario assumption.
-output,scenario_reallocation_plan,contribution_change_est,float64,metric,Analytics Lead,,
-output,scenario_reallocation_plan,efficiency_status,object,dimension,Analytics Lead,,
+output,scenario_reallocation_plan,contribution_change_est,float64,metric,Analytics Lead,Scenario contribution estimate minus baseline contribution estimate.,Channel-level scenario impact.
+output,scenario_reallocation_plan,efficiency_status,object,dimension,Analytics Lead,Channel classification under the governed LTV/CAC and payback policy.,Budget-allocation guardrail.
 output,scenario_reallocation_plan,ltv_elasticity,float64,metric,Analytics Lead,Illustrative LTV response to a 1% spend change.,Scenario assumption.
-output,scenario_reallocation_plan,recommended_action,object,dimension,Analytics Lead,,
+output,scenario_reallocation_plan,payback_horizon_contribution_per_customer,float64,metric,Analytics Lead,Cumulative contribution through the payback horizon divided by mature acquired customers.,"Recovery evidence at the censoring boundary, including zero-transaction customers."
+output,scenario_reallocation_plan,payback_horizon_months,int64,metric,Analytics Lead,Latest acquisition-age month evaluated in the empirical contribution curve.,Defines the recovery window and customer-maturity requirement.
+output,scenario_reallocation_plan,payback_is_censored,bool,boolean,Analytics Lead,True when CAC was not recovered within the governed payback horizon.,Prevents a null recovery month from being interpreted as missing at random.
+output,scenario_reallocation_plan,payback_mature_customer_share,float64,metric,Analytics Lead,Payback-mature customers divided by all customers acquired in the channel.,Coverage indicator for the channel payback estimate.
+output,scenario_reallocation_plan,payback_mature_customers,int64,metric,Analytics Lead,"Acquired customers observable through the full payback horizon, including zero-transaction customers.",Denominator and evidence volume for the empirical contribution curve.
+output,scenario_reallocation_plan,payback_status,object,dimension,Analytics Lead,"Payback outcome: recovered, not_recovered, or insufficient_maturity.",Distinguishes observed recovery from right-censoring and unavailable evidence.
+output,scenario_reallocation_plan,recommended_action,object,dimension,Analytics Lead,Policy action assigned from channel efficiency and capacity rules.,Scenario decision output.
 output,scenario_reallocation_plan,scenario_cac_assumed,float64,metric,Analytics Lead,CAC after bounded spend-response assumption.,Scenario unit economics.
-output,scenario_reallocation_plan,scenario_contribution_est,float64,metric,Analytics Lead,,
-output,scenario_reallocation_plan,scenario_customers_est,float64,metric,Analytics Lead,,
+output,scenario_reallocation_plan,scenario_contribution_est,float64,metric,Analytics Lead,Modeled contribution under the scenario allocation and response assumptions.,Scenario outcome estimate.
+output,scenario_reallocation_plan,scenario_customers_est,float64,metric,Analytics Lead,Customers implied by scenario spend and stressed CAC.,Scenario volume estimate.
 output,scenario_reallocation_plan,scenario_ltv_assumed,float64,metric,Analytics Lead,LTV after bounded spend-response assumption.,Scenario unit economics.
 output,scenario_reallocation_plan,scenario_spend,float64,metric,Analytics Lead,Channel spend after capped policy reallocation.,Scenario allocation output.
 output,scenario_reallocation_plan,spend_change,float64,metric,Analytics Lead,Scenario spend minus baseline spend.,Scenario allocation delta.
 output,scenario_reallocation_plan,spend_change_pct,float64,metric,Analytics Lead,Scenario spend change divided by baseline spend.,Elasticity input.
+output,scenario_seed_sensitivity,baseline_contribution_est,float64,metric,Analytics Lead,Modeled contribution under the baseline allocation and observed-window economics.,Scenario reconciliation baseline.
+output,scenario_seed_sensitivity,efficient_channels,int64,metric,Analytics Lead,Efficient channels identified in the seeded scenario run.,Cross-seed policy stability.
+output,scenario_seed_sensitivity,estimated_contribution_uplift,float64,metric,Analytics Lead,Scenario contribution estimate minus the reconciled baseline.,Portfolio-level scenario impact.
+output,scenario_seed_sensitivity,inefficient_channels,int64,metric,Analytics Lead,Inefficient channels identified in the seeded scenario run.,Cross-seed risk stability.
+output,scenario_seed_sensitivity,scenario_contribution_est,float64,metric,Analytics Lead,Modeled contribution under the scenario allocation and response assumptions.,Scenario outcome estimate.
+output,scenario_seed_sensitivity,seed,int64,metric,Analytics Lead,Deterministic synthetic generation seed.,Scenario reproducibility and sensitivity.
+output,scenario_seed_sensitivity,top_cut_channel,object,dimension,Analytics Lead,Channel receiving the largest spend reduction in the seeded run.,Cross-seed allocation stability.
+output,scenario_seed_sensitivity,top_cut_spend_change,float64,metric,Analytics Lead,Spend reduction assigned to the top cut channel.,Cross-seed allocation magnitude.
+output,scenario_seed_sensitivity,top_scale_channel,object,dimension,Analytics Lead,Channel receiving the largest spend increase in the seeded run.,Cross-seed allocation stability.
+output,scenario_seed_sensitivity,top_scale_spend_change,float64,metric,Analytics Lead,Spend increase assigned to the top scale channel.,Cross-seed allocation magnitude.
+output,scenario_seed_sensitivity,total_budget_baseline,float64,metric,Analytics Lead,Total observed acquisition spend before reallocation.,Budget-neutrality reconciliation.
+output,scenario_seed_sensitivity,total_budget_scenario,float64,metric,Analytics Lead,Total acquisition spend assigned by the scenario.,Budget-neutrality reconciliation.
 output,scenario_seed_sensitivity_summary,positive_uplift_rate,float64,metric,Analytics Lead,Share of synthetic seeds with positive simulated uplift.,Scenario stability check.
 output,scenario_seed_sensitivity_summary,seed_count,int64,metric,Analytics Lead,Number of deterministic synthetic seeds in the sensitivity run.,Scenario stability coverage.
 output,scenario_seed_sensitivity_summary,uplift_max,float64,metric,Analytics Lead,Maximum simulated contribution uplift across seeds.,Scenario upside check.
@@ -42,32 +182,84 @@ output,scenario_seed_sensitivity_summary,uplift_mean,float64,metric,Analytics Le
 output,scenario_seed_sensitivity_summary,uplift_median,float64,metric,Analytics Lead,Median simulated contribution uplift across seeds.,Scenario stability check.
 output,scenario_seed_sensitivity_summary,uplift_min,float64,metric,Analytics Lead,Minimum simulated contribution uplift across seeds.,Scenario downside check.
 output,scenario_seed_sensitivity_summary,uplift_std,float64,metric,Analytics Lead,Standard deviation of simulated uplift across seeds.,Scenario dispersion check.
-processed,cohort_table,activity_month,object,temporal,Analytics Engineering,Month in which the cohort generated revenue.,Retention curve x-axis.
+output,scenario_stress_test_summary,cac_multiplier,float64,metric,Analytics Lead,Stress-case multiplier applied to scenario CAC.,Scenario sensitivity assumption.
+output,scenario_stress_test_summary,estimated_uplift_vs_base_case,float64,metric,Analytics Lead,Stressed scenario contribution minus the unstressed base scenario.,Sensitivity relative to the modeled base case.
+output,scenario_stress_test_summary,estimated_uplift_vs_baseline,float64,metric,Analytics Lead,Stressed scenario contribution minus the observed baseline contribution.,Stress-case downside and upside assessment.
+output,scenario_stress_test_summary,ltv_multiplier,float64,metric,Analytics Lead,Stress-case multiplier applied to scenario LTV.,Scenario sensitivity assumption.
+output,scenario_stress_test_summary,scenario_contribution_est,float64,metric,Analytics Lead,Modeled contribution under the scenario allocation and response assumptions.,Scenario outcome estimate.
+output,scenario_stress_test_summary,scenario_customers_est,float64,metric,Analytics Lead,Customers implied by scenario spend and stressed CAC.,Scenario volume estimate.
+output,scenario_stress_test_summary,scenario_name,object,dimension,Analytics Lead,Stable name of the modeled policy or stress case.,Scenario comparison.
+output,segment_profitability,contribution_margin,float64,metric,Analytics Lead,Revenue minus direct cost.,Primary profitability measure.
+output,segment_profitability,dimension_type,object,dimension,Analytics Lead,Dimension family used for the profitability aggregate.,Cross-dimension comparison.
+output,segment_profitability,dimension_value,object,dimension,Analytics Lead,Member value within the dimension family.,Profitability drill-down.
+output,segment_profitability,margin_pct,float64,metric,Analytics Lead,Contribution margin divided by revenue.,Profitability quality by dimension.
+output,segment_profitability,record_count,int64,metric,Analytics Lead,Number of source records represented by the aggregate.,Aggregate-volume context.
+output,segment_profitability,revenue_share,float64,metric,Analytics Lead,Dimension revenue divided by total revenue in scope.,Mix and concentration analysis.
+output,segment_profitability,total_cost,float64,metric,Analytics Lead,Sum of direct cost over the grouping window.,Margin measurement.
+output,segment_profitability,total_revenue,float64,metric,Analytics Lead,Sum of revenue over the grouping window.,Top-line measurement.
+output,unit_economics_channel_diagnostics,CAC,float64,metric,Analytics Lead,Channel marketing spend divided by customers acquired.,Channel efficiency.
+output,unit_economics_channel_diagnostics,LTV_to_CAC,float64,metric,Analytics Lead,Average observed LTV divided by CAC.,Scaling guardrail.
+output,unit_economics_channel_diagnostics,acquisition_channel,object,dimension,Analytics Lead,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+output,unit_economics_channel_diagnostics,approximate_payback_period,float64,metric,Analytics Lead,Earliest acquisition-age month when cumulative contribution per mature customer reaches CAC.,Empirical CAC recovery timing; null when maturity is insufficient or CAC is not recovered.
+output,unit_economics_channel_diagnostics,average_LTV,float64,metric,Analytics Lead,Mean contribution margin per acquired customer.,Value side of LTV/CAC.
+output,unit_economics_channel_diagnostics,customers_acquired,int64,metric,Analytics Lead,Customers whose signup falls in the period.,CAC denominator.
+output,unit_economics_channel_diagnostics,efficiency_status,object,dimension,Analytics Lead,Channel classification under the governed LTV/CAC and payback policy.,Budget-allocation guardrail.
+output,unit_economics_channel_diagnostics,median_LTV,float64,metric,Analytics Lead,Median contribution margin per acquired customer.,Skew-robust value check.
+output,unit_economics_channel_diagnostics,payback_acquisition_end,object,dimension,Analytics Lead,Last signup date represented in the mature payback subset.,End of the payback CAC alignment window.
+output,unit_economics_channel_diagnostics,payback_acquisition_start,object,dimension,Analytics Lead,First signup date represented in the mature payback subset.,Start of the payback CAC alignment window.
+output,unit_economics_channel_diagnostics,payback_aligned_spend,float64,metric,Analytics Lead,Channel spend between the first and last signup dates of the mature payback subset.,Spend basis for maturity-aligned payback CAC.
+output,unit_economics_channel_diagnostics,payback_cac,float64,metric,Analytics Lead,Spend in the mature cohort acquisition window divided by mature acquired customers.,Time-aligned recovery threshold for empirical payback.
+output,unit_economics_channel_diagnostics,payback_horizon_contribution_per_customer,float64,metric,Analytics Lead,Cumulative contribution through the payback horizon divided by mature acquired customers.,"Recovery evidence at the censoring boundary, including zero-transaction customers."
+output,unit_economics_channel_diagnostics,payback_horizon_months,int64,metric,Analytics Lead,Latest acquisition-age month evaluated in the empirical contribution curve.,Defines the recovery window and customer-maturity requirement.
+output,unit_economics_channel_diagnostics,payback_is_censored,bool,boolean,Analytics Lead,True when CAC was not recovered within the governed payback horizon.,Prevents a null recovery month from being interpreted as missing at random.
+output,unit_economics_channel_diagnostics,payback_mature_customer_share,float64,metric,Analytics Lead,Payback-mature customers divided by all customers acquired in the channel.,Coverage indicator for the channel payback estimate.
+output,unit_economics_channel_diagnostics,payback_mature_customers,int64,metric,Analytics Lead,"Acquired customers observable through the full payback horizon, including zero-transaction customers.",Denominator and evidence volume for the empirical contribution curve.
+output,unit_economics_channel_diagnostics,payback_status,object,dimension,Analytics Lead,"Payback outcome: recovered, not_recovered, or insufficient_maturity.",Distinguishes observed recovery from right-censoring and unavailable evidence.
+output,unit_economics_channel_diagnostics,total_channel_contribution_margin,float64,metric,Analytics Lead,Observed contribution margin summed within an acquisition channel.,Scenario baseline reconciliation.
+output,unit_economics_channel_diagnostics,total_spend,float64,metric,Analytics Lead,Sum of marketing spend over the grouping window.,CAC denominator input.
+processed,cohort_table,activity_month,object,temporal,Analytics Engineering,"Calendar month evaluated for the cohort, including zero-activity months.",Cohort activity and retention curve x-axis.
 processed,cohort_table,average_revenue_per_active_customer,float64,metric,Analytics Engineering,Cohort revenue divided by active customers.,Per-user revenue trajectory.
 processed,cohort_table,cohort_month,object,temporal,Analytics Engineering,Signup month used as cohort key.,Cohort retention analysis.
 processed,cohort_table,cohort_revenue,float64,metric,Analytics Engineering,Revenue generated by the cohort in the activity month.,Cohort retention numerator.
-processed,cohort_table,customers_active,int64,metric,Analytics Engineering,Distinct active customers in the cohort/period.,Retention denominator.
+processed,cohort_table,cohort_size,int64,metric,Analytics Engineering,Distinct customers who signed up in the cohort month.,Denominator for activation and signup-cohort activity rates.
+processed,cohort_table,customers_active,int64,metric,Analytics Engineering,Distinct cohort members with a transaction in the evaluated activity month.,"Signup-cohort activity numerator, including late activations."
+processed,cohort_table,late_activation_customers,int64,metric,Analytics Engineering,Active customers in the evaluated month who were not active in month 0.,Separates post-signup activation from retention of the month-0 baseline.
+processed,cohort_table,month_0_activation_rate,float64,metric,Analytics Engineering,Month-0 active customers divided by the full signup cohort size.,Acquisition-to-activation quality at cohort entry.
+processed,cohort_table,month_0_active_customers,int64,metric,Analytics Engineering,Distinct cohort members with a transaction in their signup month.,Fixed baseline population for retained-from-month-0 measurement.
+processed,cohort_table,retained_from_month_0_rate,float64,metric,Analytics Engineering,Retained month-0 customers divided by month-0 active customers.,Like-for-like retention of the activated month-0 baseline.
+processed,cohort_table,retained_month_0_customers,int64,metric,Analytics Engineering,Month-0 active customers who also transacted in the evaluated activity month.,Numerator for retained-from-month-0 activity.
+processed,cohort_table,signup_activity_rate,float64,metric,Analytics Engineering,Customers active in the evaluated month divided by the full signup cohort size.,"Whole-cohort activity, including late activations and reactivations."
 processed,customer_metrics,acquisition_channel,object,dimension,Analytics Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
 processed,customer_metrics,avg_revenue_per_transaction,float64,metric,Analytics Engineering,Mean transaction revenue for the customer.,Ticket-size diagnostics.
 processed,customer_metrics,contribution_margin,float64,metric,Analytics Engineering,Revenue minus direct cost.,Primary profitability measure.
 processed,customer_metrics,contribution_margin_pct,float64,metric,Analytics Engineering,Contribution margin as share of revenue.,Margin quality signal.
 processed,customer_metrics,customer_id,object,identifier,Analytics Engineering,Unique customer identifier.,Join key across customer and transaction views.
-processed,customer_metrics,first_transaction_date,object,temporal,Analytics Engineering,First observed transaction for the customer.,Customer lifetime window start.
-processed,customer_metrics,last_transaction_date,object,temporal,Analytics Engineering,Last observed transaction for the customer.,Customer lifetime window end.
-processed,customer_metrics,lifetime_days,int64,metric,Analytics Engineering,Days between first and last observed transaction.,Observation window size.
+processed,customer_metrics,first_transaction_date,object,temporal,Analytics Engineering,First observed transaction for the customer.,Observed transaction-span start.
+processed,customer_metrics,last_transaction_date,object,temporal,Analytics Engineering,Last observed transaction for the customer.,Observed transaction-span end.
 processed,customer_metrics,region,object,dimension,Analytics Engineering,"Customer region (North America, EMEA, LATAM, APAC).",Geographic mix and regional profitability.
-processed,customer_metrics,revenue_per_day,float64,metric,Analytics Engineering,Total revenue divided by observed lifetime days.,Per-day intensity.
+processed,customer_metrics,revenue_per_transaction_span_day,float64,metric,Analytics Engineering,Total revenue divided by inclusive observed transaction-span days.,Revenue intensity within the observed transaction window.
 processed,customer_metrics,segment,object,dimension,Analytics Engineering,"Customer segment (Startup, SMB, Mid-Market, Enterprise).",Cross-cut for margin and retention diagnostics.
 processed,customer_metrics,total_cost,float64,metric,Analytics Engineering,Sum of direct cost over the grouping window.,Margin measurement.
 processed,customer_metrics,total_revenue,float64,metric,Analytics Engineering,Sum of revenue over the grouping window.,Top-line measurement.
 processed,customer_metrics,transaction_count,int64,metric,Analytics Engineering,Number of transactions in the grouping.,Volume measure.
+processed,customer_metrics,transaction_span_days,int64,metric,Analytics Engineering,"Inclusive days from first to last observed transaction, or zero without transactions.",Descriptive transaction-window length; not customer tenure.
 processed,unit_economics,CAC,float64,metric,Analytics Engineering,Channel marketing spend divided by customers acquired.,Channel efficiency.
 processed,unit_economics,LTV_to_CAC,float64,metric,Analytics Engineering,Average observed LTV divided by CAC.,Scaling guardrail.
 processed,unit_economics,acquisition_channel,object,dimension,Analytics Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
-processed,unit_economics,approximate_payback_period,float64,metric,Analytics Engineering,Months of margin needed to recover CAC.,Capital efficiency proxy.
+processed,unit_economics,approximate_payback_period,float64,metric,Analytics Engineering,Earliest acquisition-age month when cumulative contribution per mature customer reaches CAC.,Empirical CAC recovery timing; null when maturity is insufficient or CAC is not recovered.
 processed,unit_economics,average_LTV,float64,metric,Analytics Engineering,Mean contribution margin per acquired customer.,Value side of LTV/CAC.
 processed,unit_economics,customers_acquired,int64,metric,Analytics Engineering,Customers whose signup falls in the period.,CAC denominator.
 processed,unit_economics,median_LTV,float64,metric,Analytics Engineering,Median contribution margin per acquired customer.,Skew-robust value check.
+processed,unit_economics,payback_acquisition_end,object,dimension,Analytics Engineering,Last signup date represented in the mature payback subset.,End of the payback CAC alignment window.
+processed,unit_economics,payback_acquisition_start,object,dimension,Analytics Engineering,First signup date represented in the mature payback subset.,Start of the payback CAC alignment window.
+processed,unit_economics,payback_aligned_spend,float64,metric,Analytics Engineering,Channel spend between the first and last signup dates of the mature payback subset.,Spend basis for maturity-aligned payback CAC.
+processed,unit_economics,payback_cac,float64,metric,Analytics Engineering,Spend in the mature cohort acquisition window divided by mature acquired customers.,Time-aligned recovery threshold for empirical payback.
+processed,unit_economics,payback_horizon_contribution_per_customer,float64,metric,Analytics Engineering,Cumulative contribution through the payback horizon divided by mature acquired customers.,"Recovery evidence at the censoring boundary, including zero-transaction customers."
+processed,unit_economics,payback_horizon_months,int64,metric,Analytics Engineering,Latest acquisition-age month evaluated in the empirical contribution curve.,Defines the recovery window and customer-maturity requirement.
+processed,unit_economics,payback_is_censored,bool,boolean,Analytics Engineering,True when CAC was not recovered within the governed payback horizon.,Prevents a null recovery month from being interpreted as missing at random.
+processed,unit_economics,payback_mature_customer_share,float64,metric,Analytics Engineering,Payback-mature customers divided by all customers acquired in the channel.,Coverage indicator for the channel payback estimate.
+processed,unit_economics,payback_mature_customers,int64,metric,Analytics Engineering,"Acquired customers observable through the full payback horizon, including zero-transaction customers.",Denominator and evidence volume for the empirical contribution curve.
+processed,unit_economics,payback_status,object,dimension,Analytics Engineering,"Payback outcome: recovered, not_recovered, or insufficient_maturity.",Distinguishes observed recovery from right-censoring and unavailable evidence.
 processed,unit_economics,total_channel_contribution_margin,float64,metric,Analytics Engineering,Observed contribution margin summed within an acquisition channel.,Scenario baseline reconciliation.
 processed,unit_economics,total_spend,float64,metric,Analytics Engineering,Sum of marketing spend over the grouping window.,CAC denominator input.
 raw,customers,acquisition_channel,object,dimension,Data Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
@@ -75,9 +267,34 @@ raw,customers,customer_id,object,identifier,Data Engineering,Unique customer ide
 raw,customers,region,object,dimension,Data Engineering,"Customer region (North America, EMEA, LATAM, APAC).",Geographic mix and regional profitability.
 raw,customers,segment,object,dimension,Data Engineering,"Customer segment (Startup, SMB, Mid-Market, Enterprise).",Cross-cut for margin and retention diagnostics.
 raw,customers,signup_date,object,temporal,Data Engineering,Date the customer first signed up.,Cohort assignment.
+raw,marketing_experiments,acquisition_channel,object,dimension,Data Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+raw,marketing_experiments,assigned_date,object,temporal,Data Engineering,Date a customer entered a randomized experiment arm.,Experiment exposure and outcome-window governance.
+raw,marketing_experiments,assignment,object,dimension,Data Engineering,"Randomized control, treatment, or governed price assignment for the intervention.",Causal contrast definition.
+raw,marketing_experiments,converted,bool,boolean,Data Engineering,Whether the assigned customer converted inside the governed outcome window.,Randomized conversion-lift estimation.
+raw,marketing_experiments,customer_id,object,identifier,Data Engineering,Unique customer identifier.,Join key across customer and transaction views.
+raw,marketing_experiments,experiment_id,object,identifier,Data Engineering,Stable identifier for a randomized marketing holdout.,Experiment-level balance and lift estimation.
+raw,marketing_experiments,observed_contribution,float64,metric,Data Engineering,Contribution observed inside the fixed experiment outcome window.,Randomized incremental-contribution estimation.
+raw,marketing_experiments,outcome_window_days,int64,metric,Data Engineering,Fixed post-assignment days included in experiment outcomes.,Comparable treatment and control measurement.
+raw,marketing_experiments,pre_period_contribution,float64,metric,Data Engineering,Contribution observed before assignment and excluded from the outcome.,CUPED variance reduction without post-treatment leakage.
 raw,marketing_spend,acquisition_channel,object,dimension,Data Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
 raw,marketing_spend,date,object,temporal,Data Engineering,Calendar date.,Time-series aggregation.
 raw,marketing_spend,spend,float64,metric,Data Engineering,Marketing spend recorded for the day and channel.,CAC and channel ROI.
+raw,marketing_touchpoints,acquisition_channel,object,dimension,Data Engineering,Channel attributed to customer acquisition.,Unit economics and budget allocation.
+raw,marketing_touchpoints,customer_id,object,identifier,Data Engineering,Unique customer identifier.,Join key across customer and transaction views.
+raw,marketing_touchpoints,is_conversion_touch,bool,boolean,Data Engineering,True for the final governed touchpoint before signup.,Journey integrity and last-touch identification.
+raw,marketing_touchpoints,touchpoint_date,object,temporal,Data Engineering,Date of a privacy-minimal marketing interaction before signup.,Journey ordering without storing contact details.
+raw,marketing_touchpoints,touchpoint_id,object,identifier,Data Engineering,Unique identifier for a governed pre-signup marketing interaction.,Journey ordering and attribution reconciliation.
+raw,marketing_touchpoints,touchpoint_order,int64,metric,Data Engineering,One-based chronological position of a touchpoint in a customer journey.,Position-based attribution weight assignment.
+raw,pricing_interventions,assignment,object,dimension,Data Engineering,"Randomized control, treatment, or governed price assignment for the intervention.",Causal contrast definition.
+raw,pricing_interventions,contribution_margin,float64,metric,Data Engineering,Revenue minus direct cost.,Primary profitability measure.
+raw,pricing_interventions,intervention_id,object,identifier,Data Engineering,Unique identifier for a randomized weekly pricing cell.,Intervention-grain uniqueness and auditability.
+raw,pricing_interventions,observed_price,float64,metric,Data Engineering,Price actually assigned in the randomized pricing cell.,Elasticity regressor within the tested range.
+raw,pricing_interventions,product_type,object,dimension,Data Engineering,Product line for the transaction.,Product mix and profitability analysis.
+raw,pricing_interventions,reference_price,float64,metric,Data Engineering,Control price assigned to the product before the randomized multiplier.,Price-index construction and intervention validation.
+raw,pricing_interventions,region,object,dimension,Data Engineering,"Customer region (North America, EMEA, LATAM, APAC).",Geographic mix and regional profitability.
+raw,pricing_interventions,revenue,float64,metric,Data Engineering,Gross revenue booked on the transaction.,Top-line growth and mix.
+raw,pricing_interventions,units_sold,int64,metric,Data Engineering,Units observed in the product-region-week intervention cell.,Demand outcome for elasticity estimation.
+raw,pricing_interventions,week_start,object,dimension,Data Engineering,Monday starting the randomized pricing measurement week.,Pricing-panel time index and fixed effects.
 raw,transactions,cost,float64,metric,Data Engineering,Direct delivery cost linked to the transaction.,Contribution margin and unit economics.
 raw,transactions,customer_id,object,identifier,Data Engineering,Unique customer identifier.,Join key across customer and transaction views.
 raw,transactions,product_type,object,dimension,Data Engineering,Product line for the transaction.,Product mix and profitability analysis.

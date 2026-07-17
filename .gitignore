@@ -27,9 +27,15 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 .ipynb_checkpoints/
+.hypothesis/
 
 # Logs
 *.log
 
-# Interrupted report builds
-outputs/reports/_report.html
+# Runtime ingestion, warehouse, and orchestration state
+data/staging/
+outputs/operations/
+outputs/warehouse/
+warehouse/target/
+warehouse/logs/
+warehouse/dbt_packages/

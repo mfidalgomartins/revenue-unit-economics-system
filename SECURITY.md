@@ -1,38 +1,82 @@
 # Security Policy
 
-## Scope
+## Scope and trust model
 
-This is a self-contained analytics pipeline. It generates **synthetic** data and
-writes local artifacts. It has no network calls at runtime, no authentication, no
-secrets, and no user-supplied input. The realistic attack surface is therefore
-limited to the third-party Python dependencies and the CI workflows.
+The published static case runs on committed, deterministic synthetic files and
+does not require credentials. The repository also contains optional production
+paths for vendor ingestion, dbt/PostgreSQL transformation, signed alert
+webhooks, and an authenticated aggregate FastAPI service. Those paths are
+fail-closed when required environment configuration is absent.
+
+The relevant attack surface is therefore:
+
+- Python packages and GitHub Actions used to build and test the project;
+- workflow permissions and release configuration;
+- local HTML/PDF rendering through a headless browser;
+- OAuth, API, billing, database, dashboard, and webhook credentials supplied by
+  the deployment environment;
+- untrusted vendor JSON normalized by the source adapters;
+- Basic and API-key authentication, aggregate query filters, and small-cell
+  disclosure risk; and
+- files supplied by a developer who deliberately replaces governed inputs.
+
+The adapters minimize vendor payloads before persistence and block malformed
+contracts. The API publishes only server-side aggregates, suppresses cells below
+10 customers, uses constant-time credential checks and explicit scopes, and
+does not cache responses. These controls do not make arbitrary personal data
+anonymous. Production use still requires organizational identity, retention,
+access, privacy, network, and incident controls. See
+[docs/PRIVACY.md](docs/PRIVACY.md), [docs/API.md](docs/API.md), and
+[docs/INGESTION.md](docs/INGESTION.md).
 
 ## Supported versions
 
-The latest tagged release on `main` is supported. See [CHANGELOG.md](CHANGELOG.md).
+Only the latest tagged release on `main` is supported. See
+[CHANGELOG.md](CHANGELOG.md).
 
 ## Reporting a vulnerability
 
-If you find a security issue — most plausibly in a pinned dependency or a CI
-configuration — please report it privately via GitHub's
-[private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
-on this repository, or by email to the maintainer listed on the GitHub profile.
-Please do not open a public issue for an unfixed vulnerability.
+Private vulnerability reporting is not currently enabled for this repository,
+and this policy does not advertise an unverified email address. Until a private
+channel is configured, open a GitHub issue containing only a request for private
+security contact. Do **not** include exploit details, secrets, proof-of-concept
+payloads, or affected data in that public issue. The maintainer can then arrange
+a private follow-up channel.
 
-You can expect an acknowledgement within a few days.
+Repository administrator action required: enable GitHub **Private vulnerability
+reporting** under repository security settings. Once enabled, this section should
+link directly to the repository's private advisory form and the public-contact
+fallback can be removed.
 
 ## Automated safeguards
 
 - **Dependency audit** — every push and pull request runs `pip-audit` against the
-  pinned runtime and dev requirements ([CI workflow](.github/workflows/ci.yml)).
-- **Static analysis** — [CodeQL](.github/workflows/codeql.yml) scans the Python
-  sources for common vulnerability patterns on push, PR, and a weekly schedule.
-- **Dependency updates** — [Dependabot](.github/dependabot.yml) proposes pinned
-  upgrades for Python packages and GitHub Actions weekly.
-- **Least-privilege CI** — workflow `GITHUB_TOKEN` permissions are scoped to the
-  minimum each job needs (`contents: read` for CI).
+  declared runtime and development requirements
+  ([CI workflow](.github/workflows/ci.yml)).
+- **Static analysis** — [CodeQL](.github/workflows/codeql.yml) analyzes Python on
+  pushes and pull requests to `main` and on a weekly schedule.
+- **Dependency updates** — [Dependabot](.github/dependabot.yml) proposes updates
+  for Python packages and GitHub Actions weekly.
+- **Least-privilege CI** — the standard CI workflow grants its `GITHUB_TOKEN`
+  read-only repository contents access; release permissions are declared in the
+  separate release workflow.
+- **Credential isolation** — adapters, API authentication, PostgreSQL, and alert
+  signing read secrets only from environment variables; manifests and logs
+  contain provenance and error types, not secret values or vendor bodies.
+- **Authenticated publication** — live dashboard access uses same-origin Basic
+  authentication; API keys are configured as SHA-256 digests with explicit
+  scopes. Deployment requires TLS.
+- **Privacy gate** — aggregate dashboard queries enforce a minimum cell size and
+  final QA rejects identifier-bearing API snapshots.
 
-## Dependencies
+These controls reduce risk but do not replace review of open alerts or repository
+security settings.
 
-All dependencies are version-pinned in `requirements.txt` (runtime) and
-`requirements-dev.txt` (tooling) so builds are reproducible and auditable.
+## Dependency reproducibility
+
+The complete runtime and development dependency closure in `requirements.txt`
+and `requirements-dev.txt` uses exact version pins, and GitHub Actions are
+commit-pinned. Python package artifacts are not hash-locked, so a fresh
+environment is not a byte-for-byte reproducible software supply chain. CI audits
+the resolved environment; production hardening should add reviewed hashes and a
+controlled process for automated pin updates.

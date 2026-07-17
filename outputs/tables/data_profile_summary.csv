@@ -2,3 +2,6 @@ table_name,grain,row_count,column_count,candidate_primary_key,duplicate_rows,dup
 customers,One row per customer_id,9000,5,customer_id,0,0,2023-01-01,2025-12-31,"segment, region, acquisition_channel, signup_date",customer_count
 transactions,One row per transaction_id,69950,6,transaction_id,0,0,2023-01-03,2025-12-31,"transaction_date, product_type, customer_id","revenue, cost, contribution_margin, transaction_count"
 marketing_spend,One row per date x acquisition_channel,6576,3,"date, acquisition_channel",0,0,2023-01-01,2025-12-31,"date, acquisition_channel",spend
+marketing_touchpoints,One row per touchpoint_id,22465,6,touchpoint_id,0,0,2022-11-03,2025-12-31,"touchpoint_date, acquisition_channel, touchpoint_order","touchpoint_count, attributed_customer_equivalents"
+marketing_experiments,One row per experiment_id x customer_id,3000,9,"experiment_id, customer_id",0,0,2025-07-01,2025-07-28,"experiment_id, assignment, acquisition_channel","converted, pre_period_contribution, observed_contribution"
+pricing_interventions,One row per intervention_id,1680,10,intervention_id,0,0,2024-01-01,2025-12-29,"week_start, product_type, region, assignment","observed_price, units_sold, revenue, contribution_margin"

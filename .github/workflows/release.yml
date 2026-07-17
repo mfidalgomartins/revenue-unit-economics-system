@@ -8,39 +8,77 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   validate-and-publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+          python -m pip install -r requirements-dev.txt
           python -m playwright install --with-deps chromium
+
+      - name: Run quality gates
+        run: |
+          ruff check src tests
+          ruff format --check src tests
+          mypy
+          pip check
+          pip-audit -r requirements-dev.txt
 
       - name: Run pipeline and tests
         run: |
           python -m src.run_pipeline
           pytest -q
 
+      - name: Verify deterministic published artifacts
+        run: |
+          git diff --exit-code -- \
+            data \
+            outputs/tables \
+            outputs/governance \
+            outputs/dashboard \
+            outputs/reports/decision_brief.md \
+            outputs/reports/metric_registry.md \
+            outputs/reports/qa_report.md \
+            outputs/charts/README.md
+          test -z "$(git ls-files --others --exclude-standard -- \
+            data \
+            outputs/tables \
+            outputs/governance \
+            outputs/dashboard \
+            outputs/reports/decision_brief.md \
+            outputs/reports/metric_registry.md \
+            outputs/reports/qa_report.md \
+            outputs/charts/README.md)"
+
       - name: Verify release version
         run: test "v$(cat VERSION)" = "${GITHUB_REF_NAME}"
 
       - name: Package artifacts
         run: |
-          tar -czf revenue-analytics-artifacts.tgz outputs data/processed
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
+            --exclude=outputs/warehouse --exclude=outputs/operations \
+            -cf - outputs data/processed | gzip -n > revenue-analytics-artifacts.tgz
+          sha256sum revenue-analytics-artifacts.tgz > revenue-analytics-artifacts.tgz.sha256
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3
         with:
           generate_release_notes: true
-          files: revenue-analytics-artifacts.tgz
+          files: |
+            revenue-analytics-artifacts.tgz
+            revenue-analytics-artifacts.tgz.sha256

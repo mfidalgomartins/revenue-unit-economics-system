@@ -45,6 +45,9 @@ def test_quality_checks_pass_on_committed_synthetic_data() -> None:
     integrity_checks = {
         "duplicate_customer_id",
         "duplicate_transaction_id",
+        "duplicate_touchpoint_id",
+        "duplicate_experiment_customer",
+        "duplicate_pricing_intervention",
         "orphan_customer_id",
     }
     assert integrity_checks.isdisjoint(set(issues["check_name"]))
@@ -56,5 +59,12 @@ def test_quality_checks_pass_on_committed_synthetic_data() -> None:
 def test_summarize_tables_reports_one_row_per_table() -> None:
     tables = load_tables()
     summary = summarize_tables(tables)
-    assert set(summary["table_name"]) == {"customers", "transactions", "marketing_spend"}
+    assert set(summary["table_name"]) == {
+        "customers",
+        "transactions",
+        "marketing_spend",
+        "marketing_touchpoints",
+        "marketing_experiments",
+        "pricing_interventions",
+    }
     assert (summary["row_count"] > 0).all()

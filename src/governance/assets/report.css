@@ -1,63 +1,153 @@
-
-    @page { size: A4; margin: 20mm 18mm 18mm 18mm;
-      @bottom-center { content: counter(page); font-size: 8pt; color:$SUBTLE; } }
-    @page:first { @bottom-center { content: ""; } }
+    :root {
+      --navy: $REPORT_NAVY;
+      --cyan: $REPORT_CYAN;
+      --cyan-soft: $REPORT_CYAN_SOFT;
+      --magenta: $REPORT_MAGENTA;
+      --magenta-soft: $REPORT_MAGENTA_SOFT;
+      --violet: $REPORT_VIOLET;
+      --yellow: $REPORT_YELLOW;
+      --ice: $REPORT_ICE;
+      --positive: $POSITIVE;
+      --negative: $NEGATIVE;
+      --warning: $WARNING;
+    }
+    @page { size: letter; margin: 16mm 17mm 18mm 17mm;
+      @top-left { content: "REVENUE ANALYTICS · UNIT ECONOMICS"; font-size: 6.6pt;
+        letter-spacing: .12em; color: $SUBTLE; }
+      @bottom-left { content: "Synthetic case study"; font-size: 7pt; color: $SUBTLE; }
+      @bottom-right { content: counter(page); font-size: 7pt; color: $SUBTLE; }
+    }
+    @page:first { margin: 0;
+      @top-left { content: ""; }
+      @bottom-left { content: ""; }
+      @bottom-right { content: ""; }
+    }
     * { box-sizing: border-box; }
-    body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color:$INK;
-      font-size: 10.2pt; line-height: 1.45; margin:0; -webkit-font-smoothing: antialiased; }
-    h1,h2,h3 { font-weight:600; color:$INK; line-height:1.2; }
-    h2 { font-size: 15pt; margin: 0 0 2px; padding-top: 2px; page-break-after: avoid; }
-    h2 .num { color:$MUTED; font-weight:500; font-size:10pt; margin-right:8px; }
-    h3 { font-size: 11.5pt; margin: 15px 0 4px; page-break-after: avoid; }
-    p { margin: 0 0 7px; }
-    /* Keep a heading's first paragraph glued to the heading, and keep each chart
-       with its own caption, so neither is ever orphaned across a page break. */
-    h3 + p, .figure { page-break-inside: avoid; }
+    html { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    body { margin: 0; color: $INK; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 9.6pt; line-height: 1.48; font-variant-numeric: tabular-nums;
+      -webkit-font-smoothing: antialiased; }
+    h1, h2 { font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+      color: var(--navy); font-weight: 700; letter-spacing: -.025em; }
+    h2 { margin: 0; padding-top: 2px; font-size: 23pt; line-height: 1.08;
+      page-break-after: avoid; }
+    h2 .num { display: inline-block; margin-right: 9px; color: var(--cyan);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 10pt;
+      font-weight: 600; letter-spacing: 0; vertical-align: .22em; }
+    h3 { margin: 18px 0 5px; color: var(--navy); font-size: 12.2pt; line-height: 1.22;
+      font-weight: 600; letter-spacing: -.01em; page-break-after: avoid; }
+    p { margin: 0 0 8px; }
+    h3 + p, .figure, .callout, .kpis { page-break-inside: avoid; }
     thead { display: table-header-group; }
     tr { page-break-inside: avoid; }
-    .muted { color:$MUTED; }
-    .accent { color:$POSITIVE; }
-    .neg { color:$NEGATIVE; }
-    .lead { font-size:10.8pt; line-height:1.48; }
-    .rule { height:2px; background:$INK; border:0; margin:6px 0 12px; }
-    .hair { height:1px; background:$HAIRLINE; border:0; margin:14px 0; }
     section { page-break-inside: auto; }
     .break { page-break-before: always; }
+    .muted { color: $MUTED; }
+    .accent { color: var(--cyan); }
+    .neg { color: var(--magenta); }
+    .lead { max-width: 67ch; font-size: 10.8pt; line-height: 1.5; color: $INK_2; }
+    .rule { width: 100%; height: 2px; margin: 8px 0 15px; border: 0;
+      background: var(--navy); }
+    .hair { width: 100%; height: 1px; margin: 15px 0; border: 0; background: $HAIRLINE; }
+
+    .cover { position: relative; isolation: isolate; display: flex; flex-direction: column;
+      width: 215.9mm; height: 279.4mm; padding: 17mm 17mm 16mm; overflow: hidden;
+      color: var(--navy); background: var(--ice); }
+    .cover::after { position: absolute; z-index: -2; inset: 0; content: "";
+      background: linear-gradient(145deg, rgba(255,255,255,.70) 0%, rgba(238,248,252,.35) 46%, rgba(36,183,229,.09) 100%); }
+    .cover .tag { position: relative; z-index: 2; color: var(--navy); font-size: 8pt;
+      font-weight: 600; letter-spacing: .13em; text-transform: uppercase; }
+    .cover h1 { position: relative; z-index: 2; max-width: 108mm; margin: 21mm 0 0;
+      font-size: 34pt; line-height: 1.03; }
+    .cover .sub { position: relative; z-index: 2; max-width: 106mm; margin-top: 9mm;
+      color: var(--navy); font-size: 11.5pt; line-height: 1.38; }
+    .cover .spacer { flex: 1; }
+    .cover .meta { position: relative; z-index: 2; width: 130mm; margin-top: 10mm; padding-top: 4mm;
+      border-top: 1.5px solid var(--navy); color: var(--navy); font-size: 8.5pt; }
+    .cover .meta p { margin-bottom: 3px; }
+    .cover .meta b { font-weight: 600; }
+    .cover .rule { display: none; }
+    .cover-art { position: absolute; z-index: 1; right: -14mm; bottom: 0;
+      width: 238mm; height: 120mm; overflow: hidden; }
+    .cover-art .ribbon-art { width: 100%; height: 100%; }
+    .ribbon-art { display: block; width: 100%; height: 100%; overflow: visible; }
+    .ribbon { fill: none; stroke-width: 17; stroke-linecap: round; stroke-linejoin: round;
+      vector-effect: non-scaling-stroke; }
+    .ribbon.thin { stroke-width: 8; }
+    .ribbon.wide { stroke-width: 26; }
+    .ribbon-navy { stroke: var(--navy); }
+    .ribbon-cyan { stroke: var(--cyan); }
+    .ribbon-violet { stroke: var(--violet); }
+    .ribbon-magenta { stroke: var(--magenta); }
+    .ribbon-yellow { stroke: var(--yellow); }
+
+    .chapter-head { position: relative; height: 240mm; overflow: hidden;
+      page-break-after: always; }
+    .chapter-visual { position: relative; height: 105mm; margin: -16mm -17mm 18mm;
+      overflow: hidden; background: var(--navy); }
+    .chapter-visual .ribbon-art { width: 118%; height: 128%;
+      transform: translate(-4%, -17%) rotate(9deg) scale(1.04); }
+    .chapter-visual .ribbon-navy { stroke: #ffffff; opacity: .92; }
+    .chapter-head h2 { max-width: 150mm; font-size: 36pt; line-height: 1.02; }
+    .chapter-head h2 .num { position: absolute; z-index: 2; top: 7mm; left: 2mm;
+      color: #ffffff; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 72pt; font-weight: 300; letter-spacing: -.06em; }
+    .chapter-head .rule { width: 35mm; height: 3px; margin-top: 9mm; background: var(--cyan); }
+    .chapter-head + h3 { margin-top: 0; }
+
+    .executive .callout { margin-top: 2px; }
+    .callout { margin: 11px 0 13px; padding: 10px 14px; border: 0;
+      border-top: 1px solid var(--cyan); border-bottom: 1px solid var(--cyan);
+      background: var(--ice); color: var(--navy); font-size: 10pt; line-height: 1.45; }
+    .callout.warn { border-color: var(--magenta); background: #fff3f7; }
+    .kpis { display: flex; gap: 0; margin: 15px 0 12px; border-top: 2px solid var(--navy);
+      border-bottom: 1px solid $HAIRLINE; }
+    .kpi { flex: 1; min-width: 0; padding: 10px 10px 10px 0; }
+    .kpi + .kpi { padding-left: 10px; border-left: 1px solid $HAIRLINE; }
+    .kpi .v { color: var(--navy); font-family: "Iowan Old Style", Georgia, serif;
+      font-size: 19pt; font-weight: 700; letter-spacing: -.02em; }
+    .kpi .l { color: $MUTED; font-size: 7.4pt; font-weight: 600; line-height: 1.25; }
+    .kpi .d { margin-top: 3px; color: var(--cyan); font-size: 7.7pt; line-height: 1.28; }
+    .kpi .v.neg, .kpi .d.neg { color: var(--magenta); }
+
     .figure { margin: 0; }
-    .chart { width:100%; margin:12px 0 4px; border:1px solid $HAIRLINE; }
-    .chart.sm { width:86%; display:block; margin-left:auto; margin-right:auto; }
-    .cap { font-size:8.6pt; color:$MUTED; margin:0 0 14px; line-height:1.4; }
-    .cap b { color:$INK; }
-    table { width:100%; border-collapse:collapse; font-size:9pt; margin:8px 0 8px; }
-    th,td { text-align:left; padding:5px 8px; border-bottom:1px solid $HAIRLINE; }
-    th { color:$MUTED; font-weight:600; border-bottom:1.5px solid $INK; text-transform:uppercase; letter-spacing:.03em; font-size:8pt; }
-    td.num, th.num { text-align:right; font-variant-numeric: tabular-nums; }
-    .kpis { display:flex; gap:0; margin:13px 0 5px; border-top:2px solid $INK; border-bottom:1px solid $HAIRLINE; }
-    .kpi { flex:1; padding:9px 14px 9px 0; }
-    .kpi .v { font-size:18pt; font-weight:600; letter-spacing:-.01em; }
-    .kpi .l { font-size:8pt; color:$MUTED; text-transform:uppercase; letter-spacing:.04em; }
-    .kpi .d { font-size:8.4pt; color:$POSITIVE; margin-top:2px; }
-    .callout { border-left:3px solid $POSITIVE; background:$SURFACE_2; padding:8px 14px; margin:10px 0; font-size:9.8pt; }
-    .callout.warn { border-left-color:$NEGATIVE; }
-    .cover { height:247mm; display:flex; flex-direction:column; }
-    .cover .tag { font-size:9pt; letter-spacing:.18em; text-transform:uppercase; color:$MUTED; }
-    .cover h1 { font-size:31pt; letter-spacing:-.02em; margin:12px 0 0; max-width:15em; line-height:1.08; }
-    .cover .sub { font-size:13pt; color:$INK_2; margin-top:16px; max-width:30em; line-height:1.42; }
-    .cover .spacer { flex:1; }
-    .cover .meta { font-size:9.5pt; color:$INK_2; }
-    .cover .meta b { color:$INK; font-weight:600; }
-    ol.rec { margin:6px 0; padding-left:20px; }
-    ol.rec li { margin-bottom:12px; }
-    ol.rec li b { font-size:10.4pt; }
-    .toc { font-size:10.4pt; }
-    .toc .row, .toc .subrow { display:flex; align-items:baseline; padding:6px 0; border-bottom:1px solid $SURFACE_3; }
-    .toc .subrow { padding:3.5px 0 3.5px 2.4em; border-bottom:none; font-size:9.4pt; color:$MUTED; }
-    .toc .n { width:2.4em; flex-shrink:0; color:$MUTED; font-variant-numeric:tabular-nums; }
+    .chart { display: block; width: 100%; margin: 13px 0 5px; border: 0; }
+    .chart.sm { width: 86%; margin-right: auto; margin-left: auto; }
+    .cap { max-width: 76ch; margin: 0 0 15px; color: $MUTED; font-size: 8.3pt;
+      line-height: 1.42; }
+    .cap b { color: var(--navy); }
+
+    table { width: 100%; margin: 10px 0 12px; border-collapse: collapse; font-size: 8.7pt; }
+    th, td { padding: 5px 7px; text-align: left; vertical-align: top;
+      border-bottom: 1px solid $HAIRLINE; }
+    th { color: var(--navy); border-top: 1.5px solid var(--navy);
+      border-bottom: 1px solid var(--navy); font-size: 7.6pt; font-weight: 600;
+      letter-spacing: .01em; text-transform: none; }
+    tbody tr:nth-child(even) td { background: rgba(16,42,92,.025); }
+    td.num, th.num { text-align: right; white-space: nowrap; }
+    .appendix table { margin: 7px 0; font-size: 7.7pt; }
+    .appendix th, .appendix td { padding: 3.5px 5px; }
+    .appendix h3 { margin-top: 14px; }
+
+    ol.rec { margin: 8px 0; padding-left: 20px; }
+    ol.rec li { margin-bottom: 13px; padding-top: 9px; border-top: 1px solid $HAIRLINE; }
+    ol.rec li b { color: var(--navy); font-size: 10.2pt; }
+    .priority { display: inline-block; margin-right: 6px; padding: 2px 7px;
+      border-radius: 2px; color: #ffffff; font-size: 7.2pt; font-weight: 700;
+      letter-spacing: .03em; text-transform: uppercase; vertical-align: middle; }
+    .p1 { background: var(--magenta); }
+    .p2 { color: var(--navy); background: var(--yellow); }
+    .p3 { background: var(--cyan); }
+    .p4 { background: $MUTED; }
+
+    .toc { font-size: 9.7pt; }
+    .toc .row, .toc .subrow { display: flex; align-items: baseline; padding: 6px 0;
+      border-bottom: 1px solid $SURFACE_3; }
+    .toc .subrow { padding: 3.5px 0 3.5px 2.7em; border-bottom: 0;
+      color: $MUTED; font-size: 8.8pt; }
+    .toc .n { width: 2.7em; flex-shrink: 0; color: var(--cyan); font-weight: 600; }
     .toc .t { flex: 0 1 auto; }
-    .toc .fill { flex: 1 1 auto; border-bottom: 1px dotted #c7c7cc; margin: 0 6px 3px; }
-    .toc .pg { flex-shrink:0; color:$MUTED; font-variant-numeric:tabular-nums; text-align:right; }
-    .grid2 { display:flex; gap:14px; }
-    .grid2 > div { flex:1; }
-    .priority { display:inline-block; font-size:7.6pt; font-weight:700; letter-spacing:.04em;
-      text-transform:uppercase; padding:2px 7px; border-radius:3px; color:#fff; margin-right:6px; vertical-align:middle; }
-    .p1 { background:$NEGATIVE; } .p2 { background:$WARNING; } .p3 { background:$POSITIVE; } .p4 { background:$MUTED; }
+    .toc .fill { flex: 1 1 auto; margin: 0 7px 3px; border-bottom: 1px dotted #b8c2ce; }
+    .toc .pg { flex-shrink: 0; color: $MUTED; text-align: right; }
+    .grid2 { display: flex; gap: 14px; }
+    .grid2 > div { flex: 1; min-width: 0; }

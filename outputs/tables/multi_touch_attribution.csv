@@ -1,0 +1,7 @@
+acquisition_channel,touchpoints,customers_reached,attributed_customer_equivalents,attributed_contribution,attributed_contribution_share,model,claim_scope
+email,2207,1989,755.9,1582974.76,0.095567,position_based_40_20_40,descriptive_allocation_not_incrementality
+organic,3990,3343,1628.9,4077180.232,0.246147,position_based_40_20_40,descriptive_allocation_not_incrementality
+paid_search,5706,4455,2312.9,2949419.556,0.178062,position_based_40_20_40,descriptive_allocation_not_incrementality
+partners,2344,2112,910.1,2255905.62,0.136193,position_based_40_20_40,descriptive_allocation_not_incrementality
+referral,3696,3178,1543.4,3869529.795,0.23361,position_based_40_20_40,descriptive_allocation_not_incrementality
+social_ads,4522,3721,1848.8,1829020.707,0.110421,position_based_40_20_40,descriptive_allocation_not_incrementality

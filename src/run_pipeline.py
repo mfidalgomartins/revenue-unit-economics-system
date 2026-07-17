@@ -10,22 +10,8 @@ import os
 import subprocess
 import sys
 
+from src.operations.pipeline_spec import build_pipeline_stages, resolve_pipeline_profile
 from src.paths import PROJECT_ROOT
-
-STEPS: list[tuple[str, str]] = [
-    ("Generate synthetic raw data", "src.data_generation.generate_synthetic_data"),
-    ("Validate raw data", "src.validation.validate_raw_data"),
-    ("Profile raw data", "src.data_profiling.profile_raw_data"),
-    ("Build engineered features", "src.feature_engineering.build_features"),
-    ("Run core analysis", "src.analysis.unit_economics_analysis"),
-    ("Build decision scenarios", "src.scenario_engine.build_scenarios"),
-    ("Build scenario seed sensitivity", "src.scenario_engine.build_seed_sensitivity"),
-    ("Generate curated chart pack", "src.visualization.build_chart_pack"),
-    ("Build executive dashboard", "src.dashboard_builder.build_dashboard_assets"),
-    ("Publish supporting documentation", "src.governance.publish_reports"),
-    ("Build analytical PDF report", "src.governance.build_analytical_report"),
-    ("Run final QA validation", "src.validation.validate_final_outputs"),
-]
 
 
 def run_step(step_name: str, module: str) -> None:
@@ -42,8 +28,10 @@ def run_step(step_name: str, module: str) -> None:
 
 
 def main() -> None:
-    for step_name, module in STEPS:
-        run_step(step_name, module)
+    profile = resolve_pipeline_profile()
+    print(f"[PIPELINE] Profile: {profile.value}", flush=True)
+    for stage in build_pipeline_stages(profile):
+        run_step(stage.label, stage.module)
     print("[PIPELINE] Completed successfully.", flush=True)
 
 

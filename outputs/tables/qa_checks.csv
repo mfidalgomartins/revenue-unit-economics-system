@@ -1,5 +1,7 @@
 category,check_name,status,detail
 data_consistency,row_count_sanity,PASS,"customers=9,000, customer_metrics=9,000, transactions=69,950, marketing_spend=6,576"
+data_consistency,raw_validation_gate,PASS,"failures=none, warnings=none"
+data_consistency,profiled_quality_issues,PASS,medium_or_high_issues=none
 data_consistency,null_handling_raw_tables,PASS,Total raw nulls=0
 data_consistency,null_handling_processed_tables,PASS,"first_transaction_date nulls=843, last_transaction_date nulls=843, customers_with_zero_transactions=843"
 data_consistency,duplicate_handling,PASS,"duplicate customer_id=0, duplicate transaction_id=0, duplicate marketing grain=0"
@@ -8,31 +10,44 @@ calculation_checks,total_revenue_consistency,PASS,"transactions=54595966.54, cus
 calculation_checks,total_cost_consistency,PASS,"transactions=38031935.87, customer_metrics=38031935.87, monthly=38031935.87"
 calculation_checks,contribution_margin_logic,PASS,"transactions=16564030.67, customer_metrics=16564030.67, monthly=16564030.67"
 calculation_checks,denominator_correctness_rates,PASS,"max contribution_margin_pct error=0.00000050, max avg_revenue_per_transaction error=0.005000"
-calculation_checks,ltv_cac_payback_logic,PASS,"max CAC diff=0.000046, max LTV diff=0.000050, max total contribution diff=0.000000, max payback diff=0.000045"
+calculation_checks,ltv_cac_payback_logic,PASS,"max_numeric_diff=0.000000, payback_contract_match=True, payback_null_pattern_match=True"
 analytical_integrity,join_inflation_check,PASS,"transactions rows pre=69,950, post=69,950, orphans=0"
 analytical_integrity,cohort_month_grid_completeness,PASS,"expected_rows=666, observed_rows=666"
+analytical_integrity,cohort_activation_and_retention_bounds,PASS,cohort_size is the signup denominator; activity and retained-from-month-0 rates remain bounded=True
 analytical_integrity,incomplete_period_comparison_check,PASS,"months_available=36, early_recent_window_overlap=False"
 analytical_integrity,decomposition_consistency_check,PASS,"share_sum=1.0000, residual_share_of_total=0.0000. Interpretation should remain directional, not causal."
 analytical_integrity,conclusions_match_evidence,PASS,"sections_complete=True, efficient_channels=['organic', 'referral', 'partners'], inefficient_channels=['paid_search', 'social_ads'], channels_referenced_in_findings=True"
 analytical_integrity,efficiency_policy_consistency,PASS,"policy_thresholds: efficient LTV/CAC>=3.0, payback<=12.0; status_match=True"
 visualization_checks,mandatory_chart_coverage,PASS,"charts_present=19, missing=none"
-visualization_checks,chart_readme_completeness,PASS,chart_readme_rows_detected=38
-visualization_checks,curated_chart_export_quality,PASS,"chart_dimensions={'13_product_margin.png': (777, 1584), '10_channel_allocation_gap.png': (835, 1584), '15_revenue_distribution.png': (777, 1584), '19_scenario_seed_stability.png': (777, 1584), '04_active_customers_arpu.png': (806, 1584), '17_reallocation_waterfall.png': (835, 1728), '11_segment_profitability.png': (777, 1584), '08_channel_economics.png': (864, 1584), '14_revenue_concentration.png': (835, 1584), '06_cohort_retention.png': (748, 1584), '09_channel_ltv_cac_ranking.png': (806, 1584), '18_scenario_envelope.png': (777, 1584), '16_revenue_lifetime_corr.png': (835, 1584), '03_revenue_growth_mom.png': (748, 1584), '05_revenue_decomposition.png': (806, 1584), '01_growth_quality.png': (835, 1584), '12_region_profitability.png': (777, 1584), '02_margin_rate.png': (720, 1584), '07_cohort_heatmap.png': (1008, 1728)}"
-governance_checks,metric_registry_presence,PASS,metric_registry_exists=True
-governance_checks,data_catalog_presence,PASS,table_exists=True
-governance_checks,analytical_report_presence,PASS,"report_exists=True, size_bytes=1888177"
-governance_checks,dashboard_deterministic_metadata,PASS,Dashboard payload should avoid volatile build timestamps.
+visualization_checks,chart_readme_completeness,PASS,"documented=19/19, missing=none, unexpected=none"
+visualization_checks,chart_file_integrity_and_dimensions,PASS,"chart_dimensions={'01_growth_quality.png': (835, 1584), '02_margin_rate.png': (720, 1584), '03_revenue_growth_mom.png': (748, 1584), '04_active_customers_arpu.png': (806, 1584), '05_revenue_decomposition.png': (806, 1584), '06_cohort_retention.png': (748, 1584), '07_cohort_heatmap.png': (1008, 1728), '08_channel_economics.png': (864, 1584), '09_channel_ltv_cac_ranking.png': (806, 1584), '10_channel_allocation_gap.png': (835, 1584), '11_segment_profitability.png': (777, 1584), '12_region_profitability.png': (777, 1584), '13_product_margin.png': (777, 1584), '14_revenue_concentration.png': (835, 1584), '15_revenue_distribution.png': (777, 1584), '16_revenue_lifetime_corr.png': (835, 1584), '17_reallocation_waterfall.png': (835, 1728), '18_scenario_envelope.png': (777, 1584), '19_scenario_seed_stability.png': (777, 1584)}, errors=none"
+governance_checks,metric_registry_integrity,PASS,metric_registry_valid=True
+governance_checks,decision_brief_integrity,PASS,decision_brief_valid=True
+governance_checks,data_catalog_integrity,PASS,"rows=302, datasets=30, required_columns_present=True"
+governance_checks,analytical_report_presence,PASS,"report_exists=True, minimum_size_met=True"
+governance_checks,analytical_report_integrity,PASS,"page_count_in_range=True, metadata_valid=True, language_valid=True, tagged=True, outline_valid=True, missing_markers=none, volatile_metadata=none"
+governance_checks,dashboard_presence,PASS,dashboard_exists=True
+governance_checks,dashboard_deterministic_metadata,PASS,Dashboard exists and payload avoids volatile build timestamps.
+governance_checks,dashboard_authenticated_api_mode_contract,PASS,api_mode_markers_present=True
 decision_support_checks,scenario_engine_outputs,PASS,"scenario_summary_rows=1, scenario_plan_rows=6"
 decision_support_checks,scenario_assumptions_auditable,PASS,required_columns_present=True
 decision_support_checks,scenario_scale_cap,PASS,"max_channel_scale_uplift=100.00%, policy_cap=100.00%"
+decision_support_checks,scenario_spend_nonnegative_and_finite,PASS,"all_scenario_spend_valid=True, minimum_scenario_spend=394559.30"
 decision_support_checks,scenario_budget_accounting,PASS,"baseline_budget=5552234.85, scenario_budget=5552234.85, unallocated_budget=0.00"
 decision_support_checks,scenario_baseline_reconciliation,PASS,"scenario_baseline_contribution=16564030.67, observed_contribution_margin=16564030.67"
-decision_support_checks,scenario_uplift_directionality,PASS,estimated_contribution_uplift=7913367.90
+decision_support_checks,scenario_uplift_is_finite,PASS,"estimated_contribution_uplift=7913367.90; sign is an output, not a QA target"
 decision_support_checks,scenario_stress_test_outputs,PASS,scenario_stress_rows=3
 decision_support_checks,scenario_stress_monotonicity,PASS,"required_cases_present=True; best=29372878.28, base=24477398.57, worst=18730531.08"
 decision_support_checks,scenario_seed_sensitivity_outputs,PASS,scenario_seed_sensitivity_rows=5
-decision_support_checks,scenario_seed_sensitivity_coverage,PASS,"seeds_present=[7, 21, 42, 84, 126]"
-decision_support_checks,scenario_seed_sensitivity_uplift_stability,PASS,positive_uplift_rate=100.00%
+decision_support_checks,scenario_seed_sensitivity_coverage,PASS,"seeds_present=[7, 21, 42, 84, 126], unique=True"
+decision_support_checks,scenario_seed_sensitivity_values_finite,PASS,"all_uplifts_finite=True, positive_uplift_rate=100.00%; sign is diagnostic"
 decision_support_checks,scenario_seed_sensitivity_summary,PASS,scenario_seed_sensitivity_summary_rows=1
 governance_checks,dashboard_payload_budget_rows,PASS,"payload_rows=85,526, warn_threshold=100,000, fail_threshold=130,000"
-governance_checks,dashboard_size_budget_mb,PASS,"dashboard_size_mb=2.05, warn_threshold=7.00, fail_threshold=9.00"
+governance_checks,dashboard_size_budget_mb,PASS,"dashboard_size_mb=2.08, warn_threshold=7.00, fail_threshold=9.00"
+causal_measurement_checks,randomized_incrementality_contract,PASS,"experiments=2, finite_and_interval_valid=True"
+causal_measurement_checks,multi_touch_attribution_reconciliation,PASS,"attributed_contribution=16564030.67, observed_contribution=16564030.67, shares=1.000000"
+causal_measurement_checks,observed_price_elasticity_contract,PASS,"models=5, randomized_and_finite=True"
+causal_measurement_checks,pricing_recommendation_within_tested_range,PASS,"products=4, within_observed_range=True"
+warehouse_checks,dbt_incremental_warehouse_parity,PASS,"counts=(9000, 69950, 6576), expected=(9000, 69950, 6576), channel_rows=6, metric_parity=True"
+operational_governance_checks,lineage_and_sla_contracts,PASS,"dbt_nodes=63, pipeline_nodes=15, sla_products=4"
+privacy_checks,authenticated_aggregate_api_privacy_contract,PASS,"ready=True, histogram_cells=10, minimum_cell_size=10"

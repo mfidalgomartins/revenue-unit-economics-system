@@ -36,6 +36,9 @@ warn_return_any = true
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]
+strict_config = true
+strict_markers = true
+xfail_strict = true
 # Coverage runs by default and the gate is enforced via [tool.coverage.report]
 # fail_under. Pass --no-cov for fast single-file runs during development.
 addopts = "-q --cov --cov-report=term-missing"
@@ -49,16 +52,10 @@ filterwarnings = [
 branch = true
 source = ["src"]
 omit = [
-    # Output renderers and orchestration are exercised end-to-end by the
-    # pipeline run in CI rather than by unit tests; their value is the produced
-    # artifact, not branch logic. Coverage focuses on analytical/contract code.
-    "src/run_pipeline.py",
+    # Visual renderers are exercised end to end by the pipeline and targeted
+    # artifact checks; branch coverage focuses on logic with stable unit seams.
     "src/visualization/build_chart_pack.py",
-    "src/visualization/chart_manifest.py",
     "src/governance/build_analytical_report.py",
-    "src/governance/publish_reports.py",
-    "src/scenario_engine/build_seed_sensitivity.py",
-    "src/validation/validate_final_outputs.py",
 ]
 
 [tool.coverage.report]
@@ -68,6 +65,5 @@ fail_under = 90
 exclude_lines = [
     "pragma: no cover",
     "if __name__ == .__main__.:",
-    "def main\\(",
     "raise NotImplementedError",
 ]

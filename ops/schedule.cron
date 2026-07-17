@@ -1,0 +1,4 @@
+CRON_TZ=UTC
+REVENUE_ANALYTICS_HOME=/srv/revenue-analytics
+PIPELINE_LOG_PATH=/var/log/revenue-analytics.log
+0 6 * * * "$REVENUE_ANALYTICS_HOME/ops/run_scheduled_pipeline.sh" >> "$PIPELINE_LOG_PATH" 2>&1

@@ -32,6 +32,11 @@ def test_compute_overall_revenue_health_builds_monthly_metrics() -> None:
     monthly, result = compute_overall_revenue_health(transactions)
 
     assert len(monthly) == 12
-    assert {"total_revenue", "total_cost", "contribution_margin", "contribution_margin_pct"}.issubset(monthly.columns)
+    assert {
+        "total_revenue",
+        "total_cost",
+        "contribution_margin",
+        "contribution_margin_pct",
+    }.issubset(monthly.columns)
     assert monthly["contribution_margin"].min() > 0
     assert "Average monthly revenue increased" in result["result"]

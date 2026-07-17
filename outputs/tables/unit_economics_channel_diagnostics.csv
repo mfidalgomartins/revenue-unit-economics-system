@@ -1,7 +1,7 @@
-acquisition_channel,customers_acquired,total_spend,CAC,average_LTV,median_LTV,total_channel_contribution_margin,LTV_to_CAC,approximate_payback_period,efficiency_status
-organic,1736,257299.41,148.2139,3013.6912,983.745,5231767.93,20.3334,1.7705,efficient
-referral,1668,478649.38,286.9601,2930.8824,1117.15,4888711.76,10.2136,3.5247,efficient
-partners,889,638557.97,718.2879,3127.4345,1084.81,2780289.27,4.354,8.2682,efficient
-email,455,394559.3,867.1633,2281.5342,742.13,1038098.04,2.631,13.6828,borderline
-paid_search,2338,2003249.89,856.822,797.2388,221.335,1863944.31,0.9305,38.6905,inefficient
-social_ads,1914,1779918.9,929.9472,397.7113,98.15,761219.36,0.4277,84.1769,inefficient
+acquisition_channel,customers_acquired,total_spend,CAC,average_LTV,median_LTV,total_channel_contribution_margin,LTV_to_CAC,payback_cac,payback_aligned_spend,payback_acquisition_start,payback_acquisition_end,approximate_payback_period,payback_status,payback_is_censored,payback_horizon_months,payback_mature_customers,payback_mature_customer_share,payback_horizon_contribution_per_customer,efficiency_status
+organic,1736,257299.41,148.2139,3013.6912,983.745,5231767.93,20.3334,219.2335,75416.34,2023-01-01,2023-12-31,0.0,recovered,False,24,344,0.1982,4286.5478,efficient
+referral,1668,478649.38,286.9601,2930.8824,1117.15,4888711.76,10.2136,432.371,139655.82,2023-01-03,2023-12-31,1.0,recovered,False,24,323,0.1936,4552.0259,efficient
+partners,889,638557.97,718.2879,3127.4345,1084.81,2780289.27,4.354,936.3764,187275.27,2023-01-03,2023-12-31,3.0,recovered,False,24,200,0.225,4978.7022,efficient
+email,455,394559.3,867.1633,2281.5342,742.13,1038098.04,2.631,1222.1687,112439.52,2023-01-09,2023-12-31,4.0,recovered,False,24,92,0.2022,2929.9141,borderline
+paid_search,2338,2003249.89,856.822,797.2388,221.335,1863944.31,0.9305,1225.5119,585794.69,2023-01-02,2023-12-31,,not_recovered,True,24,478,0.2044,1034.5833,inefficient
+social_ads,1914,1779918.9,929.9472,397.7113,98.15,761219.36,0.4277,1354.7473,524287.21,2023-01-01,2023-12-30,,not_recovered,True,24,387,0.2022,549.146,inefficient

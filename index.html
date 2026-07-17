@@ -3,11 +3,35 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self'; base-uri 'none'; form-action 'none'" />
+    <meta name="description" content="Production-oriented revenue analytics case study with incremental dbt models, randomized lift, price elasticity, unit economics, governed APIs, and bounded decision scenarios." />
+    <link rel="canonical" href="https://mfidalgomartins.github.io/revenue-unit-economics-system/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Growth Quality Dashboard" />
+    <meta property="og:description" content="A production-oriented synthetic case study of causal measurement, price elasticity, unit economics, governed data products, and bounded growth decisions." />
+    <meta property="og:url" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/" />
+    <meta property="og:image" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/charts/08_channel_economics.png" />
+    <meta property="og:image:alt" content="Channel LTV versus CAC with acquisition-spend bubble sizes and efficiency thresholds" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Growth Quality Dashboard" />
+    <meta name="twitter:description" content="A production-oriented revenue analytics case study with causal measurement, dbt, and governed APIs." />
+    <meta name="twitter:image" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/charts/08_channel_economics.png" />
+    <meta name="twitter:image:alt" content="Channel LTV versus CAC with acquisition-spend bubble sizes and efficiency thresholds" />
     <meta http-equiv="refresh" content="0; url=outputs/dashboard/growth-quality-dashboard.html" />
     <title>Growth Quality Dashboard</title>
+    <script>
+      window.location.replace(
+        new URL("outputs/dashboard/growth-quality-dashboard.html", window.location.href).href
+      );
+    </script>
     <style>
-      body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif; color: #1d1d1f; margin: 40px; }
-      a { color: #0071e3; }
+      /* Matches the dashboard's dark default so the redirect does not flash a
+         light page before the dark dashboard paints. Tokens mirror DARK in
+         src/design/tokens.py. */
+      :root { color-scheme: dark; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif; background: #000000; color: #f5f5f7; margin: 40px; }
+      a { color: #0a84ff; }
     </style>
   </head>
   <body>

@@ -103,9 +103,7 @@ def test_whatif_payload_reproduces_the_stress_engine() -> None:
     """The browser's what-if formula over the embedded plan must land on the
     same numbers as the pipeline's stress engine for the canonical cases."""
     plan = pd.read_csv(PROJECT_ROOT / "outputs" / "tables" / "scenario_reallocation_plan.csv")
-    stress = pd.read_csv(
-        PROJECT_ROOT / "outputs" / "tables" / "scenario_stress_test_summary.csv"
-    )
+    stress = pd.read_csv(PROJECT_ROOT / "outputs" / "tables" / "scenario_stress_test_summary.csv")
     customers = pd.read_csv(
         PROJECT_ROOT / "data" / "raw" / "customers.csv", parse_dates=["signup_date"]
     )
@@ -125,13 +123,11 @@ def test_whatif_payload_reproduces_the_stress_engine() -> None:
         mc, ml = float(case["cac_multiplier"]), float(case["ltv_multiplier"])
         total = sum(
             (spend / (cac * mc)) * (ltv * ml)
-            for spend, cac, ltv in zip(
-                whatif["spend"], whatif["cac"], whatif["ltv"], strict=True
-            )
+            for spend, cac, ltv in zip(whatif["spend"], whatif["cac"], whatif["ltv"], strict=True)
         )
-        assert total == pytest.approx(
-            float(case["scenario_contribution_est"]), rel=1e-4
-        ), case["scenario_name"]
+        assert total == pytest.approx(float(case["scenario_contribution_est"]), rel=1e-4), case[
+            "scenario_name"
+        ]
         assert total - whatif["baseline_total"] == pytest.approx(
             float(case["estimated_uplift_vs_baseline"]), rel=1e-4
         ), case["scenario_name"]
@@ -169,12 +165,73 @@ def test_dashboard_html_contains_decision_layer_and_contract_ltv_logic() -> None
 
     assert 'id="decision-command"' in html
     assert 'class="chart-insight"' in html
-    assert "const avgLTV = cCount > 0 ? cm / cCount : NaN;" in html
+    assert "DASHBOARD_DATA.unit_economics" in html
+    assert "r.payback_status || 'insufficient_maturity'" in html
+    assert "new Map(customers.map(customer => [customer.cid, 0]))" in html
+    assert "const API_MODE = false" in html
+    assert "PAYBACK_HORIZON_MONTHS" in html
     assert "Full-coverage observed LTV versus CAC. Only the channel filter applies." in html
+    assert "Synthetic case · Data coverage:" in html
     assert "label: 'Active Customers'" in html
     assert "label: 'Customers Acquired'" in html
     assert "Revenue is outpacing cost; monitor whether margin leverage persists." in html
     assert "Cost is growing faster; investigate operating leverage." in html
     assert "function escapeHtml(value)" in html
+    assert "Content-Security-Policy" in html
+    assert "aria-sort" in html
     assert "fonts.googleapis.com" not in html
     assert "acquiredCm" not in html
+
+
+def test_dashboard_payload_embeds_empirical_payback_and_escapes_script_boundaries() -> None:
+    customers = pd.DataFrame(
+        {
+            "customer_id": ["C1"],
+            "signup_date": pd.to_datetime(["2024-01-01"]),
+            "segment": ["</script><script>window.bad=true</script>"],
+            "region": ["EMEA"],
+            "acquisition_channel": ["organic"],
+        }
+    )
+    transactions = pd.DataFrame(
+        {
+            "transaction_id": ["T1"],
+            "customer_id": ["C1"],
+            "transaction_date": pd.to_datetime(["2024-01-02"]),
+            "revenue": [100.0],
+            "cost": [60.0],
+            "product_type": ["Core"],
+        }
+    )
+    marketing = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2024-01-01"]),
+            "acquisition_channel": ["organic"],
+            "spend": [30.0],
+        }
+    )
+    unit_economics = pd.DataFrame(
+        {
+            "acquisition_channel": ["organic"],
+            "customers_acquired": [1],
+            "total_spend": [30.0],
+            "CAC": [30.0],
+            "average_LTV": [40.0],
+            "LTV_to_CAC": [1.3333],
+            "approximate_payback_period": [None],
+            "payback_status": ["not_recovered"],
+            "payback_horizon_months": [24],
+        }
+    )
+
+    payload = build_embedded_payload(
+        customers,
+        transactions,
+        marketing,
+        unit_economics=unit_economics,
+    )
+    html = build_dashboard_html(payload)
+
+    assert payload["unit_economics"][0]["payback_status"] == "not_recovered"
+    assert "</script><script>window.bad=true</script>" not in html
+    assert "\\u003c/script\\u003e\\u003cscript\\u003ewindow.bad=true\\u003c/script\\u003e" in html

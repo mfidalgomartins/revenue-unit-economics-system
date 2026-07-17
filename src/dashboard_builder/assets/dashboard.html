@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; font-src data:; connect-src __CONNECT_SRC__; base-uri 'none'; form-action 'none'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Is growth sustainable, or just expensive? An interactive diagnostic of channel unit economics, cohort retention, contribution margin, and a bounded spend-reallocation scenario." />
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%231d1d1f'/%3E%3Cpath%20d='M6%2022%20L13%2015%20L18%2019%20L26%209'%20fill='none'%20stroke='%2330d158'%20stroke-width='2.6'%20stroke-linecap='round'%20stroke-linejoin='round'/%3E%3Ccircle%20cx='26'%20cy='9'%20r='2.4'%20fill='%2330d158'/%3E%3C/svg%3E" />
@@ -16,9 +17,15 @@
   <meta name="twitter:image" content="https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/charts/08_channel_economics.png" />
   <title>Growth Quality Dashboard</title>
   <style>
+    /* ================================================================
+       GROWTH QUALITY DASHBOARD — decision-brief editorial voice over an
+       instrument-grade numeric surface. Serif display for judgment,
+       tabular sans for measurement, mono for apparatus.
+       Palette custom properties mirror src/design/tokens.py and are
+       pinned by tests/test_design_tokens.py.
+       ================================================================ */
     :root {
       color-scheme: light;
-      /* Apple-style surfaces: off-white canvas, white grouped cards. */
       --bg: #fbfbfd;
       --surface: #ffffff;
       --surface-2: #f5f5f7;
@@ -34,18 +41,7 @@
       --negative: #d70015;
       --warning: #b25000;
 
-      /* Material + type tokens (Apple HIG). */
-      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-        "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
-      --font-num: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue",
-        "Segoe UI", sans-serif;
-      --radius-card: 18px;
-      --radius-control: 12px;
-      --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -10px rgba(0, 0, 0, 0.10);
-      --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.06), 0 16px 36px -12px rgba(0, 0, 0, 0.16);
-      --ease: cubic-bezier(0.4, 0, 0.22, 1);
-
-      /* Chart palette — used by JS via getComputedStyle. Restrained: ink + muted. */
+      /* Chart palette — read by JS via getComputedStyle. */
       --rev: #1d1d1f;
       --cost: #86868b;
       --margin: #1a7f37;
@@ -59,12 +55,29 @@
       --chart-muted: #6e6e73;
       --tooltip-bg: #1d1d1f;
       --tooltip-ink: #f5f5f7;
-      --focus-ring: 0 0 0 4px rgba(0, 113, 227, 0.30);
+
+      /* Derived washes (non-token). */
+      --scrim: rgba(251, 251, 253, 0.86);
+      --tint-positive: rgba(26, 127, 55, 0.09);
+      --tint-negative: rgba(215, 0, 21, 0.08);
+      --tint-warning: rgba(178, 80, 0, 0.10);
+      --tint-ink: rgba(29, 29, 31, 0.05);
+      --focus-ring: 0 0 0 4px rgba(0, 113, 227, 0.28);
+
+      --font-serif: ui-serif, "New York", "Iowan Old Style", Palatino, Georgia, "Times New Roman", serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+        "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", Menlo, "Cascadia Mono", Consolas, monospace;
+
+      --radius-card: 14px;
+      --radius-control: 9px;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 10px 30px -14px rgba(0, 0, 0, 0.09);
+      --shadow-hover: 0 2px 5px rgba(0, 0, 0, 0.05), 0 18px 42px -16px rgba(0, 0, 0, 0.15);
+      --ease: cubic-bezier(0.4, 0, 0.22, 1);
     }
 
     body[data-theme="dark"] {
       color-scheme: dark;
-      /* Apple dark: true-black canvas, elevated graphite cards. */
       --bg: #000000;
       --surface: #1c1c1e;
       --surface-2: #2c2c2e;
@@ -80,9 +93,6 @@
       --negative: #ff453a;
       --warning: #ff9f0a;
 
-      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -10px rgba(0, 0, 0, 0.6);
-      --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 18px 40px -12px rgba(0, 0, 0, 0.7);
-
       --rev: #f5f5f7;
       --cost: #98989d;
       --margin: #30d158;
@@ -96,10 +106,21 @@
       --chart-muted: #98989d;
       --tooltip-bg: #f5f5f7;
       --tooltip-ink: #1d1d1f;
-      --focus-ring: 0 0 0 4px rgba(10, 132, 255, 0.36);
+
+      --scrim: rgba(0, 0, 0, 0.78);
+      --tint-positive: rgba(48, 209, 88, 0.14);
+      --tint-negative: rgba(255, 69, 58, 0.14);
+      --tint-warning: rgba(255, 159, 10, 0.14);
+      --tint-ink: rgba(245, 245, 247, 0.07);
+      --focus-ring: 0 0 0 4px rgba(10, 132, 255, 0.34);
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -14px rgba(0, 0, 0, 0.65);
+      --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 20px 44px -16px rgba(0, 0, 0, 0.75);
     }
 
     * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
@@ -110,185 +131,273 @@
       background: var(--bg);
       color: var(--ink);
       font-size: 14px;
-      line-height: 1.47;
-      letter-spacing: -0.01em;
-      transition: background 200ms var(--ease), color 200ms var(--ease);
+      line-height: 1.5;
+      letter-spacing: -0.008em;
+      transition: background 220ms var(--ease), color 220ms var(--ease);
     }
 
-    .skip-link {
-      position: absolute;
-      left: -9999px;
-    }
+    .skip-link { position: absolute; left: -9999px; }
     .skip-link:focus {
-      left: 16px;
-      top: 16px;
-      background: var(--ink);
-      color: var(--bg);
-      padding: 8px 12px;
-      border-radius: 4px;
-      z-index: 10000;
-      font-size: 12px;
+      left: 16px; top: 16px;
+      background: var(--ink); color: var(--bg);
+      padding: 8px 12px; border-radius: 6px;
+      z-index: 10000; font-size: 12px;
     }
 
-    .container {
-      width: min(1320px, 92vw);
+    /* Micro-labels: the apparatus voice. */
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    /* LAYOUT ------------------------------------------------------- */
+    .frame {
+      width: min(1440px, 100%);
       margin: 0 auto;
-      padding: 48px 0 80px;
+      padding: 0 clamp(18px, 3.4vw, 48px) 72px;
+    }
+    .page {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+    @media (min-width: 1240px) {
+      .page {
+        grid-template-columns: 132px minmax(0, 1fr);
+        gap: 44px;
+      }
     }
 
-    /* MASTHEAD ----------------------------------------------------- */
+    /* RAIL — a document's margin contents ------------------------- */
+    .rail { display: none; }
+    @media (min-width: 1240px) {
+      .rail {
+        display: block;
+        padding-top: 10px;
+      }
+      .rail-inner {
+        position: sticky;
+        top: 88px;
+        display: grid;
+        gap: 2px;
+      }
+      .rail a {
+        display: flex;
+        align-items: baseline;
+        gap: 9px;
+        padding: 7px 10px 7px 0;
+        text-decoration: none;
+        border-left: 1px solid var(--hairline);
+        padding-left: 13px;
+        transition: border-color 180ms var(--ease), color 180ms var(--ease);
+      }
+      .rail .no {
+        font-family: var(--font-mono);
+        font-size: 9.5px;
+        color: var(--subtle);
+        letter-spacing: 0.06em;
+      }
+      .rail .lbl {
+        font-size: 11.5px;
+        font-weight: 500;
+        color: var(--muted);
+        letter-spacing: -0.005em;
+      }
+      .rail a:hover .lbl { color: var(--ink); }
+      .rail a.active { border-left-color: var(--ink); }
+      .rail a.active .lbl { color: var(--ink); font-weight: 600; }
+      .rail a.active .no { color: var(--ink); }
+      .rail a:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 4px; }
+    }
+
+    /* MASTHEAD ------------------------------------------------------ */
     .masthead {
+      padding: clamp(30px, 4.6vw, 58px) 0 26px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 24px;
-      padding-bottom: 28px;
-      border-bottom: 1px solid var(--hairline);
-      margin-bottom: 28px;
+      align-items: flex-end;
+      gap: 28px;
+      border-bottom: 3px double var(--hairline-strong);
+      margin-bottom: 0;
     }
-    .masthead-title {
-      display: grid;
-      gap: 6px;
-      max-width: 720px;
-    }
+    .masthead-title { display: grid; gap: 12px; max-width: 780px; }
     .masthead h1 {
       margin: 0;
-      font-size: 28px;
+      font-family: var(--font-serif);
+      font-size: clamp(30px, 4.2vw, 46px);
       font-weight: 600;
-      letter-spacing: -0.021em;
+      letter-spacing: -0.016em;
+      line-height: 1.06;
       color: var(--ink);
-      line-height: 1.12;
     }
     .masthead .lede {
       margin: 0;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: clamp(15px, 1.6vw, 17.5px);
+      line-height: 1.5;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.55;
+      letter-spacing: 0;
+      max-width: 58ch;
     }
     .masthead-tools {
       display: flex;
-      gap: 10px;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
       flex-shrink: 0;
+      padding-bottom: 4px;
     }
     .tool-meta {
-      font-size: 12px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
       color: var(--muted);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0;
+      line-height: 1.6;
+      max-width: 100%;
     }
+    .tool-row { display: flex; gap: 8px; }
     .tool-btn {
-      font-family: inherit;
-      background: var(--surface-2);
-      border: none;
-      color: var(--ink);
-      border-radius: 980px;
-      padding: 8px 16px;
-      font-size: 12.5px;
+      font-family: var(--font-mono);
+      font-size: 10px;
       font-weight: 500;
-      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: none;
+      border: 1px solid var(--hairline-strong);
+      border-radius: 980px;
+      color: var(--ink);
+      padding: 7px 14px;
       cursor: pointer;
-      transition: background 160ms var(--ease), transform 160ms var(--ease);
+      transition: background 160ms var(--ease), border-color 160ms var(--ease), transform 160ms var(--ease);
     }
-    .tool-btn:hover {
-      background: var(--surface-3);
-    }
+    .tool-btn:hover { background: var(--surface-2); border-color: var(--ink-2); }
     .tool-btn:active { transform: scale(0.97); }
-    .tool-btn:focus-visible,
-    input[type="date"]:focus-visible,
-    select:focus-visible {
+    .tool-btn:focus-visible, input[type="date"]:focus-visible {
       outline: none;
       box-shadow: var(--focus-ring);
-      border-color: var(--accent);
     }
 
-    /* FILTERS ------------------------------------------------------ */
-    .filters {
+    /* SCOPE BAR ----------------------------------------------------- */
+    .scope {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: var(--scrim);
+      -webkit-backdrop-filter: blur(16px) saturate(1.4);
+      backdrop-filter: blur(16px) saturate(1.4);
+      border-bottom: 1px solid var(--hairline);
+      padding: 13px 0 12px;
+      margin-bottom: 34px;
       display: flex;
       flex-wrap: wrap;
-      gap: 14px 18px;
       align-items: center;
-      padding: 16px 0 28px;
-      border-bottom: 1px solid var(--hairline);
-      margin-bottom: 36px;
+      gap: 10px 22px;
     }
-    .filter-group {
-      display: inline-flex;
-      flex-direction: column;
-      gap: 5px;
-      min-width: 130px;
-    }
-    .filter-group label {
-      font-size: 11px;
+    .scope-group { display: flex; align-items: center; gap: 9px; min-width: 0; }
+    .scope-group > .eyebrow { flex-shrink: 0; }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .chip {
+      font-family: var(--font-sans);
+      font-size: 11.5px;
       font-weight: 500;
-      color: var(--muted);
-      letter-spacing: 0;
-      text-transform: uppercase;
-    }
-    input[type="date"], select {
-      font-family: inherit;
-      background: var(--surface);
+      letter-spacing: -0.005em;
+      padding: 4px 11px;
+      border-radius: 980px;
       border: 1px solid var(--hairline-strong);
-      border-radius: var(--radius-control);
-      padding: 8px 11px;
-      font-size: 13px;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 150ms var(--ease), color 150ms var(--ease), border-color 150ms var(--ease);
+    }
+    .chip:hover { border-color: var(--ink-2); color: var(--ink); }
+    .chip.is-on {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--bg);
+    }
+    .chip:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .dates { display: flex; align-items: center; gap: 6px; }
+    .dates .sep { color: var(--subtle); font-size: 11px; }
+    input[type="date"] {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      background: none;
+      border: none;
+      border-bottom: 1px solid var(--hairline-strong);
+      border-radius: 0;
+      padding: 4px 2px 3px;
       color: var(--ink);
-      transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
+      transition: border-color 150ms var(--ease);
     }
-    input[type="date"]:hover, select:hover { border-color: var(--ink-2); }
-    select[multiple] {
-      min-height: 34px;
-      max-height: 100px;
-      padding: 4px 8px;
-      font-size: 12px;
-    }
-    .filter-actions {
+    input[type="date"]:hover { border-bottom-color: var(--ink-2); }
+    .scope-actions {
       margin-left: auto;
       display: flex;
-      gap: 8px;
       align-items: center;
+      gap: 12px;
+    }
+    #filters-summary {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: var(--muted);
     }
 
-    /* KPI BAND ----------------------------------------------------- */
-    .kpi-row {
+    /* Entry rhythm -------------------------------------------------- */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: none; }
+    }
+    .reveal { animation: rise 560ms var(--ease) both; }
+    .reveal:nth-of-type(2) { animation-delay: 60ms; }
+    .reveal:nth-of-type(3) { animation-delay: 120ms; }
+    .reveal:nth-of-type(4) { animation-delay: 180ms; }
+
+    /* KPI TICKER ----------------------------------------------------- */
+    .kpi-band {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      background: var(--surface);
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-card);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      margin-bottom: 36px;
+      border-block: 1px solid var(--hairline);
+      margin-bottom: 52px;
     }
     .kpi-card {
-      padding: 22px 24px 24px;
+      padding: 20px 22px 18px 0;
+      margin-right: 22px;
       border-right: 1px solid var(--hairline);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       min-width: 0;
     }
-    .kpi-card:last-child { border-right: none; }
+    .kpi-card:last-child { border-right: none; margin-right: 0; }
     .kpi-label {
-      font-size: 11px;
-      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 9px;
       font-weight: 500;
-      letter-spacing: 0.02em;
       text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .kpi-value {
-      font-family: var(--font-num);
-      font-size: 32px;
+      font-size: clamp(24px, 2.2vw, 31px);
       font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1;
       color: var(--ink);
-      letter-spacing: -0.022em;
-      line-height: 1.02;
       font-variant-numeric: tabular-nums;
-      word-break: break-word;
     }
     .kpi-delta {
-      font-family: var(--font-num);
-      font-size: 12.5px;
+      font-size: 11.5px;
       font-weight: 500;
       color: var(--muted);
       font-variant-numeric: tabular-nums;
@@ -296,128 +405,127 @@
     }
     .kpi-delta.positive { color: var(--positive); }
     .kpi-delta.negative { color: var(--negative); }
+    .kpi-spark { margin-top: auto; height: 26px; }
+    .kpi-spark svg { display: block; width: 100%; height: 26px; }
 
-    /* DECISION STRIP ---------------------------------------------- */
-    .decision {
-      display: grid;
-      grid-template-columns: 1.4fr 1fr 1fr 1fr;
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-card);
-      background: var(--surface);
-      box-shadow: var(--shadow);
-      margin-bottom: 48px;
-      overflow: hidden;
-    }
-    .decision .cell {
-      padding: 18px 22px 20px;
-      border-right: 1px solid var(--hairline);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .decision .cell:last-child { border-right: none; }
-    .decision .cell.lead { background: var(--surface-2); }
-    .decision .label {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0;
-      font-weight: 500;
-    }
-    .decision .value {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--ink);
-      line-height: 1.3;
-    }
-    .decision .copy {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .whatif-card {
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-card);
-      background: var(--surface);
-      box-shadow: var(--shadow);
-      padding: 18px 22px 16px;
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 10px 28px;
-      align-items: center;
-    }
-    .whatif-controls { display: grid; gap: 12px; min-width: 0; }
-    .whatif-control label {
-      display: flex; justify-content: space-between; align-items: baseline;
-      font-size: 11px; font-weight: 500; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.02em; margin-bottom: 6px;
-    }
-    .whatif-mult { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; text-transform: none; }
-    .whatif-control input[type="range"] { width: 100%; accent-color: var(--accent); }
-    .whatif-presets { display: flex; gap: 8px; }
-    .whatif-preset {
-      font: inherit; font-size: 12px; font-weight: 500; padding: 5px 12px;
-      border-radius: 980px; border: 1px solid var(--hairline-strong);
-      background: var(--surface); color: var(--ink); cursor: pointer;
-      transition: background 160ms var(--ease);
-    }
-    .whatif-preset:hover { background: var(--surface-2); }
-    .whatif-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .whatif-stat .l {
-      font-size: 11px; font-weight: 500; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.02em;
-    }
-    .whatif-stat .v {
-      font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
-      font-variant-numeric: tabular-nums;
-    }
-    .whatif-stat .v.positive { color: var(--positive); }
-    .whatif-stat .v.negative { color: var(--negative); }
-    .whatif-note { grid-column: 1 / -1; margin: 4px 0 0; font-size: 11.5px; color: var(--subtle); }
-    @media (max-width: 860px) { .whatif-card { grid-template-columns: 1fr; } }
-
-
-    /* SECTION ------------------------------------------------------ */
-    .section { margin-bottom: 56px; }
+    /* SECTIONS ------------------------------------------------------- */
+    .section { margin-bottom: 64px; scroll-margin-top: 84px; }
     .section-head {
       display: flex;
       align-items: baseline;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 18px;
+      gap: 14px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .sec-no {
+      font-family: var(--font-serif);
+      font-size: 15px;
+      font-style: italic;
+      color: var(--subtle);
+      letter-spacing: 0.02em;
     }
     .section-head h2 {
       margin: 0;
-      font-size: 12px;
+      font-family: var(--font-serif);
+      font-size: 21px;
       font-weight: 600;
+      letter-spacing: -0.01em;
       color: var(--ink);
-      text-transform: uppercase;
-      letter-spacing: 0;
     }
     .section-head .sub {
+      margin-left: auto;
       font-size: 12px;
       color: var(--muted);
+      text-align: right;
+    }
+    @media (max-width: 640px) {
+      .section-head { flex-wrap: wrap; }
+      .section-head .sub { margin-left: 0; text-align: left; flex-basis: 100%; }
     }
 
-    /* SUMMARY STRIP — narrative signals --------------------------- */
-    .summary-grid {
+    /* VERDICT --------------------------------------------------------- */
+    .verdict {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: 1.35fr 1fr;
+      gap: 0;
       border: 1px solid var(--hairline);
       border-radius: var(--radius-card);
       background: var(--surface);
       box-shadow: var(--shadow);
       overflow: hidden;
     }
-    .summary-card {
-      padding: 18px 22px 20px;
+    .verdict .lead {
+      padding: 30px 34px 32px;
       border-right: 1px solid var(--hairline);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 14px;
+      position: relative;
     }
-    .summary-card:last-child { border-right: none; }
+    .verdict .lead::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent);
+    }
+    .verdict .statement {
+      margin: 0;
+      font-family: var(--font-serif);
+      font-size: clamp(20px, 2.2vw, 26px);
+      font-weight: 600;
+      line-height: 1.24;
+      letter-spacing: -0.012em;
+      color: var(--ink);
+    }
+    .verdict .rationale {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--ink-2);
+      max-width: 52ch;
+    }
+    .verdict .facets { display: grid; }
+    .verdict .facet {
+      padding: 18px 26px;
+      display: grid;
+      gap: 5px;
+      border-bottom: 1px solid var(--hairline);
+    }
+    .verdict .facet:last-child { border-bottom: none; }
+    .verdict .facet .value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+    .verdict .facet .copy {
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    /* SIGNALS --------------------------------------------------------- */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .summary-card {
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: 18px 20px 19px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 2px solid var(--hairline-strong);
+    }
+    .summary-card[data-tone="good"] { border-top-color: var(--positive); }
+    .summary-card[data-tone="bad"]  { border-top-color: var(--negative); }
+    .summary-card[data-tone="warn"] { border-top-color: var(--warning); }
     .summary-head {
       display: flex;
       justify-content: space-between;
@@ -425,86 +533,79 @@
       gap: 10px;
     }
     .summary-title {
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
       font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      color: var(--muted);
     }
     .summary-badge {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--muted);
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: 980px;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+    .summary-badge.good { color: var(--positive); background: var(--tint-positive); }
+    .summary-badge.warn { color: var(--warning); background: var(--tint-warning); }
+    .summary-badge.bad  { color: var(--negative); background: var(--tint-negative); }
+    .summary-text {
+      font-size: 12.5px;
+      color: var(--ink-2);
+      line-height: 1.6;
       font-variant-numeric: tabular-nums;
     }
-    .summary-badge.good { color: var(--positive); }
-    .summary-badge.warn { color: var(--warning); }
-    .summary-badge.bad  { color: var(--negative); }
-    .summary-text {
-      font-size: 13px;
-      color: var(--ink-2);
-      line-height: 1.55;
-    }
 
-    /* CHARTS ------------------------------------------------------- */
+    /* CHART CARDS ------------------------------------------------------ */
     .chart-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      gap: 16px;
     }
     .chart-card {
       border: 1px solid var(--hairline);
       border-radius: var(--radius-card);
       background: var(--surface);
       box-shadow: var(--shadow);
-      padding: 22px 24px 24px;
+      padding: 20px 22px 20px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      /* Allow the card to shrink inside its grid track instead of being held
-         open by intrinsic SVG/table width (prevents mobile horizontal overflow). */
+      gap: 3px;
       min-width: 0;
-      transition: box-shadow 220ms var(--ease), transform 220ms var(--ease);
+      transition: box-shadow 220ms var(--ease);
     }
-    .chart-card:hover {
-      box-shadow: var(--shadow-hover);
-      transform: translateY(-2px);
-    }
+    .chart-card:hover { box-shadow: var(--shadow-hover); }
     .chart-title {
       margin: 0;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 600;
       color: var(--ink);
-      letter-spacing: 0;
+      letter-spacing: -0.005em;
     }
     .chart-subtitle {
       margin: 0 0 14px;
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--muted);
     }
-    .chart-surface {
-      width: 100%;
-      height: 240px;
-      position: relative;
-    }
-    .chart-surface canvas, .chart-surface svg {
-      width: 100% !important;
-      height: 100% !important;
-    }
+    .chart-surface { width: 100%; height: 250px; position: relative; }
+    .chart-surface svg { width: 100%; height: 100%; display: block; }
     .chart-insight {
-      margin-top: 16px;
-      padding-top: 14px;
+      margin-top: 14px;
+      padding-top: 12px;
       border-top: 1px solid var(--hairline);
-      font-size: 12px;
-      color: var(--ink-2);
-      line-height: 1.55;
-      min-height: 30px;
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      min-height: 28px;
       font-variant-numeric: tabular-nums;
     }
     .chart-card.span-2 { grid-column: span 2; }
+    .chart-card.span-2 .chart-surface { height: 310px; }
     .chart-empty {
       width: 100%;
-      height: 240px;
+      height: 100%;
       display: grid;
       place-items: center;
       color: var(--muted);
@@ -513,44 +614,193 @@
       border-radius: var(--radius-control);
     }
 
-    /* TABLES ------------------------------------------------------- */
+    /* STRESS LAB -------------------------------------------------------- */
+    .whatif-card {
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius-card);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: 26px 30px 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 18px 44px;
+      align-items: start;
+    }
+    .whatif-controls { display: grid; gap: 18px; min-width: 0; }
+    .whatif-control label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .whatif-mult {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 18px;
+      background: none;
+      cursor: pointer;
+      margin: 0;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 2px;
+      background: var(--hairline-strong);
+      border-radius: 2px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--ink);
+      border: 3px solid var(--surface);
+      box-shadow: 0 0 0 1px var(--hairline-strong), 0 1px 4px rgba(0,0,0,0.2);
+      margin-top: -7px;
+    }
+    input[type="range"]::-moz-range-track {
+      height: 2px;
+      background: var(--hairline-strong);
+      border-radius: 2px;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--ink);
+      border: 3px solid var(--surface);
+      box-shadow: 0 0 0 1px var(--hairline-strong), 0 1px 4px rgba(0,0,0,0.2);
+    }
+    input[type="range"]:focus-visible { outline: none; }
+    input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: var(--focus-ring); }
+    input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: var(--focus-ring); }
+    .whatif-presets {
+      display: inline-flex;
+      border: 1px solid var(--hairline-strong);
+      border-radius: 980px;
+      overflow: hidden;
+      width: fit-content;
+    }
+    .whatif-preset {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      padding: 6px 16px;
+      border: none;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 150ms var(--ease), color 150ms var(--ease);
+    }
+    .whatif-preset + .whatif-preset { border-left: 1px solid var(--hairline-strong); }
+    .whatif-preset:hover { color: var(--ink); background: var(--surface-2); }
+    .whatif-preset.active { background: var(--ink); color: var(--bg); }
+    .whatif-preset:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    .whatif-readout { display: grid; gap: 18px; }
+    .whatif-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .whatif-stat .l {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .whatif-stat .v {
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .whatif-stat .v.positive { color: var(--positive); }
+    .whatif-stat .v.negative { color: var(--negative); }
+    .envelope { display: grid; gap: 6px; }
+    .env-track {
+      position: relative;
+      height: 4px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--negative), var(--hairline-strong) 38%, var(--positive));
+      opacity: 0.55;
+    }
+    .env-zero {
+      position: absolute;
+      top: -4px;
+      width: 1px;
+      height: 12px;
+      background: var(--chart-axis);
+    }
+    .env-marker {
+      position: absolute;
+      top: -3px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--ink);
+      border: 2px solid var(--surface);
+      box-shadow: 0 0 0 1px var(--hairline-strong);
+      transform: translateX(-50%);
+      transition: left 140ms var(--ease);
+    }
+    .env-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      letter-spacing: 0.05em;
+      color: var(--subtle);
+    }
+    .whatif-note {
+      grid-column: 1 / -1;
+      margin: 2px 0 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--hairline);
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--subtle);
+    }
+
+    /* TABLES ------------------------------------------------------------ */
     .table-wrap {
       border: 1px solid var(--hairline);
       border-radius: var(--radius-card);
       overflow: hidden;
+      overflow-x: auto;
       background: var(--surface);
       box-shadow: var(--shadow);
     }
     .chart-card .table-wrap {
-      border: none;
-      border-radius: 0;
-      box-shadow: none;
+      border: none; border-radius: 0; box-shadow: none;
       overflow-x: auto;
     }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: 13px;
-    }
+    table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
     th, td {
-      padding: 12px 16px;
+      padding: 11px 16px;
       text-align: left;
       border-bottom: 1px solid var(--hairline);
     }
     th {
+      font-family: var(--font-mono);
       background: var(--surface-2);
       color: var(--muted);
-      font-size: 11px;
+      font-size: 9.5px;
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 0;
+      letter-spacing: 0.1em;
       cursor: pointer;
       user-select: none;
       position: sticky;
       top: 0;
       z-index: 1;
+      white-space: nowrap;
     }
     th:hover { color: var(--ink); }
+    th.num, td.num { text-align: right; }
     tbody tr:last-child td { border-bottom: none; }
     tbody tr:hover td { background: var(--surface-2); }
     td {
@@ -558,309 +808,379 @@
       color: var(--ink-2);
       vertical-align: middle;
     }
-    td:first-child {
-      color: var(--ink);
-      font-weight: 500;
-    }
+    td:first-child { color: var(--ink); font-weight: 500; }
     .table-wrap.expanded { max-height: none; }
 
     .risk-badge {
       display: inline-block;
-      font-size: 11px;
-      font-weight: 500;
+      font-size: 10px;
+      font-weight: 600;
       padding: 2px 9px;
       border-radius: 980px;
-      letter-spacing: 0;
-      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
-    .risk-badge.high   { color: var(--negative); background: rgba(185, 28, 28, 0.08); }
-    .risk-badge.medium { color: var(--warning);  background: rgba(180, 83, 9, 0.08); }
-    .risk-badge.low    { color: var(--positive); background: rgba(21, 128, 61, 0.08); }
-    body[data-theme="dark"] .risk-badge.high   { background: rgba(248, 113, 113, 0.14); }
-    body[data-theme="dark"] .risk-badge.medium { background: rgba(251, 191, 36, 0.14); }
-    body[data-theme="dark"] .risk-badge.low    { background: rgba(74, 222, 128, 0.14); }
+    .risk-badge.high   { color: var(--negative); background: var(--tint-negative); }
+    .risk-badge.medium { color: var(--warning);  background: var(--tint-warning); }
+    .risk-badge.low    { color: var(--positive); background: var(--tint-positive); }
+    .risk-priority { display: grid; gap: 6px; justify-items: end; min-width: 120px; }
+    .risk-scorebar {
+      position: relative;
+      width: 110px; height: 3px;
+      border-radius: 3px;
+      background: var(--surface-3);
+      overflow: hidden;
+    }
+    .risk-scorebar span {
+      position: absolute; inset: 0 auto 0 0;
+      border-radius: 3px;
+    }
+    .risk-scorebar.high span   { background: var(--negative); }
+    .risk-scorebar.medium span { background: var(--warning); }
+    .risk-scorebar.low span    { background: var(--positive); }
     .risk-score {
-      display: inline-block;
-      min-width: 36px;
-      font-family: var(--font-num);
-      font-weight: 500;
+      font-weight: 600;
       color: var(--ink);
       font-variant-numeric: tabular-nums;
-      text-align: right;
-    }
-    .risk-priority { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-
-    /* FOOTNOTE ----------------------------------------------------- */
-    .footnote {
       font-size: 12px;
+    }
+
+    /* FOOTNOTE ------------------------------------------------------------ */
+    .footnote {
+      font-size: 11.5px;
       color: var(--muted);
-      padding-top: 28px;
-      border-top: 1px solid var(--hairline);
-      margin-top: 16px;
-      line-height: 1.6;
+      padding-top: 26px;
+      border-top: 3px double var(--hairline-strong);
+      margin-top: 8px;
+      line-height: 1.7;
+      max-width: 82ch;
     }
     .footnote code {
-      font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      font-size: 11.5px;
+      font-family: var(--font-mono);
+      font-size: 10.5px;
       background: var(--surface-2);
       padding: 1px 6px;
-      border-radius: 6px;
+      border-radius: 5px;
       color: var(--ink-2);
     }
 
-    /* TOOLTIP ------------------------------------------------------ */
+    /* TOOLTIP -------------------------------------------------------------- */
     .tooltip {
       position: fixed;
       pointer-events: none;
       background: var(--tooltip-bg);
       color: var(--tooltip-ink);
-      font-size: 12px;
-      font-family: var(--font-num);
-      border-radius: 10px;
-      padding: 8px 11px;
+      font-size: 11.5px;
+      border-radius: 9px;
+      padding: 9px 12px;
       z-index: 9999;
       display: none;
       max-width: 320px;
-      line-height: 1.45;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+      line-height: 1.55;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
       font-variant-numeric: tabular-nums;
     }
+    .tooltip .tt-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.65;
+      margin-bottom: 3px;
+    }
+    .tooltip .tt-row { display: flex; align-items: center; gap: 7px; white-space: nowrap; }
+    .tooltip .tt-dot {
+      width: 7px; height: 7px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      display: inline-block;
+    }
 
-    /* RESPONSIVE --------------------------------------------------- */
+    /* RESPONSIVE ------------------------------------------------------------ */
     @media (max-width: 1180px) {
-      .kpi-row { grid-template-columns: repeat(3, 1fr); }
-      .kpi-card:nth-child(3n) { border-right: none; }
+      .kpi-band { grid-template-columns: repeat(3, 1fr); }
+      .kpi-card:nth-child(3n) { border-right: none; margin-right: 0; }
       .kpi-card:nth-child(n+4) { border-top: 1px solid var(--hairline); }
       .summary-grid { grid-template-columns: repeat(2, 1fr); }
-      .summary-card:nth-child(2n) { border-right: none; }
-      .summary-card:nth-child(n+3) { border-top: 1px solid var(--hairline); }
-      .decision { grid-template-columns: 1fr 1fr; }
-      .decision .cell:nth-child(2n) { border-right: none; }
-      .decision .cell:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+      .verdict { grid-template-columns: 1fr; }
+      .verdict .lead { border-right: none; border-bottom: 1px solid var(--hairline); }
+      .verdict .facets { grid-template-columns: repeat(3, 1fr); }
+      .verdict .facet { border-bottom: none; border-right: 1px solid var(--hairline); }
+      .verdict .facet:last-child { border-right: none; }
     }
     @media (max-width: 860px) {
-      .container { padding: 32px 0 64px; }
-      .masthead { flex-direction: column; }
-      .kpi-row { grid-template-columns: repeat(2, 1fr); }
-      .kpi-card:nth-child(2n) { border-right: none; }
+      .masthead { flex-direction: column; align-items: flex-start; }
+      .masthead-tools { flex-direction: row; align-items: center; width: 100%; justify-content: space-between; }
+      .scope { position: static; }
+      .kpi-band { grid-template-columns: repeat(2, 1fr); }
+      .kpi-card:nth-child(3n) { border-right: 1px solid var(--hairline); margin-right: 22px; }
+      .kpi-card:nth-child(2n) { border-right: none; margin-right: 0; }
       .kpi-card:nth-child(n+3) { border-top: 1px solid var(--hairline); }
       .summary-grid { grid-template-columns: 1fr; }
-      .summary-card { border-right: none; }
-      .summary-card + .summary-card { border-top: 1px solid var(--hairline); }
-      .decision { grid-template-columns: 1fr; }
-      .decision .cell { border-right: none; }
-      .decision .cell + .cell { border-top: 1px solid var(--hairline); }
       .chart-grid { grid-template-columns: 1fr; }
       .chart-card.span-2 { grid-column: span 1; }
-      .filter-group { min-width: 0; flex: 1 1 calc(50% - 9px); }
+      .chart-card.span-2 .chart-surface { height: 260px; }
+      .verdict .facets { grid-template-columns: 1fr; }
+      .verdict .facet { border-right: none; border-bottom: 1px solid var(--hairline); }
+      .verdict .facet:last-child { border-bottom: none; }
+      .whatif-card { grid-template-columns: 1fr; }
+      .section { margin-bottom: 48px; }
     }
 
-    /* REDUCED MOTION ---------------------------------------------- */
+    /* REDUCED MOTION --------------------------------------------------------- */
     @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
       }
-      .chart-card:hover { transform: none; }
     }
 
-    /* PRINT -------------------------------------------------------- */
+    /* PRINT -------------------------------------------------------------------- */
     @media print {
-      :root { color-scheme: light; }
       body { background: #ffffff; color: #1d1d1f; }
-      .filters, .tool-btn, .masthead-tools { display: none !important; }
-      .container { width: 100%; padding: 16px; }
-      .chart-card, .kpi-card, .summary-card, .table-wrap, .decision {
+      .scope, .tool-row, .rail, .skip-link { display: none !important; }
+      .frame { width: 100%; padding: 12px; }
+      .page { grid-template-columns: 1fr; }
+      .chart-card, .kpi-band, .summary-card, .table-wrap, .verdict, .whatif-card {
         box-shadow: none;
         page-break-inside: avoid;
       }
+      .reveal { animation: none; }
       .tooltip { display: none !important; }
     }
   </style>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to dashboard</a>
-  <main class="container" id="main-content">
+  <div class="frame">
+    <div class="page">
+      <nav class="rail" aria-label="Sections">
+        <div class="rail-inner" id="rail-nav">
+          <a href="#sec-verdict" data-target="sec-verdict"><span class="no">01</span><span class="lbl">Verdict</span></a>
+          <a href="#sec-signals" data-target="sec-signals"><span class="no">02</span><span class="lbl">Signals</span></a>
+          <a href="#sec-trajectory" data-target="sec-trajectory"><span class="no">03</span><span class="lbl">Trajectory</span></a>
+          <a href="#sec-channels" data-target="sec-channels"><span class="no">04</span><span class="lbl">Channels</span></a>
+          <a href="#sec-diagnostics" data-target="sec-diagnostics"><span class="no">05</span><span class="lbl">Diagnostics</span></a>
+          <a href="#whatif-section" data-target="whatif-section"><span class="no">06</span><span class="lbl">Stress lab</span></a>
+          <a href="#sec-risk" data-target="sec-risk"><span class="no">07</span><span class="lbl">Risk register</span></a>
+        </div>
+      </nav>
 
-    <header class="masthead">
-      <div class="masthead-title">
-        <h1 id="dashboard-title">Growth Quality Dashboard</h1>
-        <p class="lede" id="dashboard-subtitle"></p>
-      </div>
-      <div class="masthead-tools">
-        <span class="tool-meta" id="coverage-chip"></span>
-        <button class="tool-btn" id="btn-theme" type="button" aria-label="Toggle theme"></button>
-        <button class="tool-btn" id="btn-print" type="button">Print</button>
-      </div>
-    </header>
+      <main id="main-content">
+        <header class="masthead">
+          <div class="masthead-title">
+            <span class="eyebrow">Revenue Analytics · Unit Economics · Decision Brief</span>
+            <h1 id="dashboard-title">Growth Quality Dashboard</h1>
+            <p class="lede" id="dashboard-subtitle"></p>
+          </div>
+          <div class="masthead-tools">
+            <span class="tool-meta" id="coverage-chip"></span>
+            <div class="tool-row">
+              <button class="tool-btn" id="btn-theme" type="button" aria-label="Toggle theme"></button>
+              <button class="tool-btn" id="btn-print" type="button">Print</button>
+            </div>
+          </div>
+        </header>
 
-    <div class="filters" id="filters-bar" role="region" aria-label="Dashboard filters">
-      <div class="filter-group">
-        <label for="filter-start">From</label>
-        <input id="filter-start" type="date" />
-      </div>
-      <div class="filter-group">
-        <label for="filter-end">To</label>
-        <input id="filter-end" type="date" />
-      </div>
-      <div class="filter-group">
-        <label for="filter-segment">Segment</label>
-        <select id="filter-segment" multiple></select>
-      </div>
-      <div class="filter-group">
-        <label for="filter-region">Region</label>
-        <select id="filter-region" multiple></select>
-      </div>
-      <div class="filter-group">
-        <label for="filter-channel">Channel</label>
-        <select id="filter-channel" multiple></select>
-      </div>
-      <div class="filter-group">
-        <label for="filter-product">Product</label>
-        <select id="filter-product" multiple></select>
-      </div>
-      <div class="filter-actions">
-        <span class="tool-meta" id="filters-summary"></span>
-        <button class="tool-btn" id="btn-reset" type="button">Reset</button>
-      </div>
+        <div class="scope" id="filters-bar" role="region" aria-label="Dashboard filters">
+          <div class="scope-group dates">
+            <span class="eyebrow">Window</span>
+            <input id="filter-start" type="date" aria-label="Start date" />
+            <span class="sep">–</span>
+            <input id="filter-end" type="date" aria-label="End date" />
+          </div>
+          <div class="scope-group">
+            <span class="eyebrow">Segment</span>
+            <div class="chip-row" id="filter-segment" role="group" aria-label="Segment filter"></div>
+          </div>
+          <div class="scope-group">
+            <span class="eyebrow">Region</span>
+            <div class="chip-row" id="filter-region" role="group" aria-label="Region filter"></div>
+          </div>
+          <div class="scope-group">
+            <span class="eyebrow">Channel</span>
+            <div class="chip-row" id="filter-channel" role="group" aria-label="Channel filter"></div>
+          </div>
+          <div class="scope-group">
+            <span class="eyebrow">Product</span>
+            <div class="chip-row" id="filter-product" role="group" aria-label="Product filter"></div>
+          </div>
+          <div class="scope-actions">
+            <span id="filters-summary"></span>
+            <button class="tool-btn" id="btn-reset" type="button">Reset</button>
+          </div>
+        </div>
+
+        <div class="kpi-band reveal" id="kpi-grid"></div>
+
+        <section class="section reveal" id="sec-verdict" aria-label="Decision verdict">
+          <div class="section-head">
+            <span class="sec-no">01</span>
+            <h2>Verdict</h2>
+            <span class="sub">What the policy thresholds say to do now.</span>
+          </div>
+          <div class="verdict" id="decision-command" aria-live="polite"></div>
+        </section>
+
+        <section class="section reveal" id="sec-signals">
+          <div class="section-head">
+            <span class="sec-no">02</span>
+            <h2>Headline signals</h2>
+            <span class="sub" id="summary-context"></span>
+          </div>
+          <div class="summary-grid" id="summary-strip"></div>
+        </section>
+
+        <section class="section reveal" id="sec-trajectory">
+          <div class="section-head">
+            <span class="sec-no">03</span>
+            <h2>Trajectory</h2>
+            <span class="sub">Revenue, margin, cost leverage, and cohort decay through the window.</span>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-card">
+              <h3 class="chart-title">How does monthly revenue change?</h3>
+              <p class="chart-subtitle">Monthly total revenue, filter-aware.</p>
+              <div id="chart-revenue" class="chart-surface"></div>
+              <div id="insight-revenue" class="chart-insight"></div>
+            </div>
+            <div class="chart-card">
+              <h3 class="chart-title">Is growth converting into margin?</h3>
+              <p class="chart-subtitle">Monthly contribution margin in dollars.</p>
+              <div id="chart-margin" class="chart-surface"></div>
+              <div id="insight-margin" class="chart-insight"></div>
+            </div>
+            <div class="chart-card">
+              <h3 class="chart-title">Are costs scaling faster than revenue?</h3>
+              <p class="chart-subtitle">Monthly revenue compared with direct cost.</p>
+              <div id="chart-revenue-cost" class="chart-surface"></div>
+              <div id="insight-revenue-cost" class="chart-insight"></div>
+            </div>
+            <div class="chart-card">
+              <h3 class="chart-title">How do cohorts retain revenue?</h3>
+              <p class="chart-subtitle">Median revenue retention by months since signup, with the interquartile band across cohorts.</p>
+              <div id="chart-cohort-retention" class="chart-surface"></div>
+              <div id="insight-cohort-retention" class="chart-insight"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section reveal" id="sec-channels">
+          <div class="section-head">
+            <span class="sec-no">04</span>
+            <h2>Channel economics</h2>
+            <span class="sub">Acquisition efficiency against explicit scale guardrails.</span>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-card span-2">
+              <h3 class="chart-title">Which acquisition channels deserve budget?</h3>
+              <p class="chart-subtitle">Full-coverage observed LTV versus CAC. Only the channel filter applies. Bubble area scales with acquisition spend.</p>
+              <div id="chart-ltv-cac" class="chart-surface"></div>
+              <div id="insight-ltv-cac" class="chart-insight"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section reveal" id="sec-diagnostics">
+          <div class="section-head">
+            <span class="sec-no">05</span>
+            <h2>Margin diagnostics</h2>
+            <span class="sub">Locate where economics break first.</span>
+          </div>
+          <div class="chart-grid">
+            <div class="chart-card">
+              <h3 class="chart-title">Which segment contributes the most margin?</h3>
+              <p class="chart-subtitle">Contribution margin dollars by segment.</p>
+              <div id="chart-segment-margin" class="chart-surface"></div>
+              <div id="insight-segment-margin" class="chart-insight"></div>
+            </div>
+            <div class="chart-card">
+              <h3 class="chart-title">Where is monetization strongest per transaction?</h3>
+              <p class="chart-subtitle">Average revenue per transaction by segment.</p>
+              <div id="chart-arpt-segment" class="chart-surface"></div>
+              <div id="insight-arpt-segment" class="chart-insight"></div>
+            </div>
+            <div class="chart-card">
+              <h3 class="chart-title">Is revenue concentrated in few customers?</h3>
+              <p class="chart-subtitle">Customer revenue distribution, clipped at P99.</p>
+              <div id="chart-revenue-distribution" class="chart-surface"></div>
+              <div id="insight-revenue-distribution" class="chart-insight"></div>
+            </div>
+            <div class="chart-card">
+              <h3 class="chart-title">Which regions dilute profitability?</h3>
+              <p class="chart-subtitle">Margin quality and revenue by region.</p>
+              <div class="table-wrap">
+                <table id="region-table"></table>
+              </div>
+              <div id="insight-region-table" class="chart-insight"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section reveal" id="whatif-section" aria-label="Reallocation stress lab">
+          <div class="section-head">
+            <span class="sec-no">06</span>
+            <h2>Reallocation stress lab</h2>
+            <span class="sub">Full-coverage policy view; page filters do not apply.</span>
+          </div>
+          <div class="whatif-card">
+            <div class="whatif-controls">
+              <div class="whatif-control">
+                <label for="whatif-cac"><span class="eyebrow">CAC response</span> <span class="whatif-mult" id="whatif-cac-value">1.00&times;</span></label>
+                <input type="range" id="whatif-cac" min="0.85" max="1.20" step="0.01" value="1.00">
+              </div>
+              <div class="whatif-control">
+                <label for="whatif-ltv"><span class="eyebrow">LTV response</span> <span class="whatif-mult" id="whatif-ltv-value">1.00&times;</span></label>
+                <input type="range" id="whatif-ltv" min="0.85" max="1.10" step="0.01" value="1.00">
+              </div>
+              <div class="whatif-presets" role="group" aria-label="Stress presets">
+                <button type="button" class="whatif-preset" data-cac="0.90" data-ltv="1.08">Best</button>
+                <button type="button" class="whatif-preset active" data-cac="1.00" data-ltv="1.00">Base</button>
+                <button type="button" class="whatif-preset" data-cac="1.15" data-ltv="0.88">Worst</button>
+              </div>
+            </div>
+            <div class="whatif-readout">
+              <div class="whatif-stats">
+                <div class="whatif-stat"><div class="l">Scenario contribution</div><div class="v" id="whatif-contribution">&ndash;</div></div>
+                <div class="whatif-stat"><div class="l">Uplift vs baseline</div><div class="v" id="whatif-uplift">&ndash;</div></div>
+              </div>
+              <div class="envelope" aria-hidden="true">
+                <div class="env-track">
+                  <div class="env-zero" id="env-zero"></div>
+                  <div class="env-marker" id="env-marker"></div>
+                </div>
+                <div class="env-labels"><span id="env-min"></span><span>uplift envelope</span><span id="env-max"></span></div>
+              </div>
+            </div>
+            <p class="whatif-note">Applies the pipeline's stress formula to the embedded reallocation plan:
+            contribution = &Sigma; spend &divide; (CAC &times; m<sub>CAC</sub>) &times; LTV &times; m<sub>LTV</sub>.
+            The Best / Base / Worst presets reproduce the report's stress table.</p>
+          </div>
+        </section>
+
+        <section class="section reveal" id="sec-risk">
+          <div class="section-head">
+            <span class="sec-no">07</span>
+            <h2>Risk register</h2>
+            <span class="sub">Where management attention should go next.</span>
+          </div>
+          <div class="table-wrap expanded">
+            <table id="risk-table"></table>
+          </div>
+        </section>
+
+        <div class="footnote">
+          Synthetic data. The pipeline demonstrates method, not market truth. Full methodology and validation in
+          <code>outputs/reports/decision_brief.md</code> and <code>outputs/reports/qa_report.md</code>.
+        </div>
+      </main>
     </div>
+  </div>
 
-    <div class="kpi-row" id="kpi-grid"></div>
-
-    <div class="decision" id="decision-command" aria-live="polite"></div>
-
-    <section class="section" id="whatif-section" aria-label="Reallocation stress lab">
-      <div class="section-head">
-        <h2>Reallocation stress lab</h2>
-        <span class="sub">Full-coverage policy view; page filters do not apply.</span>
-      </div>
-      <div class="whatif-card">
-        <div class="whatif-controls">
-          <div class="whatif-control">
-            <label for="whatif-cac">CAC response <span class="whatif-mult" id="whatif-cac-value">1.00&times;</span></label>
-            <input type="range" id="whatif-cac" min="0.85" max="1.20" step="0.01" value="1.00">
-          </div>
-          <div class="whatif-control">
-            <label for="whatif-ltv">LTV response <span class="whatif-mult" id="whatif-ltv-value">1.00&times;</span></label>
-            <input type="range" id="whatif-ltv" min="0.85" max="1.10" step="0.01" value="1.00">
-          </div>
-          <div class="whatif-presets" role="group" aria-label="Stress presets">
-            <button type="button" class="whatif-preset" data-cac="0.90" data-ltv="1.08">Best</button>
-            <button type="button" class="whatif-preset" data-cac="1.00" data-ltv="1.00">Base</button>
-            <button type="button" class="whatif-preset" data-cac="1.15" data-ltv="0.88">Worst</button>
-          </div>
-        </div>
-        <div class="whatif-readout">
-          <div class="whatif-stat"><div class="l">Scenario contribution</div><div class="v" id="whatif-contribution">&ndash;</div></div>
-          <div class="whatif-stat"><div class="l">Uplift vs baseline</div><div class="v" id="whatif-uplift">&ndash;</div></div>
-        </div>
-        <p class="whatif-note">Applies the pipeline's stress formula to the embedded reallocation plan:
-        contribution = &Sigma; spend &divide; (CAC &times; m<sub>CAC</sub>) &times; LTV &times; m<sub>LTV</sub>.
-        The Best / Base / Worst presets reproduce the report's stress table.</p>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <h2>Headline signals</h2>
-        <span class="sub" id="summary-context"></span>
-      </div>
-      <div class="summary-grid" id="summary-strip"></div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <h2>Primary analysis</h2>
-        <span class="sub">Revenue, margin, cost trajectory, cohort decay, channel efficiency.</span>
-      </div>
-      <div class="chart-grid">
-        <div class="chart-card">
-          <h3 class="chart-title">Is revenue momentum real?</h3>
-          <p class="chart-subtitle">Monthly total revenue, filter-aware.</p>
-          <div id="chart-revenue" class="chart-surface"></div>
-          <div id="insight-revenue" class="chart-insight"></div>
-        </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Is growth converting into margin?</h3>
-          <p class="chart-subtitle">Monthly contribution margin in dollars.</p>
-          <div id="chart-margin" class="chart-surface"></div>
-          <div id="insight-margin" class="chart-insight"></div>
-        </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Are costs scaling faster than revenue?</h3>
-          <p class="chart-subtitle">Monthly revenue compared with direct cost.</p>
-          <div id="chart-revenue-cost" class="chart-surface"></div>
-          <div id="insight-revenue-cost" class="chart-insight"></div>
-        </div>
-        <div class="chart-card">
-          <h3 class="chart-title">How fast do cohorts decay?</h3>
-          <p class="chart-subtitle">Median revenue retention by months since signup.</p>
-          <div id="chart-cohort-retention" class="chart-surface"></div>
-          <div id="insight-cohort-retention" class="chart-insight"></div>
-        </div>
-        <div class="chart-card span-2">
-          <h3 class="chart-title">Which acquisition channels deserve budget?</h3>
-          <p class="chart-subtitle">Full-coverage observed LTV versus CAC. Only the channel filter applies.</p>
-          <div id="chart-ltv-cac" class="chart-surface"></div>
-          <div id="insight-ltv-cac" class="chart-insight"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <h2>Diagnostics</h2>
-        <span class="sub">Locate where economics break first.</span>
-      </div>
-      <div class="chart-grid">
-        <div class="chart-card">
-          <h3 class="chart-title">Which segment contributes the most margin?</h3>
-          <p class="chart-subtitle">Contribution margin dollars by segment.</p>
-          <div id="chart-segment-margin" class="chart-surface"></div>
-          <div id="insight-segment-margin" class="chart-insight"></div>
-        </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Where is monetization strongest per transaction?</h3>
-          <p class="chart-subtitle">Average revenue per transaction by segment.</p>
-          <div id="chart-arpt-segment" class="chart-surface"></div>
-          <div id="insight-arpt-segment" class="chart-insight"></div>
-        </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Is revenue concentrated in few customers?</h3>
-          <p class="chart-subtitle">Customer revenue distribution, clipped at P99.</p>
-          <div id="chart-revenue-distribution" class="chart-surface"></div>
-          <div id="insight-revenue-distribution" class="chart-insight"></div>
-        </div>
-        <div class="chart-card">
-          <h3 class="chart-title">Which regions dilute profitability?</h3>
-          <p class="chart-subtitle">Margin quality and revenue by region.</p>
-          <div class="table-wrap">
-            <table id="region-table"></table>
-          </div>
-          <div id="insight-region-table" class="chart-insight"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <h2>Risk ranking</h2>
-        <span class="sub">Where management attention should go next.</span>
-      </div>
-      <div class="table-wrap expanded">
-        <table id="risk-table"></table>
-      </div>
-    </section>
-
-    <div class="footnote">
-      Synthetic data. The pipeline demonstrates method, not market truth. Full methodology and validation in
-      <code>outputs/reports/decision_brief.md</code> and <code>outputs/reports/qa_report.md</code>.
-    </div>
-  </main>
-
-  <div class="tooltip" id="tooltip"></div>
+  <div class="tooltip" id="tooltip" role="presentation"></div>
 
   <script>
     // The build embeds a columnar payload: parallel arrays with integer day
@@ -889,13 +1209,22 @@
         ch: v.acquisition_channels[raw.marketing_spend.ch[i]],
         spend: raw.marketing_spend.spend[i],
       }));
-      return { meta: raw.meta, whatif: raw.whatif, customers, transactions, marketing_spend };
+      return {
+        meta: raw.meta,
+        whatif: raw.whatif,
+        unit_economics: raw.unit_economics || [],
+        customers,
+        transactions,
+        marketing_spend,
+      };
     }
 
+    const API_MODE = __API_MODE__;
     const DASHBOARD_DATA = decodePayload(__DATA_JSON__);
     const CUSTOMER_BY_ID = new Map((DASHBOARD_DATA.customers || []).map(c => [c.cid, c]));
     const METRIC_POLICY = DASHBOARD_DATA.meta.metric_policy || {};
     const MARGIN_QUALITY_FLOOR = METRIC_POLICY.margin_quality_floor || 0.30;
+    const PAYBACK_HORIZON_MONTHS = METRIC_POLICY.payback_horizon_months || 24;
     const EFF_THRESH = METRIC_POLICY.efficiency_thresholds || {
       ltv_cac_target: 3.0,
       payback_target_months: 12.0,
@@ -911,6 +1240,7 @@
       cohort_base: 55.0
     };
     const THEME_KEY = 'exec_dashboard_theme';
+    const SVGNS = 'http://www.w3.org/2000/svg';
 
     const state = {
       regionSort: { key: 'marginPct', dir: 'desc' },
@@ -938,6 +1268,7 @@
         axis: cssVar('--chart-axis', '#b0b0b5'),
         text: cssVar('--chart-text', '#424245'),
         muted: cssVar('--chart-muted', '#6e6e73'),
+        surface: cssVar('--surface', '#ffffff'),
       };
     }
 
@@ -945,7 +1276,7 @@
       const normalized = theme === 'dark' ? 'dark' : 'light';
       document.body.setAttribute('data-theme', normalized);
       const btn = document.getElementById('btn-theme');
-      btn.textContent = normalized === 'dark' ? 'Light Mode' : 'Dark Mode';
+      btn.textContent = normalized === 'dark' ? 'Light' : 'Dark';
       btn.setAttribute(
         'aria-label',
         normalized === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
@@ -953,9 +1284,11 @@
     }
 
     function resolveInitialTheme() {
+      // A returning visitor's explicit choice always wins; first-time visitors
+      // land on dark, the dashboard's deliberate default presentation.
       const saved = window.localStorage.getItem(THEME_KEY);
       if (saved === 'dark' || saved === 'light') return saved;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return 'dark';
     }
 
     function toggleTheme() {
@@ -983,7 +1316,7 @@
         summarizeSelectedValues(selected.channels, DASHBOARD_DATA.meta.values.acquisition_channels, 'Channel'),
         summarizeSelectedValues(selected.products, DASHBOARD_DATA.meta.values.product_types, 'Product'),
       ].filter(Boolean);
-      wrap.textContent = parts.length ? parts.join(' · ') : '';
+      wrap.textContent = parts.length ? parts.join(' · ') : 'Full scope';
     }
 
     function fmtCurrency(value) {
@@ -1007,6 +1340,14 @@
     function fmtNum(value, digits = 2) {
       if (!Number.isFinite(value)) return 'n/a';
       return value.toLocaleString(undefined, { maximumFractionDigits: digits });
+    }
+
+    function fmtPayback(row, suffix = ' months') {
+      if (row.paybackStatus === 'not_recovered') {
+        return `>${fmtNum(row.paybackHorizon, 0)}${suffix}`;
+      }
+      if (!Number.isFinite(row.payback)) return 'n/a';
+      return `${fmtNum(row.payback, 1)}${suffix}`;
     }
 
     function escapeHtml(value) {
@@ -1078,18 +1419,32 @@
       return { max: step * count, step, count };
     }
 
+    function showTooltip(html, clientX, clientY) {
+      tooltipEl.innerHTML = html;
+      tooltipEl.style.display = 'block';
+      moveTooltip(clientX, clientY);
+    }
+
+    function moveTooltip(clientX, clientY) {
+      const rect = tooltipEl.getBoundingClientRect();
+      const x = Math.min(clientX + 14, window.innerWidth - rect.width - 10);
+      const y = Math.min(clientY + 14, window.innerHeight - rect.height - 10);
+      tooltipEl.style.left = Math.max(8, x) + 'px';
+      tooltipEl.style.top = Math.max(8, y) + 'px';
+    }
+
+    function hideTooltip() {
+      tooltipEl.style.display = 'none';
+    }
+
     function setTooltip(target, html) {
-      target.addEventListener('mouseenter', () => {
-        tooltipEl.innerHTML = html;
-        tooltipEl.style.display = 'block';
-      });
-      target.addEventListener('mousemove', (e) => {
-        tooltipEl.style.left = (e.clientX + 14) + 'px';
-        tooltipEl.style.top = (e.clientY + 14) + 'px';
-      });
-      target.addEventListener('mouseleave', () => {
-        tooltipEl.style.display = 'none';
-      });
+      target.addEventListener('mouseenter', e => showTooltip(html, e.clientX, e.clientY));
+      target.addEventListener('mousemove', e => moveTooltip(e.clientX, e.clientY));
+      target.addEventListener('mouseleave', hideTooltip);
+    }
+
+    function ttRow(color, label, value) {
+      return `<div class="tt-row"><span class="tt-dot" style="background:${color}"></span>${escapeHtml(label)}&ensp;<strong>${escapeHtml(value)}</strong></div>`;
     }
 
     function clearNode(id) {
@@ -1106,46 +1461,44 @@
       container.appendChild(div);
     }
 
-    function createSvg(container, height = 248) {
-      // Keep a 340-unit floor for the drawing coordinate space (label legibility),
-      // but map it to the element via a viewBox so the chart scales to the real
-      // container width. Without this, narrow (mobile) containers overflow the page.
-      const width = Math.max(340, container.clientWidth - 6);
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
-      svg.setAttribute('preserveAspectRatio', 'none');
-      svg.setAttribute('aria-hidden', 'true');
+    let gradientSeq = 0;
+
+    function createSvg(container) {
+      const width = Math.max(320, container.clientWidth);
+      const height = Math.max(180, container.clientHeight || 250);
+      const svg = document.createElementNS(SVGNS, 'svg');
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      const chartTitle = container.closest('.chart-card')?.querySelector('.chart-title')?.textContent;
+      svg.setAttribute('role', 'img');
+      svg.setAttribute('aria-label', chartTitle || 'Dashboard data visualization');
       svg.setAttribute('focusable', 'false');
-      svg.style.width = '100%';
-      svg.style.maxWidth = '100%';
-      svg.style.height = height + 'px';
-      svg.style.display = 'block';
       container.appendChild(svg);
       return { svg, width, height };
     }
 
+    function svgEl(svg, name, attrs) {
+      const el = document.createElementNS(SVGNS, name);
+      Object.entries(attrs || {}).forEach(([k, v]) => el.setAttribute(k, v));
+      svg.appendChild(el);
+      return el;
+    }
+
     function addSvgLine(svg, x1, y1, x2, y2, color, width = 1, dash = null, opacity = 1) {
-      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-      line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-      line.setAttribute('stroke', color);
-      line.setAttribute('stroke-width', width);
-      line.setAttribute('opacity', opacity);
-      if (dash) line.setAttribute('stroke-dasharray', dash);
-      svg.appendChild(line);
-      return line;
+      const attrs = { x1, y1, x2, y2, stroke: color, 'stroke-width': width, opacity };
+      if (dash) attrs['stroke-dasharray'] = dash;
+      return svgEl(svg, 'line', attrs);
     }
 
     function addSvgText(svg, x, y, text, opts = {}) {
-      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      t.setAttribute('x', x);
-      t.setAttribute('y', y);
-      t.setAttribute('fill', opts.color || cssVar('--chart-text', '#475569'));
-      t.setAttribute('font-size', opts.size || '11');
-      t.setAttribute('text-anchor', opts.anchor || 'start');
-      t.setAttribute('font-weight', opts.weight || '400');
+      const t = svgEl(svg, 'text', {
+        x, y,
+        fill: opts.color || cssVar('--chart-text', '#424245'),
+        'font-size': opts.size || '10.5',
+        'text-anchor': opts.anchor || 'start',
+        'font-weight': opts.weight || '400',
+      });
+      if (opts.mono) t.setAttribute('font-family', 'ui-monospace, SF Mono, Menlo, monospace');
       t.textContent = text;
-      svg.appendChild(t);
       return t;
     }
 
@@ -1156,16 +1509,118 @@
       return d;
     }
 
-    function renderLineChart(id, rows, series, yFormatter) {
+    // Fritsch–Carlson monotone cubic: elegant curvature with no overshoot,
+    // so the smoothing never invents values the data does not contain.
+    function smoothPath(pts) {
+      const n = pts.length;
+      if (n < 3) return linePath(pts);
+      const xs = pts.map(p => p.x);
+      const ys = pts.map(p => p.y);
+      const dx = [], slope = [], tang = new Array(n);
+      for (let i = 0; i < n - 1; i += 1) {
+        dx.push(xs[i + 1] - xs[i] || 1e-9);
+        slope.push((ys[i + 1] - ys[i]) / dx[i]);
+      }
+      tang[0] = slope[0];
+      for (let i = 1; i < n - 1; i += 1) {
+        tang[i] = slope[i - 1] * slope[i] <= 0 ? 0 : (slope[i - 1] + slope[i]) / 2;
+      }
+      tang[n - 1] = slope[n - 2];
+      for (let i = 0; i < n - 1; i += 1) {
+        if (slope[i] === 0) { tang[i] = 0; tang[i + 1] = 0; continue; }
+        const a = tang[i] / slope[i];
+        const b = tang[i + 1] / slope[i];
+        const s = a * a + b * b;
+        if (s > 9) {
+          const tau = 3 / Math.sqrt(s);
+          tang[i] = tau * a * slope[i];
+          tang[i + 1] = tau * b * slope[i];
+        }
+      }
+      let d = `M ${xs[0]} ${ys[0]}`;
+      for (let i = 0; i < n - 1; i += 1) {
+        const h = dx[i];
+        d += ` C ${xs[i] + h / 3} ${ys[i] + tang[i] * h / 3} ${xs[i + 1] - h / 3} ${ys[i + 1] - tang[i + 1] * h / 3} ${xs[i + 1]} ${ys[i + 1]}`;
+      }
+      return d;
+    }
+
+    // Recessive shared frame: horizontal hairlines, no axis box. Labels rest
+    // above the gridlines at the left edge; marks that start at the left edge
+    // (bars, histogram bins) request a dedicated gutter instead so labels
+    // never sit behind the data.
+    function drawFrame(svg, width, height, m, yScale, yFormatter, opts = {}) {
+      const innerH = height - m.top - m.bottom;
+      const palette = themeColors();
+      for (let i = 0; i <= yScale.count; i += 1) {
+        const value = yScale.step * (yScale.count - i);
+        const y = m.top + (i / yScale.count) * innerH;
+        addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
+        if (value > 0 || i < yScale.count) {
+          if (opts.gutter) {
+            addSvgText(svg, m.left - 8, y + 3, yFormatter(value), { anchor: 'end', size: '9.5', color: palette.muted, mono: true });
+          } else {
+            addSvgText(svg, m.left, y - 5, yFormatter(value), { size: '9.5', color: palette.muted, mono: true });
+          }
+        }
+      }
+      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1);
+    }
+
+    // Shared crosshair hover layer for time-series charts: nearest-point
+    // vertical guide, focus dots per series, and a composed tooltip.
+    function addCrosshair(svg, width, height, m, rows, series, sx, sy, yFormatter) {
+      const palette = themeColors();
+      const innerH = height - m.top - m.bottom;
+      const guide = addSvgLine(svg, 0, m.top, 0, m.top + innerH, palette.axis, 1, '2 3', 0);
+      const dots = series.map(s => svgEl(svg, 'circle', { r: 3.5, fill: s.color, stroke: palette.surface, 'stroke-width': 1.5, opacity: 0 }));
+      const cap = svgEl(svg, 'rect', {
+        x: m.left, y: m.top,
+        width: Math.max(1, width - m.left - m.right),
+        height: Math.max(1, innerH),
+        fill: 'transparent',
+      });
+      cap.style.cursor = 'crosshair';
+      const px = rows.map(r => sx(r.x));
+      cap.addEventListener('mousemove', e => {
+        const box = svg.getBoundingClientRect();
+        const mx = (e.clientX - box.left) * (width / box.width);
+        let idx = 0;
+        let best = Infinity;
+        for (let i = 0; i < px.length; i += 1) {
+          const dist = Math.abs(px[i] - mx);
+          if (dist < best) { best = dist; idx = i; }
+        }
+        const row = rows[idx];
+        guide.setAttribute('x1', px[idx]);
+        guide.setAttribute('x2', px[idx]);
+        guide.setAttribute('opacity', '0.85');
+        series.forEach((s, si) => {
+          dots[si].setAttribute('cx', px[idx]);
+          dots[si].setAttribute('cy', sy(Number(row[s.key]) || 0));
+          dots[si].setAttribute('opacity', '1');
+        });
+        const html = `<div class="tt-title">${escapeHtml(row.label)}</div>` +
+          series.map(s => ttRow(s.color, s.label, yFormatter(Number(row[s.key]) || 0))).join('');
+        showTooltip(html, e.clientX, e.clientY);
+      });
+      cap.addEventListener('mouseleave', () => {
+        guide.setAttribute('opacity', '0');
+        dots.forEach(d => d.setAttribute('opacity', '0'));
+        hideTooltip();
+      });
+    }
+
+    function renderLineChart(id, rows, series, yFormatter, opts = {}) {
       if (!rows.length) {
         renderNoData(id);
         return;
       }
       const palette = themeColors();
-
       const container = clearNode(id);
       const { svg, width, height } = createSvg(container);
-      const m = { top: 14, right: 18, bottom: 36, left: 58 };
+      const endLabelPad = 14 + 7 * Math.max(...series.map(s => s.label.length));
+      const m = { top: 16, right: opts.endLabels === false ? 18 : Math.min(120, endLabelPad), bottom: 26, left: 10 };
       const innerW = width - m.left - m.right;
       const innerH = height - m.top - m.bottom;
 
@@ -1177,60 +1632,81 @@
       series.forEach(s => {
         rows.forEach(r => { dataMax = Math.max(dataMax, Number(r[s.key]) || 0); });
       });
-      const yScale = niceScale(dataMax, 5);
+      if (opts.band) {
+        rows.forEach(r => { dataMax = Math.max(dataMax, Number(r[opts.band.high]) || 0); });
+      }
+      const yScale = niceScale(dataMax, 4);
       const yMax = yScale.max;
 
-      const sx = (x) => m.left + ((x - xMin) / Math.max(1, (xMax - xMin))) * innerW;
-      const sy = (y) => m.top + innerH - (y / yMax) * innerH;
+      const sx = x => m.left + ((x - xMin) / Math.max(1, xMax - xMin)) * innerW;
+      const sy = y => m.top + innerH - (y / yMax) * innerH;
 
-      for (let i = 0; i <= yScale.count; i += 1) {
-        const y = m.top + (i / yScale.count) * innerH;
-        addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
-        addSvgText(svg, m.left - 8, y + 4, yFormatter(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
-      }
+      drawFrame(svg, width, height, m, yScale, yFormatter);
 
       const tickCount = Math.min(6, rows.length);
       for (let i = 0; i < tickCount; i += 1) {
         const idx = Math.round((i / Math.max(1, tickCount - 1)) * (rows.length - 1));
         const row = rows[idx];
-        const x = sx(row.x);
-        addSvgLine(svg, x, height - m.bottom, x, height - m.bottom + 4, palette.axis, 1);
-        addSvgText(svg, x, height - m.bottom + 16, row.label, { anchor: 'middle', size: '10' });
+        const anchor = i === 0 ? 'start' : (i === tickCount - 1 ? 'end' : 'middle');
+        addSvgText(svg, sx(row.x), height - m.bottom + 16, row.label, { anchor, size: '9.5', color: palette.muted, mono: true });
       }
 
-      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
-      addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
+      if (opts.band) {
+        const upper = rows.map(r => ({ x: sx(r.x), y: sy(Number(r[opts.band.high]) || 0) }));
+        const lower = rows.map(r => ({ x: sx(r.x), y: sy(Number(r[opts.band.low]) || 0) })).reverse();
+        const d = `${smoothPath(upper)} L ${lower[0].x} ${lower[0].y} ${smoothPath(lower).replace(/^M [^ ]+ [^ ]+/, '').trim()} Z`;
+        svgEl(svg, 'path', { d, fill: series[0].color, opacity: 0.09, stroke: 'none' });
+      }
 
       series.forEach(s => {
-        const pts = rows.map(r => ({ x: sx(r.x), y: sy(r[s.key]), raw: r[s.key], label: r.label }));
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', linePath(pts));
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', s.color);
-        path.setAttribute('stroke-width', s.width || 2.3);
-        svg.appendChild(path);
+        const pts = rows.map(r => ({ x: sx(r.x), y: sy(Number(r[s.key]) || 0) }));
 
-        pts.forEach(p => {
-          const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          c.setAttribute('cx', p.x);
-          c.setAttribute('cy', p.y);
-          c.setAttribute('r', 3);
-          c.setAttribute('fill', s.color);
-          c.setAttribute('opacity', '0.95');
-          svg.appendChild(c);
-          setTooltip(c, `<strong>${escapeHtml(s.label)}</strong><br>${escapeHtml(p.label)}: ${escapeHtml(yFormatter(p.raw))}`);
+        if (s.area && pts.length > 1) {
+          const gradId = `grad-${++gradientSeq}`;
+          const defs = svgEl(svg, 'defs', {});
+          const grad = document.createElementNS(SVGNS, 'linearGradient');
+          grad.setAttribute('id', gradId);
+          grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
+          grad.setAttribute('x2', '0'); grad.setAttribute('y2', '1');
+          const stop1 = document.createElementNS(SVGNS, 'stop');
+          stop1.setAttribute('offset', '0%'); stop1.setAttribute('stop-color', s.color); stop1.setAttribute('stop-opacity', '0.14');
+          const stop2 = document.createElementNS(SVGNS, 'stop');
+          stop2.setAttribute('offset', '100%'); stop2.setAttribute('stop-color', s.color); stop2.setAttribute('stop-opacity', '0');
+          grad.appendChild(stop1); grad.appendChild(stop2);
+          defs.appendChild(grad);
+          const areaD = `${smoothPath(pts)} L ${pts[pts.length - 1].x} ${m.top + innerH} L ${pts[0].x} ${m.top + innerH} Z`;
+          svgEl(svg, 'path', { d: areaD, fill: `url(#${gradId})`, stroke: 'none' });
+        }
+
+        svgEl(svg, 'path', {
+          d: smoothPath(pts),
+          fill: 'none',
+          stroke: s.color,
+          'stroke-width': s.width || 2,
+          'stroke-linecap': 'round',
+          'stroke-linejoin': 'round',
         });
+        if (s.dash) svg.lastChild.setAttribute('stroke-dasharray', s.dash);
+
+        const last = pts[pts.length - 1];
+        svgEl(svg, 'circle', { cx: last.x, cy: last.y, r: 3.5, fill: s.color, stroke: palette.surface, 'stroke-width': 1.5 });
       });
 
-      if (series.length > 1) {
-        let lx = m.left;
-        const ly = m.top - 2;
+      // Direct end labels, nudged apart when series converge at the edge.
+      if (opts.endLabels !== false) {
+        const placed = [];
         series.forEach(s => {
-          addSvgLine(svg, lx, ly, lx + 18, ly, s.color, 2.4);
-          addSvgText(svg, lx + 22, ly + 4, s.label, { size: '10' });
-          lx += 100;
+          const last = rows[rows.length - 1];
+          let ly = sy(Number(last[s.key]) || 0) + 3;
+          placed.sort((a, b) => a - b).forEach(p => {
+            if (Math.abs(ly - p) < 13) ly = p + 13;
+          });
+          placed.push(ly);
+          addSvgText(svg, sx(last.x) + 9, ly, s.label, { size: '10', weight: '600', color: s.color });
         });
       }
+
+      addCrosshair(svg, width, height, m, rows, series, sx, sy, yFormatter);
     }
 
     function renderScatterChart(id, rows) {
@@ -1239,65 +1715,76 @@
         return;
       }
       const palette = themeColors();
-
       const container = clearNode(id);
       const { svg, width, height } = createSvg(container);
-      const m = { top: 16, right: 18, bottom: 40, left: 60 };
+      const m = { top: 36, right: 26, bottom: 34, left: 10 };
       const innerW = width - m.left - m.right;
       const innerH = height - m.top - m.bottom;
 
-      const xScale = niceScale(Math.max(0, ...rows.map(r => r.CAC)) * 1.1, 5);
-      const yScale = niceScale(Math.max(0, ...rows.map(r => r.avgLTV)) * 1.1, 5);
+      const xScale = niceScale(Math.max(0, ...rows.map(r => r.CAC)) * 1.12, 5);
+      const yScale = niceScale(Math.max(0, ...rows.map(r => r.avgLTV)) * 1.12, 4);
       const xMax = xScale.max;
       const yMax = yScale.max;
 
-      const sx = (x) => m.left + (x / xMax) * innerW;
-      const sy = (y) => m.top + innerH - (y / yMax) * innerH;
+      const sx = x => m.left + (x / xMax) * innerW;
+      const sy = y => m.top + innerH - (y / yMax) * innerH;
 
-      for (let i = 0; i <= xScale.count; i += 1) {
+      drawFrame(svg, width, height, m, yScale, fmtCurrency);
+
+      for (let i = 1; i <= xScale.count; i += 1) {
         const x = m.left + (i / xScale.count) * innerW;
-        addSvgLine(svg, x, m.top + innerH, x, m.top + innerH + 4, palette.axis, 1);
-        addSvgText(svg, x, m.top + innerH + 16, fmtCurrency(xScale.step * i), { anchor: 'middle', size: '10' });
+        addSvgText(svg, x, m.top + innerH + 16, fmtCurrency(xScale.step * i), { anchor: 'middle', size: '9.5', color: palette.muted, mono: true });
       }
+      addSvgText(svg, width - m.right, m.top + innerH + 30, 'CAC →', { anchor: 'end', size: '9', color: palette.muted, mono: true });
+      addSvgText(svg, m.left, m.top - 22, 'OBSERVED LTV ↑', { size: '9', color: palette.muted, mono: true });
 
-      for (let i = 0; i <= yScale.count; i += 1) {
-        const y = m.top + (i / yScale.count) * innerH;
-        addSvgLine(svg, m.left - 4, y, m.left, y, palette.axis, 1);
-        addSvgText(svg, m.left - 8, y + 4, fmtCurrency(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
-      }
-
-      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
-      addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
-
-      // Break-even reference (LTV = CAC) — faint, just a floor of viability.
+      // Below break-even (LTV < CAC) every dollar of acquisition loses money:
+      // wash the whole region so the eye reads it as off-limits.
       const beEnd = Math.min(xMax, yMax);
-      addSvgLine(svg, sx(0), sy(0), sx(beEnd), sy(beEnd), palette.axis, 1, '3 4', 0.55);
-      addSvgText(svg, sx(beEnd) - 4, sy(beEnd) - 6, '1:1 break-even', { anchor: 'end', size: '9.5', color: palette.muted });
+      svgEl(svg, 'path', {
+        d: `M ${sx(0)} ${sy(0)} L ${sx(beEnd)} ${sy(beEnd)} L ${sx(xMax)} ${sy(Math.min(yMax, xMax > yMax ? yMax : 0))} L ${sx(xMax)} ${sy(0)} Z`,
+        fill: palette.bad,
+        opacity: 0.045,
+        stroke: 'none',
+      });
+      addSvgLine(svg, sx(0), sy(0), sx(beEnd), sy(beEnd), palette.axis, 1, '3 4', 0.6);
+      addSvgText(svg, sx(beEnd) - 4, sy(beEnd) - 6, '1:1 break-even', { anchor: 'end', size: '9', color: palette.muted, mono: true });
 
       // Scale threshold (LTV/CAC target) — the rule that governs the decision.
       const target = EFF_THRESH.ltv_cac_target || 3.0;
       const tEndX = (yMax / target <= xMax) ? yMax / target : xMax;
       const tEndY = tEndX * target;
-      addSvgLine(svg, sx(0), sy(0), sx(tEndX), sy(tEndY), palette.good, 1.4, '5 4', 0.9);
-      addSvgText(svg, sx(tEndX) - 4, sy(tEndY) - 6, fmtNum(target, 0) + ':1 scale target', { anchor: 'end', size: '9.5', weight: '500', color: palette.good });
+      addSvgLine(svg, sx(0), sy(0), sx(tEndX), sy(tEndY), palette.good, 1.3, '5 4', 0.9);
+      addSvgText(svg, sx(tEndX) + 6, sy(tEndY) + 10, fmtNum(target, 0) + ':1 scale target', { size: '9', weight: '600', color: palette.good, mono: true });
 
-      rows.forEach(r => {
+      // Bubble area encodes acquisition spend so misallocated budget is
+      // visually heavy, not just annotated.
+      const spends = rows.map(r => Number(r.totalSpend) || 0);
+      const maxSpend = Math.max(1, ...spends);
+      const radius = spend => 6 + 11 * Math.sqrt((Number(spend) || 0) / maxSpend);
+
+      const statusColor = r => r.status === 'inefficient' ? palette.bad : (r.status === 'efficient' ? palette.good : palette.warn);
+      const statusLabel = { efficient: 'Efficient', inefficient: 'Inefficient', borderline: 'Borderline', undefined: 'Insufficient maturity' };
+
+      [...rows].sort((a, b) => (Number(b.totalSpend) || 0) - (Number(a.totalSpend) || 0)).forEach(r => {
         const cx = sx(r.CAC);
         const cy = sy(r.avgLTV);
-        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        c.setAttribute('cx', cx);
-        c.setAttribute('cy', cy);
-        c.setAttribute('r', 6);
-        c.setAttribute('fill', r.status === 'inefficient' ? palette.bad : (r.status === 'efficient' ? palette.good : palette.warn));
-        c.setAttribute('opacity', '0.9');
-        svg.appendChild(c);
-        addSvgText(svg, cx + 7, cy - 8, r.channel, { size: '10', color: palette.text });
+        const rad = radius(r.totalSpend);
+        const c = svgEl(svg, 'circle', {
+          cx, cy, r: rad,
+          fill: statusColor(r),
+          'fill-opacity': 0.78,
+          stroke: palette.surface,
+          'stroke-width': 1.5,
+        });
+        addSvgText(svg, cx + rad + 5, cy + 3.5, r.channel, { size: '10.5', weight: '600', color: palette.text });
         setTooltip(c,
-          `<strong>${escapeHtml(r.channel)}</strong><br>` +
-          `CAC: ${escapeHtml(fmtCurrencyFull(r.CAC))}<br>` +
-          `Avg LTV: ${escapeHtml(fmtCurrencyFull(r.avgLTV))}<br>` +
-          `LTV/CAC: ${escapeHtml(fmtNum(r.ltvToCac, 2))}<br>` +
-          `Payback: ${escapeHtml(Number.isFinite(r.payback) ? fmtNum(r.payback, 1) + ' months' : 'n/a')}`
+          `<div class="tt-title">${escapeHtml(r.channel)} · ${escapeHtml(statusLabel[r.status] || r.status)}</div>` +
+          ttRow(statusColor(r), 'LTV/CAC', fmtNum(r.ltvToCac, 2)) +
+          ttRow(palette.muted, 'CAC', fmtCurrencyFull(r.CAC)) +
+          ttRow(palette.muted, 'Avg LTV', fmtCurrencyFull(r.avgLTV)) +
+          ttRow(palette.muted, 'Spend', fmtCurrency(r.totalSpend)) +
+          ttRow(palette.muted, 'Payback', fmtPayback(r))
         );
       });
     }
@@ -1308,45 +1795,55 @@
         return;
       }
       const palette = themeColors();
-
       const container = clearNode(id);
       const { svg, width, height } = createSvg(container);
-      const m = { top: 16, right: 18, bottom: 44, left: 60 };
+      const m = { top: 16, right: 14, bottom: 30, left: 58 };
       const innerW = width - m.left - m.right;
       const innerH = height - m.top - m.bottom;
 
-      const yScale = niceScale(Math.max(0, ...rows.map(r => Number(r[key]) || 0)), 5);
+      const values = rows.map(r => Number(r[key]) || 0);
+      const yScale = niceScale(Math.max(0, ...values), 4);
       const yMax = yScale.max;
-      const barW = innerW / rows.length * 0.65;
       const gap = innerW / rows.length;
+      const barW = Math.min(84, gap * 0.56);
 
-      const sy = (y) => m.top + innerH - (y / yMax) * innerH;
+      const sy = y => m.top + innerH - (y / yMax) * innerH;
 
-      for (let i = 0; i <= yScale.count; i += 1) {
-        const y = m.top + (i / yScale.count) * innerH;
-        addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
-        addSvgText(svg, m.left - 8, y + 4, yFormatter(yScale.step * (yScale.count - i)), { anchor: 'end', size: '10' });
-      }
+      drawFrame(svg, width, height, m, yScale, yFormatter, { gutter: true });
 
-      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
-      addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
+      const maxIdx = values.indexOf(Math.max(...values));
 
       rows.forEach((r, idx) => {
+        const v = values[idx];
         const x = m.left + idx * gap + (gap - barW) / 2;
-        const y = sy(Number(r[key]) || 0);
-        const h = m.top + innerH - y;
+        const y = sy(v);
+        const h = Math.max(1.5, m.top + innerH - y);
 
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', x);
-        rect.setAttribute('y', y);
-        rect.setAttribute('width', barW);
-        rect.setAttribute('height', Math.max(1, h));
-        rect.setAttribute('fill', color);
-        rect.setAttribute('opacity', '0.9');
-        svg.appendChild(rect);
+        const rect = svgEl(svg, 'rect', {
+          x, y,
+          width: barW,
+          height: h,
+          fill: color,
+          rx: 3.5,
+          opacity: idx === maxIdx ? 0.95 : 0.55,
+        });
+        // Square off the baseline so rounding reads as a data-end, not a pill.
+        if (h > 5) {
+          svgEl(svg, 'rect', { x, y: y + h - 4, width: barW, height: 4, fill: color, opacity: idx === maxIdx ? 0.95 : 0.55 });
+        }
 
-        addSvgText(svg, x + barW / 2, m.top + innerH + 16, String(r[labelKey]), { anchor: 'middle', size: '10' });
-        setTooltip(rect, `<strong>${escapeHtml(r[labelKey])}</strong><br>${escapeHtml(yFormatter(r[key]))}` + (r.marginPct !== undefined ? `<br>Margin %: ${escapeHtml(fmtPct(r.marginPct))}` : ''));
+        if (idx === maxIdx) {
+          addSvgText(svg, x + barW / 2, y - 7, yFormatter(v), { anchor: 'middle', size: '10', weight: '600', color: palette.text, mono: true });
+        }
+        addSvgText(svg, x + barW / 2, m.top + innerH + 16, String(r[labelKey]), { anchor: 'middle', size: '10', color: palette.muted });
+
+        rect.addEventListener('mouseenter', () => rect.setAttribute('opacity', '1'));
+        rect.addEventListener('mouseleave', () => rect.setAttribute('opacity', idx === maxIdx ? '0.95' : '0.55'));
+        setTooltip(rect,
+          `<div class="tt-title">${escapeHtml(r[labelKey])}</div>` +
+          ttRow(color, key === 'margin' ? 'Contribution' : 'Value', yFormatter(v)) +
+          (r.marginPct !== undefined ? ttRow(palette.muted, 'Margin rate', fmtPct(r.marginPct)) : '')
+        );
       });
     }
 
@@ -1379,12 +1876,11 @@
         bucketStart: min + i * step,
         bucketEnd: min + (i + 1) * step,
         count: c,
-        label: i,
       }));
 
       const container = clearNode(id);
       const { svg, width, height } = createSvg(container);
-      const m = { top: 16, right: 18, bottom: 40, left: 52 };
+      const m = { top: 16, right: 14, bottom: 40, left: 44 };
       const innerW = width - m.left - m.right;
       const innerH = height - m.top - m.bottom;
 
@@ -1392,50 +1888,58 @@
       const yMax = yScale.max;
       const barW = innerW / rows.length;
 
-      for (let i = 0; i <= yScale.count; i += 1) {
-        const y = m.top + (i / yScale.count) * innerH;
-        addSvgLine(svg, m.left, y, width - m.right, y, palette.grid, 1);
-        addSvgText(svg, m.left - 8, y + 4, Math.round(yScale.step * (yScale.count - i)).toString(), { anchor: 'end', size: '10' });
-      }
-
-      addSvgLine(svg, m.left, m.top + innerH, width - m.right, m.top + innerH, palette.axis, 1.2);
-      addSvgLine(svg, m.left, m.top, m.left, m.top + innerH, palette.axis, 1.2);
+      drawFrame(svg, width, height, m, yScale, v => Math.round(v).toString(), { gutter: true });
 
       rows.forEach((r, i) => {
         const h = (r.count / yMax) * innerH;
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', m.left + i * barW + 0.5);
-        rect.setAttribute('y', m.top + innerH - h);
-        rect.setAttribute('width', Math.max(1, barW - 1));
-        rect.setAttribute('height', Math.max(1, h));
-        rect.setAttribute('fill', palette.bar);
-        rect.setAttribute('opacity', '0.88');
-        svg.appendChild(rect);
-        setTooltip(rect, `Revenue bucket: ${fmtCurrencyFull(r.bucketStart)} - ${fmtCurrencyFull(r.bucketEnd)}<br>Customers: ${r.count}`);
+        const rect = svgEl(svg, 'rect', {
+          x: m.left + i * barW + 1,
+          y: m.top + innerH - h,
+          width: Math.max(1, barW - 2),
+          height: Math.max(1, h),
+          fill: palette.bar,
+          rx: 1.5,
+          opacity: 0.8,
+        });
+        rect.addEventListener('mouseenter', () => rect.setAttribute('opacity', '1'));
+        rect.addEventListener('mouseleave', () => rect.setAttribute('opacity', '0.8'));
+        setTooltip(rect,
+          `<div class="tt-title">${escapeHtml(fmtCurrencyFull(r.bucketStart))} – ${escapeHtml(fmtCurrencyFull(r.bucketEnd))}</div>` +
+          ttRow(palette.bar, 'Customers', fmtNum(r.count, 0)));
       });
 
-      addSvgText(svg, m.left, height - 8, 'Distribution clipped at P99 to reduce outlier distortion', { size: '10', color: palette.muted });
+      for (let i = 0; i <= 3; i += 1) {
+        const v = min + (i / 3) * (max - min);
+        const anchor = i === 0 ? 'start' : (i === 3 ? 'end' : 'middle');
+        addSvgText(svg, m.left + (i / 3) * innerW, m.top + innerH + 16, fmtCurrency(v), { anchor, size: '9.5', color: palette.muted, mono: true });
+      }
+      addSvgText(svg, m.left, height - 6, 'Distribution clipped at P99 to reduce outlier distortion', { size: '9', color: palette.muted, mono: true });
     }
 
-    function populateMultiSelect(id, values) {
-      const select = document.getElementById(id);
-      select.innerHTML = '';
+    /* Filters — chip toggles keep the whole scope legible at a glance. */
+    function populateChipGroup(id, values) {
+      const wrap = document.getElementById(id);
+      wrap.innerHTML = '';
       values.forEach(v => {
-        const opt = document.createElement('option');
-        opt.value = v;
-        opt.textContent = v;
-        // Leave unselected by default — empty selection is treated as "all".
-        opt.selected = false;
-        select.appendChild(opt);
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'chip is-on';
+        chip.dataset.value = v;
+        chip.setAttribute('aria-pressed', 'true');
+        chip.textContent = v;
+        chip.addEventListener('click', () => {
+          const on = chip.classList.toggle('is-on');
+          chip.setAttribute('aria-pressed', String(on));
+          computeAndRender();
+        });
+        wrap.appendChild(chip);
       });
-      select.size = Math.min(3, values.length);
     }
 
-    function getSelectedSet(id, allValues) {
-      const options = Array.from(document.getElementById(id).options);
-      const selected = options.filter(o => o.selected).map(o => o.value);
-      if (!selected.length) return new Set(allValues);
-      return new Set(selected);
+    function getSelectedSet(id) {
+      return new Set(
+        Array.from(document.getElementById(id).querySelectorAll('.chip.is-on')).map(chip => chip.dataset.value)
+      );
     }
 
     function applyFilters(startDate, endDate, selected) {
@@ -1536,60 +2040,51 @@
     }
 
     function computeUnitEconomicsByChannel(selected) {
-      const channels = Array.from(selected.channels);
-      const customerByChannel = new Map();
-      channels.forEach(ch => customerByChannel.set(ch, new Set()));
-      DASHBOARD_DATA.customers.forEach(c => {
-        if (!selected.channels.has(c.ch)) return;
-        if (!customerByChannel.has(c.ch)) customerByChannel.set(c.ch, new Set());
-        customerByChannel.get(c.ch).add(c.cid);
-      });
+      const rows = DASHBOARD_DATA.unit_economics
+        .filter(r => selected.channels.has(r.acquisition_channel))
+        .map(r => {
+          const payback = r.approximate_payback_period === null
+            ? NaN
+            : Number(r.approximate_payback_period);
+          const ltvToCac = Number(r.LTV_to_CAC);
+          const paybackStatus = r.payback_status || 'insufficient_maturity';
+          let status = 'borderline';
+          if (!Number.isFinite(ltvToCac) || paybackStatus === 'insufficient_maturity') {
+            status = 'undefined';
+          } else if (paybackStatus === 'not_recovered') {
+            status = 'inefficient';
+          } else if (!Number.isFinite(payback)) {
+            status = 'undefined';
+          } else if (
+            ltvToCac >= EFF_THRESH.ltv_cac_target
+            && payback <= EFF_THRESH.payback_target_months
+          ) {
+            status = 'efficient';
+          } else if (
+            ltvToCac < EFF_THRESH.ineff_ltv_cac
+            || payback > EFF_THRESH.ineff_payback_months
+          ) {
+            status = 'inefficient';
+          }
 
-      const spendByChannel = new Map();
-      channels.forEach(ch => spendByChannel.set(ch, 0));
-      DASHBOARD_DATA.marketing_spend.forEach(m => {
-        if (!selected.channels.has(m.ch)) return;
-        spendByChannel.set(m.ch, (spendByChannel.get(m.ch) || 0) + m.spend);
-      });
-
-      const cmByChannel = new Map();
-      channels.forEach(ch => cmByChannel.set(ch, 0));
-      DASHBOARD_DATA.transactions.forEach(t => {
-        const customer = CUSTOMER_BY_ID.get(t.cid);
-        if (!customer) return;
-        if (!selected.channels.has(customer.ch)) return;
-        cmByChannel.set(customer.ch, (cmByChannel.get(customer.ch) || 0) + (t.rev - t.cost));
-      });
-
-      const months = Math.max(
-        1,
-        diffMonths(monthKey(DASHBOARD_DATA.meta.coverage_start), monthKey(DASHBOARD_DATA.meta.coverage_end)) + 1
-      );
-
-      const rows = channels.map(ch => {
-        const cCount = (customerByChannel.get(ch) || new Set()).size;
-        const spend = spendByChannel.get(ch) || 0;
-        const cm = cmByChannel.get(ch) || 0;
-        const CAC = cCount > 0 ? spend / cCount : NaN;
-        const avgLTV = cCount > 0 ? cm / cCount : NaN;
-        const ltvToCac = (Number.isFinite(CAC) && CAC > 0) ? avgLTV / CAC : NaN;
-        const monthlyCmPerCustomer = cCount > 0 ? (cm / cCount) / months : NaN;
-        const payback = (Number.isFinite(monthlyCmPerCustomer) && monthlyCmPerCustomer > 0 && Number.isFinite(CAC))
-          ? CAC / monthlyCmPerCustomer
-          : NaN;
-
-        let status = 'borderline';
-        if (!Number.isFinite(ltvToCac) || !Number.isFinite(payback)) status = 'undefined';
-        else if (ltvToCac >= EFF_THRESH.ltv_cac_target && payback <= EFF_THRESH.payback_target_months) status = 'efficient';
-        else if (ltvToCac < EFF_THRESH.ineff_ltv_cac || payback > EFF_THRESH.ineff_payback_months) status = 'inefficient';
-
-        return { channel: ch, customersAcquired: cCount, totalSpend: spend, CAC, avgLTV, ltvToCac, payback, status };
-      });
+          return {
+            channel: r.acquisition_channel,
+            customersAcquired: Number(r.customers_acquired),
+            totalSpend: Number(r.total_spend),
+            CAC: Number(r.CAC),
+            avgLTV: Number(r.average_LTV),
+            ltvToCac,
+            payback,
+            paybackStatus,
+            paybackHorizon: Number(r.payback_horizon_months || PAYBACK_HORIZON_MONTHS),
+            status,
+          };
+        });
 
       return rows.sort((a, b) => (b.ltvToCac || -Infinity) - (a.ltvToCac || -Infinity));
     }
 
-    function computeCohortRetention(tx) {
+    function computeCohortRetention(tx, customers, observationEnd) {
       const agg = new Map();
       tx.forEach(r => {
         const cohort = monthKey(r.sd);
@@ -1601,45 +2096,69 @@
         o.customers.add(r.cid);
       });
 
-      const rows = Array.from(agg.values()).map(o => ({
-        cohort: o.cohort,
-        activity: o.activity,
-        revenue: o.revenue,
-        activeCustomers: o.customers.size,
-        monthsSince: diffMonths(o.cohort, o.activity),
-      }));
+      const cohortSizes = new Map();
+      customers.forEach(c => {
+        const cohort = monthKey(c.sd);
+        cohortSizes.set(cohort, (cohortSizes.get(cohort) || 0) + 1);
+      });
 
-      const baselineMap = new Map();
-      rows.forEach(r => {
-        if (r.monthsSince === 0) baselineMap.set(r.cohort, { revenue: r.revenue, customers: r.activeCustomers });
+      const rows = [];
+      const observationMonth = monthKey(observationEnd);
+      cohortSizes.forEach((cohortSize, cohort) => {
+        const baseline = agg.get(cohort + '|' + cohort);
+        if (!baseline || baseline.revenue <= 0 || baseline.customers.size <= 0) return;
+
+        const maxAge = Math.max(0, diffMonths(cohort, observationMonth));
+        for (let monthsSince = 0; monthsSince <= maxAge; monthsSince += 1) {
+          const year = Number(cohort.slice(0, 4));
+          const month = Number(cohort.slice(5, 7)) - 1 + monthsSince;
+          const activity = new Date(Date.UTC(year, month, 1)).toISOString().slice(0, 7);
+          const observed = agg.get(cohort + '|' + activity) || {
+            revenue: 0,
+            customers: new Set(),
+          };
+          let retainedCustomers = 0;
+          observed.customers.forEach(cid => {
+            if (baseline.customers.has(cid)) retainedCustomers += 1;
+          });
+          rows.push({
+            cohort,
+            activity,
+            monthsSince,
+            revenue: observed.revenue,
+            activeCustomers: observed.customers.size,
+            cohortSize,
+            revenueRetention: observed.revenue / baseline.revenue,
+            activityRetention: retainedCustomers / baseline.customers.size,
+            signupActivityRate: observed.customers.size / cohortSize,
+          });
+        }
       });
 
       const byMonths = new Map();
       rows.forEach(r => {
-        const base = baselineMap.get(r.cohort);
-        if (!base || base.revenue <= 0 || base.customers <= 0) return;
-        const revRet = r.revenue / base.revenue;
-        const actRet = r.activeCustomers / base.customers;
-        if (!byMonths.has(r.monthsSince)) byMonths.set(r.monthsSince, { rev: [], act: [] });
-        byMonths.get(r.monthsSince).rev.push(revRet);
-        byMonths.get(r.monthsSince).act.push(actRet);
+        if (!byMonths.has(r.monthsSince)) {
+          byMonths.set(r.monthsSince, { rev: [], retained: [], signupActivity: [] });
+        }
+        byMonths.get(r.monthsSince).rev.push(r.revenueRetention);
+        byMonths.get(r.monthsSince).retained.push(r.activityRetention);
+        byMonths.get(r.monthsSince).signupActivity.push(r.signupActivityRate);
       });
 
       const summary = Array.from(byMonths.entries())
         .map(([monthsSince, vals]) => ({
           monthsSince,
           medianRevenueRetention: median(vals.rev),
-          medianActivityRetention: median(vals.act),
+          q25RevenueRetention: quantile(vals.rev, 0.25),
+          q75RevenueRetention: quantile(vals.rev, 0.75),
+          medianActivityRetention: median(vals.retained),
+          medianSignupActivityRate: median(vals.signupActivity),
         }))
         .sort((a, b) => a.monthsSince - b.monthsSince);
 
-      const decayByCohort = [];
-      baselineMap.forEach((base, cohort) => {
-        const m6 = rows.find(r => r.cohort === cohort && r.monthsSince === 6);
-        if (m6) {
-          decayByCohort.push({ cohort, month6RevenueRetention: m6.revenue / base.revenue });
-        }
-      });
+      const decayByCohort = rows
+        .filter(r => r.monthsSince === 6)
+        .map(r => ({ cohort: r.cohort, month6RevenueRetention: r.revenueRetention }));
 
       return { summary, decayByCohort };
     }
@@ -1690,8 +2209,8 @@
       })).sort((a, b) => b.avgRevTx - a.avgRevTx);
     }
 
-    function computeRevenueByCustomer(tx) {
-      const map = new Map();
+    function computeRevenueByCustomer(customers, tx) {
+      const map = new Map(customers.map(customer => [customer.cid, 0]));
       tx.forEach(r => {
         map.set(r.cid, (map.get(r.cid) || 0) + r.rev);
       });
@@ -1711,17 +2230,20 @@
         .sort((a, b) => a.ltvToCac - b.ltvToCac)
         .slice(0, 3)
         .forEach(r => {
+          const paybackRisk = r.paybackStatus === 'not_recovered'
+            ? RISK_WEIGHTS.payback_cap_points
+            : (Number.isFinite(r.payback) ? Math.min(RISK_WEIGHTS.payback_cap_points, r.payback) : 15);
           const score = (r.ltvToCac < EFF_THRESH.ineff_ltv_cac ? RISK_WEIGHTS.low_efficiency_base : RISK_WEIGHTS.borderline_base)
-            + (Number.isFinite(r.payback) ? Math.min(RISK_WEIGHTS.payback_cap_points, r.payback) : 15);
+            + paybackRisk;
           rows.push({
             entity: `Channel: ${r.channel}`,
-            metricValues: `LTV/CAC ${fmtNum(r.ltvToCac, 2)} | Payback ${Number.isFinite(r.payback) ? fmtNum(r.payback, 1) + 'm' : 'n/a'}`,
+            metricValues: `LTV/CAC ${fmtNum(r.ltvToCac, 2)} | Payback ${fmtPayback(r, 'm')}`,
             riskInterpretation: r.ltvToCac < 1
-              ? 'Customer value does not recover acquisition spend.'
-              : 'Channel is borderline with slow capital recovery.',
+              ? 'Observed LTV is below acquisition cost.'
+              : `LTV/CAC is below the ${fmtNum(EFF_THRESH.ltv_cac_target, 1)}× scale threshold despite timely payback.`,
             recommendedAction: r.ltvToCac < 1
-              ? 'Reduce budget share and tighten bid/creative efficiency tests.'
-              : 'Run CAC reduction plan before scaling spend.',
+              ? 'Pilot a bounded reduction with an attribution holdout.'
+              : 'Hold spend and test whether CAC or LTV can improve before scaling.',
             priorityScore: score,
             priorityBand: priorityBand(score),
           });
@@ -1736,8 +2258,8 @@
           rows.push({
             entity: `Segment: ${r.segment}`,
             metricValues: `Margin ${fmtPct(r.marginPct)} | Contribution ${fmtCurrency(r.margin)}`,
-            riskInterpretation: 'Low margin rate weakens growth quality as segment scales.',
-            recommendedAction: 'Improve packaging, pricing discipline, and service delivery cost controls.',
+            riskInterpretation: `Margin is below the ${fmtPct(RISK_WEIGHTS.segment_margin_floor)} diagnostic reference.`,
+            recommendedAction: 'Decompose price, mix, and cost-to-serve before choosing an intervention.',
             priorityScore: score,
             priorityBand: priorityBand(score),
           });
@@ -1751,8 +2273,8 @@
           rows.push({
             entity: `Cohort: ${r.cohort}`,
             metricValues: `Month-6 Revenue Retention ${fmtPct(r.month6RevenueRetention)}`,
-            riskInterpretation: 'Fast cohort decay implies dependence on constant new acquisition.',
-            recommendedAction: 'Strengthen early lifecycle activation and expansion motions for this cohort profile.',
+            riskInterpretation: 'Month-6 revenue is below month 0; the aggregate view does not identify the mechanism.',
+            recommendedAction: 'Split activation, retained activity, and revenue by channel, segment, and product.',
             priorityScore: score,
             priorityBand: priorityBand(score),
           });
@@ -1779,10 +2301,44 @@
       });
     }
 
-    function renderKpis(cards) {
+    function sparkSvg(values, color) {
+      const clean = values.filter(v => Number.isFinite(v));
+      if (clean.length < 3) return '';
+      const w = 120, h = 26, pad = 2;
+      const min = Math.min(...clean);
+      const max = Math.max(...clean);
+      const span = (max - min) || 1;
+      const pts = values.map((v, i) => ({
+        x: pad + (i / (values.length - 1)) * (w - pad * 2 - 4),
+        y: pad + (1 - ((Number.isFinite(v) ? v : min) - min) / span) * (h - pad * 2),
+      }));
+      const last = pts[pts.length - 1];
+      return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+        <path d="${smoothPath(pts)}" fill="none" stroke="${color}" stroke-width="1.5" opacity="0.55" stroke-linecap="round"/>
+        <circle cx="${last.x}" cy="${last.y}" r="2.5" fill="${color}"/>
+      </svg>`;
+    }
+
+    // Attach per-KPI micro-trends derived from the same monthly aggregation
+    // the trajectory charts use, so the ticker and the charts always agree.
+    function attachKpiSparks(cards, monthlyRows) {
+      if (!monthlyRows || monthlyRows.length < 3) return cards;
+      const seriesByLabel = {
+        'Revenue': monthlyRows.map(r => r.revenue),
+        'Contribution Margin': monthlyRows.map(r => r.margin),
+        'Margin %': monthlyRows.map(r => (r.revenue > 0 ? r.margin / r.revenue : NaN)),
+        'Active Customers': monthlyRows.every(r => Number.isFinite(r.activeCustomers))
+          ? monthlyRows.map(r => r.activeCustomers)
+          : null,
+      };
+      return cards.map(card => ({ ...card, spark: seriesByLabel[card.label] || null }));
+    }
+
+    function renderKpis(cards, monthlyRows) {
       const wrap = document.getElementById('kpi-grid');
       wrap.innerHTML = '';
-      cards.forEach(card => {
+      const sparkColor = cssVar('--chart-muted', '#6e6e73');
+      attachKpiSparks(cards, monthlyRows).forEach(card => {
         const deltaClass = !Number.isFinite(card.delta)
           ? 'kpi-delta'
           : (card.delta >= 0 ? 'kpi-delta positive' : 'kpi-delta negative');
@@ -1793,6 +2349,7 @@
           <div class="kpi-label">${escapeHtml(card.label)}</div>
           <div class="kpi-value">${escapeHtml(card.value)}</div>
           <div class="${deltaClass}">${escapeHtml(card.deltaText)}</div>
+          ${card.spark ? `<div class="kpi-spark">${sparkSvg(card.spark, sparkColor)}</div>` : ''}
         `;
         wrap.appendChild(el);
       });
@@ -1801,25 +2358,27 @@
     function renderDecisionCommand(command) {
       const wrap = document.getElementById('decision-command');
       wrap.innerHTML = `
-        <div class="cell lead">
-          <div class="label">Decision now</div>
-          <div class="value">${escapeHtml(command.decision)}</div>
-          <div class="copy">${escapeHtml(command.decisionText)}</div>
+        <div class="lead">
+          <span class="eyebrow">Decision now</span>
+          <p class="statement">${escapeHtml(command.decision)}</p>
+          <p class="rationale">${escapeHtml(command.decisionText)}</p>
         </div>
-        <div class="cell">
-          <div class="label">Scale</div>
-          <div class="value">${escapeHtml(command.scale)}</div>
-          <div class="copy">${escapeHtml(command.scaleText)}</div>
-        </div>
-        <div class="cell">
-          <div class="label">Intervene</div>
-          <div class="value">${escapeHtml(command.intervene)}</div>
-          <div class="copy">${escapeHtml(command.interveneText)}</div>
-        </div>
-        <div class="cell">
-          <div class="label">Impact</div>
-          <div class="value">${escapeHtml(command.impact)}</div>
-          <div class="copy">${escapeHtml(command.impactText)}</div>
+        <div class="facets">
+          <div class="facet">
+            <span class="eyebrow">Scale</span>
+            <div class="value">${escapeHtml(command.scale)}</div>
+            <div class="copy">${escapeHtml(command.scaleText)}</div>
+          </div>
+          <div class="facet">
+            <span class="eyebrow">Intervene</span>
+            <div class="value">${escapeHtml(command.intervene)}</div>
+            <div class="copy">${escapeHtml(command.interveneText)}</div>
+          </div>
+          <div class="facet">
+            <span class="eyebrow">Impact</span>
+            <div class="value">${escapeHtml(command.impact)}</div>
+            <div class="copy">${escapeHtml(command.impactText)}</div>
+          </div>
         </div>
       `;
     }
@@ -1836,10 +2395,10 @@
           <thead>
             <tr>
               <th>Region</th>
-              <th>Revenue</th>
-              <th>Cost</th>
-              <th>Contribution Margin</th>
-              <th>Margin %</th>
+              <th class="num">Revenue</th>
+              <th class="num">Cost</th>
+              <th class="num">Contribution</th>
+              <th class="num">Margin %</th>
             </tr>
           </thead>
           <tbody>
@@ -1858,27 +2417,34 @@
         <thead>
           <tr>
             <th data-key="region">Region</th>
-            <th data-key="revenue">Revenue</th>
-            <th data-key="cost">Cost</th>
-            <th data-key="margin">Contribution Margin</th>
-            <th data-key="marginPct">Margin %</th>
+            <th data-key="revenue" class="num">Revenue</th>
+            <th data-key="cost" class="num">Cost</th>
+            <th data-key="margin" class="num">Contribution</th>
+            <th data-key="marginPct" class="num">Margin %</th>
           </tr>
         </thead>
         <tbody>
           ${sorted.map(r => `
             <tr>
               <td>${escapeHtml(r.region)}</td>
-              <td>${escapeHtml(fmtCurrencyFull(r.revenue))}</td>
-              <td>${escapeHtml(fmtCurrencyFull(r.cost))}</td>
-              <td>${escapeHtml(fmtCurrencyFull(r.margin))}</td>
-              <td>${escapeHtml(fmtPct(r.marginPct))}</td>
+              <td class="num">${escapeHtml(fmtCurrency(r.revenue))}</td>
+              <td class="num">${escapeHtml(fmtCurrency(r.cost))}</td>
+              <td class="num">${escapeHtml(fmtCurrency(r.margin))}</td>
+              <td class="num">${escapeHtml(fmtPct(r.marginPct))}</td>
             </tr>
           `).join('')}
         </tbody>
       `;
 
       table.querySelectorAll('th').forEach(th => {
-        th.addEventListener('click', () => {
+        th.tabIndex = 0;
+        th.setAttribute(
+          'aria-sort',
+          state.regionSort.key === th.dataset.key
+            ? (state.regionSort.dir === 'asc' ? 'ascending' : 'descending')
+            : 'none'
+        );
+        const sortColumn = () => {
           const key = th.dataset.key;
           if (state.regionSort.key === key) {
             state.regionSort.dir = state.regionSort.dir === 'asc' ? 'desc' : 'asc';
@@ -1887,6 +2453,13 @@
             state.regionSort.dir = 'desc';
           }
           renderRegionTable(rows);
+        };
+        th.addEventListener('click', sortColumn);
+        th.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            sortColumn();
+          }
         });
       });
     }
@@ -1915,6 +2488,7 @@
         const dir = state.riskSort.dir === 'asc' ? 1 : -1;
         return ((a[k] > b[k]) ? 1 : -1) * dir;
       });
+      const maxScore = Math.max(...rows.map(r => r.priorityScore), 1);
 
       table.innerHTML = `
         <thead>
@@ -1923,7 +2497,7 @@
             <th data-key="metricValues">Metric Values</th>
             <th data-key="riskInterpretation">Risk Interpretation</th>
             <th data-key="recommendedAction">Recommended Action</th>
-            <th data-key="priorityScore">Priority Score</th>
+            <th data-key="priorityScore" class="num">Priority Score</th>
           </tr>
         </thead>
         <tbody>
@@ -1933,10 +2507,12 @@
               <td>${escapeHtml(r.metricValues)}</td>
               <td>${escapeHtml(r.riskInterpretation)}</td>
               <td>${escapeHtml(r.recommendedAction)}</td>
-              <td>
+              <td class="num">
                 <div class="risk-priority">
-                  <div class="risk-score">${escapeHtml(fmtNum(r.priorityScore, 1))}</div>
-                  <span class="risk-badge ${r.priorityBand}">${escapeHtml(r.priorityBand)}</span>
+                  <span class="risk-score">${escapeHtml(fmtNum(r.priorityScore, 1))}
+                    <span class="risk-badge ${r.priorityBand}">${escapeHtml(r.priorityBand)}</span>
+                  </span>
+                  <span class="risk-scorebar ${r.priorityBand}"><span style="width:${Math.round((r.priorityScore / maxScore) * 100)}%"></span></span>
                 </div>
               </td>
             </tr>
@@ -1945,7 +2521,14 @@
       `;
 
       table.querySelectorAll('th').forEach(th => {
-        th.addEventListener('click', () => {
+        th.tabIndex = 0;
+        th.setAttribute(
+          'aria-sort',
+          state.riskSort.key === th.dataset.key
+            ? (state.riskSort.dir === 'asc' ? 'ascending' : 'descending')
+            : 'none'
+        );
+        const sortColumn = () => {
           const key = th.dataset.key;
           if (state.riskSort.key === key) {
             state.riskSort.dir = state.riskSort.dir === 'asc' ? 'desc' : 'asc';
@@ -1954,8 +2537,104 @@
             state.riskSort.dir = key === 'priorityScore' ? 'desc' : 'asc';
           }
           renderRiskTable(rows);
+        };
+        th.addEventListener('click', sortColumn);
+        th.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            sortColumn();
+          }
         });
       });
+    }
+
+    let apiRequestSequence = 0;
+
+    async function computeAndRenderFromApi(startDate, endDate, selected) {
+      const requestSequence = ++apiRequestSequence;
+      const params = new URLSearchParams({ start_date: startDate, end_date: endDate });
+      [
+        ['segments', selected.segments],
+        ['regions', selected.regions],
+        ['channels', selected.channels],
+        ['products', selected.products],
+      ].forEach(([name, values]) => {
+        values.forEach(value => params.append(name, value));
+      });
+
+      try {
+        const response = await fetch('/v1/dashboard/snapshot?' + params.toString(), {
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json' },
+        });
+        if (!response.ok) {
+          throw new Error(response.status === 404
+            ? 'This filter slice is below the privacy threshold.'
+            : 'The governed dashboard API is unavailable.');
+        }
+        const snapshot = await response.json();
+        if (requestSequence !== apiRequestSequence) return;
+
+        const palette = themeColors();
+        const monthlyRows = snapshot.monthly.map(row => ({
+          ...row,
+          x: dateToTs(row.month + '-01'),
+          label: monthLabel(row.month),
+        }));
+        renderKpis(snapshot.kpis, monthlyRows);
+        renderLineChart('chart-revenue', monthlyRows, [{ key: 'revenue', label: 'Revenue', color: palette.rev, area: true }], fmtCurrency);
+        renderLineChart('chart-margin', monthlyRows, [{ key: 'margin', label: 'Margin', color: palette.margin, area: true }], fmtCurrency);
+        renderLineChart(
+          'chart-revenue-cost',
+          monthlyRows,
+          [
+            { key: 'revenue', label: 'Revenue', color: palette.rev },
+            { key: 'cost', label: 'Cost', color: palette.cost },
+          ],
+          fmtCurrency
+        );
+        const cohortRows = snapshot.cohort.map(row => ({
+          x: row.monthsSince,
+          label: 'M' + row.monthsSince,
+          retention: row.revenueRetention,
+        }));
+        renderLineChart('chart-cohort-retention', cohortRows, [{ key: 'retention', label: 'Retention', color: palette.bar, area: true }], fmtPct);
+        renderScatterChart('chart-ltv-cac', snapshot.unitEconomics);
+        renderBarChart('chart-segment-margin', snapshot.segments, 'margin', 'segment', fmtCurrency, palette.margin);
+        renderBarChart('chart-arpt-segment', snapshot.averageRevenue, 'avgRevTx', 'segment', fmtCurrency, palette.bar);
+        const histogramValues = [];
+        snapshot.histogramBins.forEach(bin => {
+          const midpoint = (bin.bucketStart + bin.bucketEnd) / 2;
+          for (let index = 0; index < bin.count; index += 1) histogramValues.push(midpoint);
+        });
+        renderHistogram('chart-revenue-distribution', histogramValues);
+        renderRegionTable(snapshot.regions);
+        renderRiskTable(snapshot.risks);
+        renderDecisionCommand(snapshot.decision);
+        renderSummaryStrip(snapshot.insights);
+        Object.entries(snapshot.chartInsights).forEach(([id, text]) => setInsight(id, text));
+        document.getElementById('summary-context').textContent = snapshot.summaryContext;
+      } catch (error) {
+        if (requestSequence !== apiRequestSequence) return;
+        const message = error instanceof Error ? error.message : 'The governed dashboard API is unavailable.';
+        ['chart-revenue', 'chart-margin', 'chart-revenue-cost', 'chart-cohort-retention',
+          'chart-ltv-cac', 'chart-segment-margin', 'chart-arpt-segment',
+          'chart-revenue-distribution'].forEach(id => renderNoData(id, message));
+        renderRegionTable([]);
+        renderRiskTable([]);
+        renderKpis([]);
+        renderSummaryStrip([]);
+        renderDecisionCommand({
+          decision: 'Data unavailable',
+          decisionText: message,
+          scale: 'Unavailable',
+          scaleText: 'Retry after verifying API readiness.',
+          intervene: 'Unavailable',
+          interveneText: 'No inference is made from a failed request.',
+          impact: 'Unavailable',
+          impactText: 'Privacy and authentication controls remain enforced.',
+        });
+      }
     }
 
     function computeAndRender() {
@@ -1963,12 +2642,16 @@
       const endDate = document.getElementById('filter-end').value;
 
       const selected = {
-        segments: getSelectedSet('filter-segment', DASHBOARD_DATA.meta.values.segments),
-        regions: getSelectedSet('filter-region', DASHBOARD_DATA.meta.values.regions),
-        channels: getSelectedSet('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels),
-        products: getSelectedSet('filter-product', DASHBOARD_DATA.meta.values.product_types),
+        segments: getSelectedSet('filter-segment'),
+        regions: getSelectedSet('filter-region'),
+        channels: getSelectedSet('filter-channel'),
+        products: getSelectedSet('filter-product'),
       };
       renderFilterSummary(startDate, endDate, selected);
+      if (API_MODE) {
+        void computeAndRenderFromApi(startDate, endDate, selected);
+        return;
+      }
 
       const current = applyFilters(startDate, endDate, selected);
       const curSnap = computeSnapshot(current.tx, current.customers);
@@ -2062,14 +2745,15 @@
           tone: 'neutral',
         },
       ];
-      renderKpis(kpis);
       const palette = themeColors();
 
       const monthly = aggregateMonthly(current.tx);
       const monthlyRows = monthly.map(r => ({ x: dateToTs(r.month + '-01'), label: monthLabel(r.month), ...r }));
 
-      renderLineChart('chart-revenue', monthlyRows, [{ key: 'revenue', label: 'Revenue', color: palette.rev }], fmtCurrency);
-      renderLineChart('chart-margin', monthlyRows, [{ key: 'margin', label: 'Contribution Margin', color: palette.margin }], fmtCurrency);
+      renderKpis(kpis, monthlyRows);
+
+      renderLineChart('chart-revenue', monthlyRows, [{ key: 'revenue', label: 'Revenue', color: palette.rev, area: true }], fmtCurrency);
+      renderLineChart('chart-margin', monthlyRows, [{ key: 'margin', label: 'Margin', color: palette.margin, area: true }], fmtCurrency);
       renderLineChart(
         'chart-revenue-cost',
         monthlyRows,
@@ -2080,11 +2764,23 @@
         fmtCurrency
       );
 
-      const cohort = computeCohortRetention(current.tx);
+      const cohort = computeCohortRetention(current.tx, current.customers, endDate);
       const cohortRows = cohort.summary
         .filter(r => r.monthsSince <= 24)
-        .map(r => ({ x: r.monthsSince, label: 'M' + r.monthsSince, retention: r.medianRevenueRetention || 0 }));
-      renderLineChart('chart-cohort-retention', cohortRows, [{ key: 'retention', label: 'Revenue Retention', color: palette.bar }], fmtPct);
+        .map(r => ({
+          x: r.monthsSince,
+          label: 'M' + r.monthsSince,
+          retention: r.medianRevenueRetention || 0,
+          q25: r.q25RevenueRetention || 0,
+          q75: r.q75RevenueRetention || 0,
+        }));
+      renderLineChart(
+        'chart-cohort-retention',
+        cohortRows,
+        [{ key: 'retention', label: 'Median', color: palette.bar }],
+        fmtPct,
+        { band: { low: 'q25', high: 'q75' } }
+      );
 
       const unitRows = computeUnitEconomicsByChannel(selected);
       renderScatterChart('chart-ltv-cac', unitRows);
@@ -2095,7 +2791,7 @@
       const arptRows = computeAvgRevenuePerTxBySegment(current.tx);
       renderBarChart('chart-arpt-segment', arptRows, 'avgRevTx', 'segment', fmtCurrency, palette.bar);
 
-      const customerRevenue = computeRevenueByCustomer(current.tx);
+      const customerRevenue = computeRevenueByCustomer(current.customers, current.tx);
       renderHistogram('chart-revenue-distribution', customerRevenue);
 
       const regionRows = computeRegionProfitability(current.tx);
@@ -2143,7 +2839,7 @@
         const firstRate = first.revenue > 0 ? first.margin / first.revenue : NaN;
         const lastRate = last.revenue > 0 ? last.margin / last.revenue : NaN;
         const shift = Number.isFinite(firstRate) && Number.isFinite(lastRate) ? (lastRate - firstRate) * 100 : NaN;
-        return `Margin rate shifted ${Number.isFinite(shift) ? shift.toFixed(1) + 'pp' : 'n/a'} across the window; negative movement means growth is getting less valuable.`;
+        return `Margin rate shifted ${Number.isFinite(shift) ? shift.toFixed(1) + 'pp' : 'n/a'} from the first to last observed month; inspect mix and cost before attributing the change.`;
       })();
 
       const costLeverageText = (() => {
@@ -2168,8 +2864,8 @@
           decisionText = 'Selected channel economics clear the scale rule. Add budget gradually and monitor retention and margin mix.';
         }
         if (inefficient.length) {
-          decision = 'Cut weak acquisition before scaling winners';
-          decisionText = `${inefficient.join(', ')} breach efficiency rules; reallocate spend only after CAC/payback recovery tests are defined.`;
+          decision = 'Pilot reductions in weak acquisition before broader scaling';
+          decisionText = `${inefficient.join(', ')} breach efficiency rules; use bounded reductions, attribution holdouts, and CAC/payback guardrails.`;
         }
         return {
           decision,
@@ -2187,12 +2883,12 @@
       setInsight('insight-revenue', revenueTrendText);
       setInsight('insight-margin', marginTrendText);
       setInsight('insight-revenue-cost', costLeverageText);
-      setInsight('insight-cohort-retention', `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12; faster decay increases dependence on new acquisition.`);
-      setInsight('insight-ltv-cac', bestChannel && worstChannel ? `${bestChannel.channel} is the best scaling candidate; ${worstChannel.channel} is the budget risk to cap or repair. This full-coverage view responds only to the channel filter.` : 'No channel efficiency comparison is available.');
+      setInsight('insight-cohort-retention', `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12; lower retention means more revenue must be replaced to hold the same top line.`);
+      setInsight('insight-ltv-cac', bestChannel && worstChannel ? `${bestChannel.channel} has the highest observed LTV/CAC; ${worstChannel.channel} has the lowest. This full-coverage view responds only to the channel filter.` : 'No channel efficiency comparison is available.');
       setInsight('insight-segment-margin', strongestSegment && weakestSegment ? `${strongestSegment.segment} contributes the most margin; ${weakestSegment.segment} has the weakest margin rate at ${fmtPct(weakestSegment.marginPct)}.` : 'No segment profitability comparison is available.');
       setInsight('insight-arpt-segment', arptRows.length ? `${arptRows[0].segment} has the highest average transaction value at ${fmtCurrency(arptRows[0].avgRevTx)}; verify margin before prioritizing volume.` : 'No ticket-size comparison is available.');
       setInsight('insight-revenue-distribution', `Top-decile customers contribute ${fmtPct(revenueShareTop10)} of revenue; high concentration increases account-risk sensitivity.`);
-      setInsight('insight-region-table', weakestRegion ? `${weakestRegion.region} has the lowest margin rate at ${fmtPct(weakestRegion.marginPct)}; treat it as the first regional operating review.` : 'No regional profitability comparison is available.');
+      setInsight('insight-region-table', weakestRegion ? `${weakestRegion.region} has the lowest observed margin rate at ${fmtPct(weakestRegion.marginPct)}; this is a diagnostic flag, not a causal result.` : 'No regional profitability comparison is available.');
 
       const insights = [
         {
@@ -2203,7 +2899,7 @@
             const phrase = Number.isFinite(growthRate)
               ? `Revenue moved ${fmtPct(growthRate)} ${cmpLabel}`
               : `Revenue trend cannot be measured for this scope`;
-            return `${phrase}; margin rate is ${fmtPct(curSnap.marginPct)}. This is the first test of whether scale is creating value or just volume.`;
+            return `${phrase}; margin rate is ${fmtPct(curSnap.marginPct)}. Read the two together before assessing growth quality.`;
           })()
         },
         {
@@ -2218,7 +2914,7 @@
           title: 'Cohort Durability',
           badge: m6 && Number.isFinite(m6.medianRevenueRetention) && m6.medianRevenueRetention >= 0.75 ? 'Stable' : 'Decay',
           tone: m6 && Number.isFinite(m6.medianRevenueRetention) && m6.medianRevenueRetention >= 0.75 ? 'good' : 'bad',
-          text: `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12. Early decay here creates dependence on continual acquisition.`
+          text: `Median revenue retention is ${m6 ? fmtPct(m6.medianRevenueRetention) : 'n/a'} at month 6 and ${m12 ? fmtPct(m12.medianRevenueRetention) : 'n/a'} at month 12. Diagnose activation, retained activity, and revenue separately.`
         },
         {
           title: 'Profitability Concentration',
@@ -2235,42 +2931,80 @@
         `Current scope: ${fmtNum(current.tx.length, 0)} transactions | ${fmtNum(new Set(current.tx.map(r => r.cid)).size, 0)} active customers`;
     }
 
-    function clearAllFilters() {
+    function selectAllFilterValues() {
       ['filter-segment', 'filter-region', 'filter-channel', 'filter-product'].forEach(id => {
-        Array.from(document.getElementById(id).options).forEach(o => { o.selected = false; });
+        document.getElementById(id).querySelectorAll('.chip').forEach(chip => {
+          chip.classList.add('is-on');
+          chip.setAttribute('aria-pressed', 'true');
+        });
       });
     }
 
     function resetFilters() {
       document.getElementById('filter-start').value = DASHBOARD_DATA.meta.coverage_start;
       document.getElementById('filter-end').value = DASHBOARD_DATA.meta.coverage_end;
-      clearAllFilters();
+      selectAllFilterValues();
       computeAndRender();
     }
 
-    function renderWhatIf() {
+    /* Stress lab — the browser applies the same formula as the pipeline's
+       stress engine over the embedded plan, plus an uplift envelope so the
+       current position is legible against the bounded scenario space. */
+    function whatifUplift(mc, ml) {
       const plan = DASHBOARD_DATA.whatif;
-      const mc = Number(document.getElementById('whatif-cac').value);
-      const ml = Number(document.getElementById('whatif-ltv').value);
-      document.getElementById('whatif-cac-value').textContent = mc.toFixed(2) + '\u00d7';
-      document.getElementById('whatif-ltv-value').textContent = ml.toFixed(2) + '\u00d7';
       let total = 0;
       for (let i = 0; i < plan.spend.length; i += 1) {
         total += (plan.spend[i] / (plan.cac[i] * mc)) * (plan.ltv[i] * ml);
       }
-      const uplift = total - plan.baseline_total;
+      return { total, uplift: total - plan.baseline_total };
+    }
+
+    let envBounds = null;
+
+    function renderWhatIf() {
+      const mc = Number(document.getElementById('whatif-cac').value);
+      const ml = Number(document.getElementById('whatif-ltv').value);
+      document.getElementById('whatif-cac-value').textContent = mc.toFixed(2) + '×';
+      document.getElementById('whatif-ltv-value').textContent = ml.toFixed(2) + '×';
+      const { total, uplift } = whatifUplift(mc, ml);
       document.getElementById('whatif-contribution').textContent = fmtCurrency(total);
       const upliftEl = document.getElementById('whatif-uplift');
-      upliftEl.textContent = (uplift >= 0 ? '+' : '\u2212') + fmtCurrency(Math.abs(uplift));
+      upliftEl.textContent = (uplift >= 0 ? '+' : '−') + fmtCurrency(Math.abs(uplift));
       upliftEl.classList.toggle('positive', uplift >= 0);
       upliftEl.classList.toggle('negative', uplift < 0);
+
+      if (envBounds) {
+        const span = envBounds.max - envBounds.min || 1;
+        const pos = Math.min(100, Math.max(0, ((uplift - envBounds.min) / span) * 100));
+        document.getElementById('env-marker').style.left = pos + '%';
+      }
+
+      document.querySelectorAll('.whatif-preset').forEach(btn => {
+        const active = Number(btn.dataset.cac) === mc && Number(btn.dataset.ltv) === ml;
+        btn.classList.toggle('active', active);
+      });
     }
 
     function initWhatIf() {
       if (!DASHBOARD_DATA.whatif) {
         document.getElementById('whatif-section').remove();
+        const railLink = document.querySelector('#rail-nav a[data-target="whatif-section"]');
+        if (railLink) railLink.remove();
         return;
       }
+
+      const cacInput = document.getElementById('whatif-cac');
+      const ltvInput = document.getElementById('whatif-ltv');
+      envBounds = {
+        min: whatifUplift(Number(cacInput.max), Number(ltvInput.min)).uplift,
+        max: whatifUplift(Number(cacInput.min), Number(ltvInput.max)).uplift,
+      };
+      const span = envBounds.max - envBounds.min || 1;
+      document.getElementById('env-min').textContent = (envBounds.min >= 0 ? '+' : '−') + fmtCurrency(Math.abs(envBounds.min));
+      document.getElementById('env-max').textContent = (envBounds.max >= 0 ? '+' : '−') + fmtCurrency(Math.abs(envBounds.max));
+      const zeroPos = Math.min(100, Math.max(0, ((0 - envBounds.min) / span) * 100));
+      document.getElementById('env-zero').style.left = zeroPos + '%';
+
       ['whatif-cac', 'whatif-ltv'].forEach(id =>
         document.getElementById(id).addEventListener('input', renderWhatIf));
       document.querySelectorAll('.whatif-preset').forEach(btn =>
@@ -2282,16 +3016,36 @@
       renderWhatIf();
     }
 
+    function initRail() {
+      const links = Array.from(document.querySelectorAll('#rail-nav a'));
+      if (!links.length || !('IntersectionObserver' in window)) return;
+      const byTarget = new Map(links.map(a => [a.dataset.target, a]));
+      const visible = new Map();
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => visible.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0));
+        let bestId = null;
+        let bestRatio = 0;
+        visible.forEach((ratio, id) => {
+          if (ratio > bestRatio) { bestRatio = ratio; bestId = id; }
+        });
+        links.forEach(a => a.classList.toggle('active', a.dataset.target === bestId));
+      }, { rootMargin: '-15% 0px -35% 0px', threshold: [0, 0.2, 0.5, 0.8] });
+      byTarget.forEach((_, id) => {
+        const section = document.getElementById(id);
+        if (section) observer.observe(section);
+      });
+    }
+
     function init() {
       applyTheme(resolveInitialTheme());
       document.getElementById('dashboard-title').textContent = DASHBOARD_DATA.meta.dashboard_title;
       document.getElementById('dashboard-subtitle').textContent = DASHBOARD_DATA.meta.question;
-      const coverageText = `Data coverage: ${DASHBOARD_DATA.meta.coverage_start} to ${DASHBOARD_DATA.meta.coverage_end}`;
+      const coverageText = `Synthetic case · Data coverage: ${DASHBOARD_DATA.meta.coverage_start} to ${DASHBOARD_DATA.meta.coverage_end}`;
       document.getElementById('coverage-chip').textContent = coverageText;
-      populateMultiSelect('filter-segment', DASHBOARD_DATA.meta.values.segments);
-      populateMultiSelect('filter-region', DASHBOARD_DATA.meta.values.regions);
-      populateMultiSelect('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels);
-      populateMultiSelect('filter-product', DASHBOARD_DATA.meta.values.product_types);
+      populateChipGroup('filter-segment', DASHBOARD_DATA.meta.values.segments);
+      populateChipGroup('filter-region', DASHBOARD_DATA.meta.values.regions);
+      populateChipGroup('filter-channel', DASHBOARD_DATA.meta.values.acquisition_channels);
+      populateChipGroup('filter-product', DASHBOARD_DATA.meta.values.product_types);
 
       document.getElementById('filter-start').value = DASHBOARD_DATA.meta.coverage_start;
       document.getElementById('filter-end').value = DASHBOARD_DATA.meta.coverage_end;
@@ -2300,8 +3054,8 @@
       document.getElementById('filter-end').min = DASHBOARD_DATA.meta.coverage_start;
       document.getElementById('filter-end').max = DASHBOARD_DATA.meta.coverage_end;
 
-      ['filter-start', 'filter-end', 'filter-segment', 'filter-region', 'filter-channel', 'filter-product']
-        .forEach(id => document.getElementById(id).addEventListener('change', () => {
+      ['filter-start', 'filter-end'].forEach(id =>
+        document.getElementById(id).addEventListener('change', () => {
           const start = document.getElementById('filter-start').value;
           const end = document.getElementById('filter-end').value;
           if (start > end) {
@@ -2315,6 +3069,7 @@
       document.getElementById('btn-print').addEventListener('click', () => window.print());
 
       initWhatIf();
+      initRail();
 
       computeAndRender();
       let resizeTimer = null;
@@ -2323,14 +3078,6 @@
         resizeTimer = window.setTimeout(() => computeAndRender(), 120);
       });
 
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener('change', (event) => {
-        const hasManualChoice = !!window.localStorage.getItem(THEME_KEY);
-        if (!hasManualChoice) {
-          applyTheme(event.matches ? 'dark' : 'light');
-          computeAndRender();
-        }
-      });
     }
 
     init();

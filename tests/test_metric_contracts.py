@@ -34,7 +34,9 @@ def test_unit_economics_classification_contract() -> None:
     unit_econ = pd.read_csv(PROJECT_ROOT / "data" / "processed" / "unit_economics.csv")
     observed = {
         row.acquisition_channel: classify_channel_efficiency(
-            float(row.LTV_to_CAC), float(row.approximate_payback_period)
+            float(row.LTV_to_CAC),
+            float(row.approximate_payback_period),
+            str(row.payback_status),
         )
         for row in unit_econ.itertuples(index=False)
     }

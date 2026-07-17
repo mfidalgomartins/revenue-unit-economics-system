@@ -6,9 +6,15 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from src.paths import PROJECT_ROOT
+from src.data_contracts import (
+    ACQUISITION_CHANNELS,
+    PRODUCT_TYPES,
+    REGIONS,
+    SEGMENTS,
+)
+from src.paths import PROJECT_ROOT, RAW_DATA_DIR
 
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
+RAW_DIR = RAW_DATA_DIR
 OUTPUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 
 
@@ -55,12 +61,42 @@ TABLE_SPECS = [
         likely_dimensions=["date", "acquisition_channel"],
         likely_metrics=["spend"],
     ),
+    TableSpec(
+        name="marketing_touchpoints",
+        file_name="marketing_touchpoints.csv",
+        grain="One row per touchpoint_id",
+        candidate_keys=[["touchpoint_id"]],
+        date_columns=["touchpoint_date"],
+        categorical_columns=["customer_id", "acquisition_channel"],
+        likely_dimensions=["touchpoint_date", "acquisition_channel", "touchpoint_order"],
+        likely_metrics=["touchpoint_count", "attributed_customer_equivalents"],
+    ),
+    TableSpec(
+        name="marketing_experiments",
+        file_name="marketing_experiments.csv",
+        grain="One row per experiment_id x customer_id",
+        candidate_keys=[["experiment_id", "customer_id"]],
+        date_columns=["assigned_date"],
+        categorical_columns=["experiment_id", "assignment", "acquisition_channel"],
+        likely_dimensions=["experiment_id", "assignment", "acquisition_channel"],
+        likely_metrics=["converted", "pre_period_contribution", "observed_contribution"],
+    ),
+    TableSpec(
+        name="pricing_interventions",
+        file_name="pricing_interventions.csv",
+        grain="One row per intervention_id",
+        candidate_keys=[["intervention_id"]],
+        date_columns=["week_start"],
+        categorical_columns=["product_type", "region", "assignment"],
+        likely_dimensions=["week_start", "product_type", "region", "assignment"],
+        likely_metrics=["observed_price", "units_sold", "revenue", "contribution_margin"],
+    ),
 ]
 
-CUSTOMER_ALLOWED_SEGMENTS = {"Startup", "SMB", "Mid-Market", "Enterprise"}
-CUSTOMER_ALLOWED_REGIONS = {"North America", "EMEA", "LATAM", "APAC"}
-ALLOWED_CHANNELS = {"paid_search", "social_ads", "referral", "organic", "partners", "email"}
-ALLOWED_PRODUCT_TYPES = {"Core", "Add-on", "Premium", "Services"}
+CUSTOMER_ALLOWED_SEGMENTS = frozenset(SEGMENTS)
+CUSTOMER_ALLOWED_REGIONS = frozenset(REGIONS)
+ALLOWED_CHANNELS = frozenset(ACQUISITION_CHANNELS)
+ALLOWED_PRODUCT_TYPES = frozenset(PRODUCT_TYPES)
 NEGATIVE_MARGIN_REVIEW_THRESHOLD = 0.01
 
 
@@ -80,10 +116,12 @@ def detect_candidate_key(df: pd.DataFrame, candidate_keys: list[list[str]]) -> t
         if key_nulls == 0 and duplicate_key_rows == 0:
             return ", ".join(key_columns), duplicate_key_rows
     fallback = ", ".join(candidate_keys[0]) if candidate_keys else "None"
-    fallback_dupes = int(df.duplicated(subset=candidate_keys[0]).sum()) if candidate_keys else int(df.duplicated().sum())
+    fallback_dupes = (
+        int(df.duplicated(subset=candidate_keys[0]).sum())
+        if candidate_keys
+        else int(df.duplicated().sum())
+    )
     return f"{fallback} (not unique)", fallback_dupes
-
-
 
 
 def make_issue(
@@ -111,12 +149,18 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
     customers = tables["customers"].copy()
     transactions = tables["transactions"].copy()
     marketing = tables["marketing_spend"].copy()
+    touchpoints = tables["marketing_touchpoints"].copy()
+    experiments = tables["marketing_experiments"].copy()
+    pricing = tables["pricing_interventions"].copy()
 
     issues: list[dict[str, object]] = []
 
     customers_rows = len(customers)
     transactions_rows = len(transactions)
     marketing_rows = len(marketing)
+    touchpoint_rows = len(touchpoints)
+    experiment_rows = len(experiments)
+    pricing_rows = len(pricing)
 
     # Customers checks.
     issues.append(
@@ -128,6 +172,93 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
             int(customers.duplicated(subset=["customer_id"]).sum()),
             customers_rows,
             "customer_id should be unique at customer grain.",
+        )
+    )
+
+    # Journey and intervention checks complement the blocking raw contract with
+    # issue-level evidence for operational review.
+    issues.append(
+        make_issue(
+            "marketing_touchpoints",
+            "touchpoint_id",
+            "duplicate_touchpoint_id",
+            "high",
+            int(touchpoints.duplicated("touchpoint_id").sum()),
+            touchpoint_rows,
+            "touchpoint_id should be unique at journey-event grain.",
+        )
+    )
+    issues.append(
+        make_issue(
+            "marketing_touchpoints",
+            "customer_id",
+            "orphan_customer_id",
+            "high",
+            int((~touchpoints["customer_id"].isin(customers["customer_id"])).sum()),
+            touchpoint_rows,
+            "Every touchpoint customer must exist in the customer master.",
+        )
+    )
+    touch_signup = touchpoints["customer_id"].map(customers.set_index("customer_id")["signup_date"])
+    issues.append(
+        make_issue(
+            "marketing_touchpoints",
+            "touchpoint_date",
+            "touchpoint_after_signup",
+            "high",
+            int((touchpoints["touchpoint_date"] > touch_signup).sum()),
+            touchpoint_rows,
+            "Pre-signup attribution touchpoints cannot occur after signup.",
+        )
+    )
+    issues.append(
+        make_issue(
+            "marketing_experiments",
+            "experiment_id, customer_id",
+            "duplicate_experiment_customer",
+            "high",
+            int(experiments.duplicated(["experiment_id", "customer_id"]).sum()),
+            experiment_rows,
+            "A customer can appear once in each experiment.",
+        )
+    )
+    missing_experiment_arms = int(
+        (experiments.groupby("experiment_id")["assignment"].nunique() != 2).sum()
+    )
+    issues.append(
+        make_issue(
+            "marketing_experiments",
+            "assignment",
+            "experiment_missing_arm",
+            "high",
+            missing_experiment_arms,
+            experiments["experiment_id"].nunique(),
+            "Every randomized marketing experiment requires control and treatment arms.",
+        )
+    )
+    issues.append(
+        make_issue(
+            "pricing_interventions",
+            "intervention_id",
+            "duplicate_pricing_intervention",
+            "high",
+            int(pricing.duplicated("intervention_id").sum()),
+            pricing_rows,
+            "intervention_id should be unique at randomized pricing-cell grain.",
+        )
+    )
+    missing_price_variants = int(
+        (pricing.groupby(["product_type", "region"])["assignment"].nunique() != 3).sum()
+    )
+    issues.append(
+        make_issue(
+            "pricing_interventions",
+            "assignment",
+            "pricing_cell_missing_variant",
+            "high",
+            missing_price_variants,
+            pricing.groupby(["product_type", "region"]).ngroups,
+            "Every product-region pricing panel requires all randomized variants.",
         )
     )
     invalid_segments = int((~customers["segment"].isin(CUSTOMER_ALLOWED_SEGMENTS)).sum())
@@ -154,7 +285,9 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
             "region contains unexpected categories.",
         )
     )
-    invalid_customer_channels = int((~customers["acquisition_channel"].isin(ALLOWED_CHANNELS)).sum())
+    invalid_customer_channels = int(
+        (~customers["acquisition_channel"].isin(ALLOWED_CHANNELS)).sum()
+    )
     issues.append(
         make_issue(
             "customers",
@@ -228,7 +361,7 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
         )
     )
     cost_above_revenue = int((transactions["cost"] > transactions["revenue"]).sum())
-    cost_above_revenue_rate = cost_above_revenue / transactions_rows
+    cost_above_revenue_rate = cost_above_revenue / transactions_rows if transactions_rows else 0.0
     issues.append(
         make_issue(
             "transactions",
@@ -241,7 +374,9 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
         )
     )
 
-    joined = transactions.merge(customers[["customer_id", "signup_date"]], on="customer_id", how="left")
+    joined = transactions.merge(
+        customers[["customer_id", "signup_date"]], on="customer_id", how="left"
+    )
     tx_before_signup = int((joined["transaction_date"] < joined["signup_date"]).sum())
     issues.append(
         make_issue(
@@ -267,7 +402,9 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
             "date + acquisition_channel should define a unique row.",
         )
     )
-    invalid_marketing_channels = int((~marketing["acquisition_channel"].isin(ALLOWED_CHANNELS)).sum())
+    invalid_marketing_channels = int(
+        (~marketing["acquisition_channel"].isin(ALLOWED_CHANNELS)).sum()
+    )
     issues.append(
         make_issue(
             "marketing_spend",
@@ -304,7 +441,11 @@ def evaluate_data_quality(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
         )
     )
 
-    expected_dates = pd.date_range(marketing["date"].min(), marketing["date"].max(), freq="D")
+    expected_dates = (
+        pd.date_range(marketing["date"].min(), marketing["date"].max(), freq="D")
+        if marketing_rows
+        else pd.DatetimeIndex([])
+    )
     expected_pairs = len(expected_dates) * len(ALLOWED_CHANNELS)
     missing_pairs = max(0, expected_pairs - len(marketing))
     issues.append(

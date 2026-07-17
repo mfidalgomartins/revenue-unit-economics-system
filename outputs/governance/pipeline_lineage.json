@@ -1,0 +1,209 @@
+{
+  "edges": [
+    {
+      "from": "generate_raw",
+      "to": "validate_raw"
+    },
+    {
+      "from": "validate_raw",
+      "to": "build_warehouse"
+    },
+    {
+      "from": "validate_raw",
+      "to": "profile_raw"
+    },
+    {
+      "from": "validate_raw",
+      "to": "build_features"
+    },
+    {
+      "from": "build_features",
+      "to": "analyze"
+    },
+    {
+      "from": "build_features",
+      "to": "measure_causal"
+    },
+    {
+      "from": "analyze",
+      "to": "build_scenarios"
+    },
+    {
+      "from": "build_scenarios",
+      "to": "seed_sensitivity"
+    },
+    {
+      "from": "build_warehouse",
+      "to": "publish_operational_governance"
+    },
+    {
+      "from": "analyze",
+      "to": "build_charts"
+    },
+    {
+      "from": "measure_causal",
+      "to": "build_charts"
+    },
+    {
+      "from": "build_scenarios",
+      "to": "build_charts"
+    },
+    {
+      "from": "analyze",
+      "to": "build_dashboard"
+    },
+    {
+      "from": "measure_causal",
+      "to": "build_dashboard"
+    },
+    {
+      "from": "build_scenarios",
+      "to": "build_dashboard"
+    },
+    {
+      "from": "analyze",
+      "to": "publish_docs"
+    },
+    {
+      "from": "measure_causal",
+      "to": "publish_docs"
+    },
+    {
+      "from": "build_scenarios",
+      "to": "publish_docs"
+    },
+    {
+      "from": "build_charts",
+      "to": "build_pdf"
+    },
+    {
+      "from": "publish_docs",
+      "to": "build_pdf"
+    },
+    {
+      "from": "build_warehouse",
+      "to": "validate_outputs"
+    },
+    {
+      "from": "publish_operational_governance",
+      "to": "validate_outputs"
+    },
+    {
+      "from": "build_dashboard",
+      "to": "validate_outputs"
+    },
+    {
+      "from": "build_pdf",
+      "to": "validate_outputs"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "generate_raw",
+      "max_attempts": 1,
+      "module": "src.data_generation.generate_synthetic_data",
+      "sla_seconds": 30,
+      "timeout_seconds": 60
+    },
+    {
+      "id": "validate_raw",
+      "max_attempts": 1,
+      "module": "src.validation.validate_raw_data",
+      "sla_seconds": 10,
+      "timeout_seconds": 20
+    },
+    {
+      "id": "build_warehouse",
+      "max_attempts": 2,
+      "module": "src.warehouse.run_dbt",
+      "sla_seconds": 90,
+      "timeout_seconds": 180
+    },
+    {
+      "id": "profile_raw",
+      "max_attempts": 1,
+      "module": "src.data_profiling.profile_raw_data",
+      "sla_seconds": 20,
+      "timeout_seconds": 40
+    },
+    {
+      "id": "build_features",
+      "max_attempts": 1,
+      "module": "src.feature_engineering.build_features",
+      "sla_seconds": 30,
+      "timeout_seconds": 60
+    },
+    {
+      "id": "analyze",
+      "max_attempts": 1,
+      "module": "src.analysis.unit_economics_analysis",
+      "sla_seconds": 30,
+      "timeout_seconds": 60
+    },
+    {
+      "id": "measure_causal",
+      "max_attempts": 1,
+      "module": "src.causal.measure_incrementality",
+      "sla_seconds": 30,
+      "timeout_seconds": 60
+    },
+    {
+      "id": "build_scenarios",
+      "max_attempts": 1,
+      "module": "src.scenario_engine.build_scenarios",
+      "sla_seconds": 20,
+      "timeout_seconds": 40
+    },
+    {
+      "id": "seed_sensitivity",
+      "max_attempts": 1,
+      "module": "src.scenario_engine.build_seed_sensitivity",
+      "sla_seconds": 120,
+      "timeout_seconds": 240
+    },
+    {
+      "id": "publish_operational_governance",
+      "max_attempts": 1,
+      "module": "src.operations.publish_governance",
+      "sla_seconds": 10,
+      "timeout_seconds": 20
+    },
+    {
+      "id": "build_charts",
+      "max_attempts": 1,
+      "module": "src.visualization.build_chart_pack",
+      "sla_seconds": 120,
+      "timeout_seconds": 240
+    },
+    {
+      "id": "build_dashboard",
+      "max_attempts": 1,
+      "module": "src.dashboard_builder.build_dashboard_assets",
+      "sla_seconds": 30,
+      "timeout_seconds": 60
+    },
+    {
+      "id": "publish_docs",
+      "max_attempts": 1,
+      "module": "src.governance.publish_reports",
+      "sla_seconds": 20,
+      "timeout_seconds": 40
+    },
+    {
+      "id": "build_pdf",
+      "max_attempts": 1,
+      "module": "src.governance.build_analytical_report",
+      "sla_seconds": 120,
+      "timeout_seconds": 240
+    },
+    {
+      "id": "validate_outputs",
+      "max_attempts": 1,
+      "module": "src.validation.validate_final_outputs",
+      "sla_seconds": 30,
+      "timeout_seconds": 60
+    }
+  ],
+  "profile": "synthetic",
+  "schema_version": "1.0.0"
+}

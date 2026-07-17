@@ -13,6 +13,7 @@ import pandas as pd
 import pytest
 from src.analysis.unit_economics_analysis import (
     compute_cohort_analysis,
+    compute_overall_revenue_health,
     compute_revenue_decomposition,
     compute_segment_profitability,
     compute_unit_economics_section,
@@ -32,11 +33,17 @@ def test_formatters_handle_values_and_missing() -> None:
     assert fmt_num(float("nan")) == "n/a"
 
 
+def test_revenue_health_names_compound_monthly_growth_correctly() -> None:
+    tables = load_data()
+    _monthly, summary = compute_overall_revenue_health(tables["transactions"])
+
+    assert "compound monthly revenue growth" in str(summary["result"])
+    assert "CAGR" not in str(summary["result"])
+
+
 def test_revenue_decomposition_effects_are_exhaustive_and_volume_led() -> None:
     tables = load_data()
-    table, summary = compute_revenue_decomposition(
-        tables["customers"], tables["transactions"]
-    )
+    table, summary = compute_revenue_decomposition(tables["customers"], tables["transactions"])
     effects = table.set_index("effect")
 
     # The three effects fully account for the change: zero residual and
@@ -62,9 +69,14 @@ def test_cohort_analysis_medians_and_expansion_share() -> None:
     table, summary = compute_cohort_analysis(tables["cohort_table"])
     at = table.set_index("months_since_cohort")
 
-    # Retention starts at 100% by construction and decays monotonically
-    # through the well-observed early months.
+    # Revenue is indexed to month 0, while activity retention follows only
+    # customers who were active in month 0; both stay bounded and decline.
     assert at.loc[0, "median_revenue_retention"] == pytest.approx(1.0)
+    assert at.loc[0, "median_retained_from_month_0_rate"] == pytest.approx(1.0)
+    assert at.loc[0, "median_month_0_activation_rate"] == pytest.approx(0.521554, abs=1e-4)
+    assert at.loc[6, "median_signup_activity_rate"] == pytest.approx(0.344898, abs=1e-4)
+    assert at.loc[6, "median_retained_from_month_0_rate"] == pytest.approx(0.359579, abs=1e-4)
+    assert (table["median_retained_from_month_0_rate"].dropna() <= 1.0).all()
     assert (
         at.loc[3, "median_revenue_retention"]
         > at.loc[6, "median_revenue_retention"]

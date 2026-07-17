@@ -16,11 +16,7 @@ from src.governance import build_analytical_report as report
 from src.visualization import build_chart_pack as charts
 
 DASHBOARD_TEMPLATE = (
-    Path(__file__).resolve().parents[1]
-    / "src"
-    / "dashboard_builder"
-    / "assets"
-    / "dashboard.html"
+    Path(__file__).resolve().parents[1] / "src" / "dashboard_builder" / "assets" / "dashboard.html"
 )
 REPORT_CSS = Path(__file__).resolve().parents[1] / "src" / "governance" / "assets" / "report.css"
 

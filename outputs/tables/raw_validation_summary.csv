@@ -1,12 +1,16 @@
 check_name,status,detail
-table_row_count_non_zero,PASS,"customers=9,000, transactions=69,950, marketing_spend=6,576"
-schema_columns_match,PASS,"customers=['customer_id', 'signup_date', 'segment', 'region', 'acquisition_channel']; transactions=['transaction_id', 'customer_id', 'transaction_date', 'revenue', 'cost', 'product_type']; marketing_spend=['date', 'acquisition_channel', 'spend']"
+table_row_count_non_zero,PASS,"customers=9,000, transactions=69,950, marketing_spend=6,576, marketing_touchpoints=22,465, marketing_experiments=3,000, pricing_interventions=1,680"
+schema_columns_match,PASS,"customers=['customer_id', 'signup_date', 'segment', 'region', 'acquisition_channel']; transactions=['transaction_id', 'customer_id', 'transaction_date', 'revenue', 'cost', 'product_type']; marketing_spend=['date', 'acquisition_channel', 'spend']; marketing_touchpoints=['touchpoint_id', 'customer_id', 'touchpoint_date', 'acquisition_channel', 'touchpoint_order', 'is_conversion_touch']; marketing_experiments=['experiment_id', 'customer_id', 'acquisition_channel', 'assignment', 'assigned_date', 'outcome_window_days', 'converted', 'pre_period_contribution', 'observed_contribution']; pricing_interventions=['intervention_id', 'week_start', 'product_type', 'region', 'assignment', 'reference_price', 'observed_price', 'units_sold', 'revenue', 'contribution_margin']"
 null_values_raw_tables,PASS,total_raw_nulls=0
-grain_key_uniqueness,PASS,"duplicate customer_id=0, duplicate transaction_id=0, duplicate date+channel=0"
-transaction_customer_referential_integrity,PASS,orphan_transaction_rows=0
+contract_types_and_finite_values,PASS,"invalid_dates=0, invalid_or_nonfinite_numeric_values=0"
+grain_key_uniqueness,PASS,"duplicate customer_id=0, duplicate transaction_id=0, duplicate date+channel=0, duplicate touchpoint_id=0, duplicate experiment+customer=0, duplicate intervention_id=0"
+categorical_domain_values,PASS,unexpected_values=none
+transaction_customer_referential_integrity,PASS,"orphan_transaction_rows=0, orphan_touchpoint_rows=0, orphan_experiment_rows=0"
 transaction_date_not_before_signup,PASS,rows_with_transaction_before_signup=0
+marketing_journey_integrity,PASS,"post_signup_touchpoints=0, customers_without_exactly_one_conversion_touch=0, conversion_touch_not_last=0"
 value_range_sanity,PASS,"non_positive_revenue=0, negative_cost=0, negative_spend=0"
+causal_design_input_integrity,PASS,"negative_experiment_values=0, experiments_missing_arm=0, negative_pricing_values=0, invalid_price_assignments=0, pricing_cells_missing_arm=0"
 negative_margin_transaction_review,PASS,"rows_with_cost_above_revenue=258, share=0.37%, review_threshold=1.00%"
 channel_domain_alignment,PASS,"customer_channels=['email', 'organic', 'paid_search', 'partners', 'referral', 'social_ads'], marketing_channels=['email', 'organic', 'paid_search', 'partners', 'referral', 'social_ads']"
-marketing_date_channel_coverage,PASS,"expected_pairs=6576, observed_pairs=6,576, missing_pairs=0"
+marketing_date_channel_coverage,PASS,"expected_pairs=6,576, observed_pairs=6,576, missing_pairs=0"
 date_coverage_observed,PASS,"customers=2023-01-01..2025-12-31, transactions=2023-01-03..2025-12-31, marketing=2023-01-01..2025-12-31"

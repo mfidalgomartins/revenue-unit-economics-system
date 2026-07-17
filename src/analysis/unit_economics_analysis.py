@@ -23,9 +23,9 @@ from src.governance.metric_registry import (
     EFFICIENCY_THRESHOLDS,
     classify_channel_efficiency,
 )
-from src.paths import PROJECT_ROOT
+from src.paths import PROJECT_ROOT, RAW_DATA_DIR
 
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
+RAW_DIR = RAW_DATA_DIR
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 OUTPUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 
@@ -57,12 +57,8 @@ def fmt_num(value: float, digits: int = 2) -> str:
 def load_data() -> dict[str, pd.DataFrame]:
     tables = {
         "customers": pd.read_csv(RAW_DIR / "customers.csv", parse_dates=["signup_date"]),
-        "transactions": pd.read_csv(
-            RAW_DIR / "transactions.csv", parse_dates=["transaction_date"]
-        ),
-        "marketing_spend": pd.read_csv(
-            RAW_DIR / "marketing_spend.csv", parse_dates=["date"]
-        ),
+        "transactions": pd.read_csv(RAW_DIR / "transactions.csv", parse_dates=["transaction_date"]),
+        "marketing_spend": pd.read_csv(RAW_DIR / "marketing_spend.csv", parse_dates=["date"]),
         "customer_metrics": pd.read_csv(PROCESSED_DIR / "customer_metrics.csv"),
         "cohort_table": pd.read_csv(
             PROCESSED_DIR / "cohort_table.csv",
@@ -73,7 +69,9 @@ def load_data() -> dict[str, pd.DataFrame]:
     return tables
 
 
-def compute_overall_revenue_health(transactions: pd.DataFrame) -> tuple[pd.DataFrame, Mapping[str, object]]:
+def compute_overall_revenue_health(
+    transactions: pd.DataFrame,
+) -> tuple[pd.DataFrame, Mapping[str, object]]:
     tx = transactions.copy()
     tx["month"] = tx["transaction_date"].dt.to_period("M").dt.to_timestamp()
 
@@ -114,11 +112,11 @@ def compute_overall_revenue_health(transactions: pd.DataFrame) -> tuple[pd.DataF
     cm_growth = safe_pct_change(recent_cm, early_cm)
 
     monthly_periods = max(len(monthly) - 1, 1)
-    revenue_cagr = safe_pct_change(
+    revenue_cmgr = safe_pct_change(
         monthly.iloc[-1]["total_revenue"], monthly.iloc[0]["total_revenue"]
     )
-    if pd.notna(revenue_cagr):
-        revenue_cagr = (1 + revenue_cagr) ** (1 / monthly_periods) - 1
+    if pd.notna(revenue_cmgr):
+        revenue_cmgr = (1 + revenue_cmgr) ** (1 / monthly_periods) - 1
 
     result = {
         "question": "Is top-line revenue scaling with improving or deteriorating contribution quality over time?",
@@ -130,11 +128,12 @@ def compute_overall_revenue_health(transactions: pd.DataFrame) -> tuple[pd.DataF
             f"Average monthly revenue increased from {fmt_currency(early_rev)} to {fmt_currency(recent_rev)} "
             f"({fmt_pct(revenue_growth)}), while cost increased from {fmt_currency(early_cost)} to "
             f"{fmt_currency(recent_cost)} ({fmt_pct(cost_growth)}). Contribution margin increased "
-            f"{fmt_pct(cm_growth)} with latest monthly revenue CAGR around {fmt_pct(revenue_cagr)}."
+            f"{fmt_pct(cm_growth)}; compound monthly revenue growth across the observed endpoints "
+            f"was {fmt_pct(revenue_cmgr)}."
         ),
         "business_interpretation": (
-            "Revenue is growing in absolute terms, but sustainability depends on whether margin growth keeps pace "
-            "with spend-driven volume expansion."
+            "Revenue is growing in absolute terms; margin rate, cohort activity, and acquisition economics "
+            "provide the necessary quality checks."
         ),
         "caveats": (
             "Trends are based on synthetic data and observed period windows; growth rates can be sensitive to "
@@ -239,11 +238,15 @@ def compute_revenue_decomposition(
         decomposition["effect"].isin(
             ["customer_volume_effect", "mix_effect", "average_revenue_effect"]
         )
-    ].iloc[decomposition[
-        decomposition["effect"].isin(
-            ["customer_volume_effect", "mix_effect", "average_revenue_effect"]
-        )
-    ]["effect_value"].abs().argmax()]
+    ].iloc[
+        decomposition[
+            decomposition["effect"].isin(
+                ["customer_volume_effect", "mix_effect", "average_revenue_effect"]
+            )
+        ]["effect_value"]
+        .abs()
+        .argmax()
+    ]
 
     result = {
         "question": (
@@ -260,8 +263,8 @@ def compute_revenue_decomposition(
             f"mix effect: {fmt_currency(mix_effect)}. Dominant driver: {dominant_row['effect']}."
         ),
         "business_interpretation": (
-            "Growth quality is stronger when monetization and favorable mix support growth; "
-            "volume-only growth with weak unit economics is less sustainable."
+            "The decomposition identifies the relative contribution of volume, monetization, and segment mix; "
+            "it does not attribute those effects to a causal channel or intervention."
         ),
         "caveats": (
             "Decomposition compares aggregated windows and uses segment as the mix dimension; "
@@ -273,15 +276,27 @@ def compute_revenue_decomposition(
     return decomposition, result
 
 
-def compute_cohort_analysis(cohort_table: pd.DataFrame) -> tuple[pd.DataFrame, Mapping[str, object]]:
+def compute_cohort_analysis(
+    cohort_table: pd.DataFrame,
+) -> tuple[pd.DataFrame, Mapping[str, object]]:
     cohort = cohort_table.copy()
     cohort["cohort_month"] = pd.to_datetime(cohort["cohort_month"])
     cohort["activity_month"] = pd.to_datetime(cohort["activity_month"])
 
+    required_columns = {
+        "cohort_size",
+        "month_0_activation_rate",
+        "signup_activity_rate",
+        "retained_from_month_0_rate",
+    }
+    missing_columns = required_columns - set(cohort.columns)
+    if missing_columns:
+        missing = ", ".join(sorted(missing_columns))
+        raise ValueError(f"Cohort table is missing required semantic fields: {missing}")
+
     cohort["months_since_cohort"] = (
-        (cohort["activity_month"].dt.year - cohort["cohort_month"].dt.year) * 12
-        + (cohort["activity_month"].dt.month - cohort["cohort_month"].dt.month)
-    )
+        cohort["activity_month"].dt.year - cohort["cohort_month"].dt.year
+    ) * 12 + (cohort["activity_month"].dt.month - cohort["cohort_month"].dt.month)
 
     baseline = cohort[cohort["months_since_cohort"] == 0][
         ["cohort_month", "customers_active", "cohort_revenue"]
@@ -293,11 +308,6 @@ def compute_cohort_analysis(cohort_table: pd.DataFrame) -> tuple[pd.DataFrame, M
     )
 
     cohort = cohort.merge(baseline, on="cohort_month", how="left")
-    cohort["activity_retention"] = np.where(
-        cohort["baseline_customers_active"] > 0,
-        cohort["customers_active"] / cohort["baseline_customers_active"],
-        np.nan,
-    )
     cohort["revenue_retention"] = np.where(
         cohort["baseline_cohort_revenue"] > 0,
         cohort["cohort_revenue"] / cohort["baseline_cohort_revenue"],
@@ -307,80 +317,77 @@ def compute_cohort_analysis(cohort_table: pd.DataFrame) -> tuple[pd.DataFrame, M
     retention_summary = (
         cohort.groupby("months_since_cohort", as_index=False)
         .agg(
-            median_activity_retention=("activity_retention", "median"),
+            median_month_0_activation_rate=("month_0_activation_rate", "median"),
+            median_signup_activity_rate=("signup_activity_rate", "median"),
+            median_retained_from_month_0_rate=("retained_from_month_0_rate", "median"),
             median_revenue_retention=("revenue_retention", "median"),
             cohorts_observed=("cohort_month", "nunique"),
         )
         .sort_values("months_since_cohort", ignore_index=True)
     )
 
-    max_observed = cohort.groupby("cohort_month", as_index=True)["months_since_cohort"].max()
-
     def metric_at_month(metric_col: str, month_index: int) -> float:
-        eligible = max_observed[max_observed >= month_index].index
-        if len(eligible) == 0:
+        month_slice = retention_summary.loc[
+            retention_summary["months_since_cohort"] == month_index,
+            metric_col,
+        ]
+        if month_slice.empty:
             return np.nan
+        return float(month_slice.iloc[0])
 
-        month_slice = cohort[
-            (cohort["cohort_month"].isin(eligible))
-            & (cohort["months_since_cohort"] == month_index)
-        ][["cohort_month", metric_col]].set_index("cohort_month")
+    activation_m0 = metric_at_month("median_month_0_activation_rate", 0)
+    m3_signup_activity = metric_at_month("median_signup_activity_rate", 3)
+    m6_signup_activity = metric_at_month("median_signup_activity_rate", 6)
+    m12_signup_activity = metric_at_month("median_signup_activity_rate", 12)
+    m3_retained = metric_at_month("median_retained_from_month_0_rate", 3)
+    m6_retained = metric_at_month("median_retained_from_month_0_rate", 6)
+    m12_retained = metric_at_month("median_retained_from_month_0_rate", 12)
 
-        series = month_slice[metric_col].reindex(eligible, fill_value=0.0)
-        return float(series.median()) if len(series) else np.nan
+    m3_revenue = metric_at_month("median_revenue_retention", 3)
+    m6_revenue = metric_at_month("median_revenue_retention", 6)
+    m12_revenue = metric_at_month("median_revenue_retention", 12)
 
-    m3_activity = metric_at_month("activity_retention", 3)
-    m6_activity = metric_at_month("activity_retention", 6)
-    m12_activity = metric_at_month("activity_retention", 12)
+    m6_series = cohort.loc[
+        cohort["months_since_cohort"] == 6,
+        "revenue_retention",
+    ].dropna()
+    expansion_share_m6 = float((m6_series > 1.0).mean()) if len(m6_series) else np.nan
 
-    m3_revenue = metric_at_month("revenue_retention", 3)
-    m6_revenue = metric_at_month("revenue_retention", 6)
-    m12_revenue = metric_at_month("revenue_retention", 12)
-
-    eligible_m6 = max_observed[max_observed >= 6].index
-    if len(eligible_m6):
-        m6_series = cohort[
-            (cohort["cohort_month"].isin(eligible_m6))
-            & (cohort["months_since_cohort"] == 6)
-        ][["cohort_month", "revenue_retention"]].set_index("cohort_month")["revenue_retention"]
-        m6_series = m6_series.reindex(eligible_m6, fill_value=0.0)
-        expansion_share_m6 = float((m6_series > 1.0).mean())
-    else:
-        expansion_share_m6 = np.nan
-
-    decay_signal = (
-        pd.notna(m3_activity)
-        and pd.notna(m6_activity)
-        and m6_activity < m3_activity
-    )
+    decay_signal = pd.notna(m3_retained) and pd.notna(m6_retained) and m6_retained < m3_retained
 
     result = {
         "question": (
-            "Are cohorts retaining activity and revenue over time, or decaying in a way that weakens growth quality?"
+            "How do signup activation, retained activity, and cohort revenue evolve with cohort age?"
         ),
         "metrics_used": (
-            "Cohort activity retention and revenue retention at months 3, 6, 12; "
-            "share of cohorts with month-6 revenue retention > 100%"
+            "Month-0 activation, active customers as a share of all signups, retained month-0 "
+            "customers, and revenue retention at months 3, 6, and 12"
         ),
         "result": (
-            f"Median activity retention: M3 {fmt_pct(m3_activity)}, M6 {fmt_pct(m6_activity)}, "
-            f"M12 {fmt_pct(m12_activity)}. Median revenue retention: M3 {fmt_pct(m3_revenue)}, "
+            f"Median month-0 activation is {fmt_pct(activation_m0)}. Signup activity: "
+            f"M3 {fmt_pct(m3_signup_activity)}, M6 {fmt_pct(m6_signup_activity)}, "
+            f"M12 {fmt_pct(m12_signup_activity)}. Retained from month 0: "
+            f"M3 {fmt_pct(m3_retained)}, M6 {fmt_pct(m6_retained)}, "
+            f"M12 {fmt_pct(m12_retained)}. Revenue retention: M3 {fmt_pct(m3_revenue)}, "
             f"M6 {fmt_pct(m6_revenue)}, M12 {fmt_pct(m12_revenue)}. "
             f"Cohorts with M6 revenue expansion (>100%): {fmt_pct(expansion_share_m6)}."
         ),
         "business_interpretation": (
-            "Stable or expanding revenue retention suggests healthy post-acquisition monetization; "
-            "declining activity retention indicates potential dependency on ongoing acquisition to sustain growth."
+            "Activation separates acquisition quality from later retention. Signup activity measures "
+            "the whole acquired cohort, while retained-from-month-0 activity excludes late activations."
         ),
         "caveats": (
-            "Later-month retention metrics include only mature cohorts; newer cohorts are excluded from long-horizon reads."
+            "Later-month metrics include only cohorts mature enough to reach that age. Revenue retention "
+            "is a cohort-level index and should not be interpreted as the median customer's change."
             + (" Cohort decay is visible between M3 and M6." if decay_signal else "")
         ),
     }
 
     retention_summary = retention_summary.round(
         {
-            "median_activity_retention": 6,
+            "median_month_0_activation_rate": 6,
+            "median_signup_activity_rate": 6,
+            "median_retained_from_month_0_rate": 6,
             "median_revenue_retention": 6,
         }
     )
@@ -393,16 +400,24 @@ def compute_cohort_analysis(cohort_table: pd.DataFrame) -> tuple[pd.DataFrame, M
     return retention_summary, result
 
 
-def compute_unit_economics_section(unit_economics: pd.DataFrame) -> tuple[pd.DataFrame, Mapping[str, object]]:
+def compute_unit_economics_section(
+    unit_economics: pd.DataFrame,
+) -> tuple[pd.DataFrame, Mapping[str, object]]:
     ue = unit_economics.copy()
 
     ue["efficiency_status"] = ue.apply(
-        lambda r: classify_channel_efficiency(r["LTV_to_CAC"], r["approximate_payback_period"]),
+        lambda r: classify_channel_efficiency(
+            r["LTV_to_CAC"],
+            r["approximate_payback_period"],
+            r.get("payback_status"),
+        ),
         axis=1,
     )
     ue = ue.sort_values("LTV_to_CAC", ascending=False, ignore_index=True)
 
-    efficient_channels = ue.loc[ue["efficiency_status"] == "efficient", "acquisition_channel"].tolist()
+    efficient_channels = ue.loc[
+        ue["efficiency_status"] == "efficient", "acquisition_channel"
+    ].tolist()
     inefficient_channels = ue.loc[
         ue["efficiency_status"] == "inefficient", "acquisition_channel"
     ].tolist()
@@ -411,7 +426,7 @@ def compute_unit_economics_section(unit_economics: pd.DataFrame) -> tuple[pd.Dat
     worst = ue.iloc[-1]
 
     result = {
-        "question": "Which acquisition channels create efficient growth versus value-destructive growth?",
+        "question": "Which acquisition channels pass or fail the governed unit-economics policy?",
         "metrics_used": "CAC, average_LTV, median_LTV, LTV_to_CAC, approximate_payback_period",
         "result": (
             f"Efficient channels: {', '.join(efficient_channels) if efficient_channels else 'none'}. "
@@ -420,8 +435,8 @@ def compute_unit_economics_section(unit_economics: pd.DataFrame) -> tuple[pd.Dat
             f"worst: {worst['acquisition_channel']} ({fmt_num(worst['LTV_to_CAC'], 2)})."
         ),
         "business_interpretation": (
-            "Channel allocation should prioritize high LTV/CAC and faster payback channels; "
-            "low-ratio channels likely drive unprofitable growth unless economics improve."
+            "Channels with observed LTV below CAC fail the policy before attribution adjustments; "
+            "any allocation change should use bounded tests and recovery guardrails."
         ),
         "caveats": (
             "Unit economics use observed LTV and period-wide spend allocation; attribution and lag effects can alter "
@@ -532,8 +547,7 @@ def compute_segment_profitability(
     )
 
     overall_margin_pct = float(
-        (transactions["revenue"].sum() - transactions["cost"].sum())
-        / transactions["revenue"].sum()
+        (transactions["revenue"].sum() - transactions["cost"].sum()) / transactions["revenue"].sum()
     )
 
     low_margin_growth_pockets = profitability_long[
@@ -542,9 +556,11 @@ def compute_segment_profitability(
     ].sort_values(["margin_pct", "total_revenue"], ascending=[True, False], ignore_index=True)
 
     if low_margin_growth_pockets.empty:
-        low_margin_growth_pockets = profitability_long[
-            profitability_long["revenue_share"] >= 0.03
-        ].sort_values("margin_pct", ascending=True, ignore_index=True).head(5)
+        low_margin_growth_pockets = (
+            profitability_long[profitability_long["revenue_share"] >= 0.03]
+            .sort_values("margin_pct", ascending=True, ignore_index=True)
+            .head(5)
+        )
 
     worst_segment = segment_profitability.sort_values("margin_pct", ascending=True).iloc[0]
     worst_region = region_profitability.sort_values("margin_pct", ascending=True).iloc[0]
@@ -565,8 +581,8 @@ def compute_segment_profitability(
             f"Low-margin growth pockets identified: {len(low_margin_growth_pockets)}."
         ),
         "business_interpretation": (
-            "Growth concentration in low-margin pockets can inflate revenue while suppressing value creation. "
-            "Commercial strategy should adjust pricing/mix/cost discipline in weak-margin slices."
+            "The lowest-margin slices are diagnostic starting points. A price, discount, mix, and cost-to-serve "
+            "bridge is required before selecting an intervention."
         ),
         "caveats": (
             "Segment and region profitability use customer-level aggregated costs/revenue, while product profitability "
@@ -620,7 +636,9 @@ def run() -> None:
     )
 
     monthly_revenue_health.to_csv(OUTPUT_TABLES_DIR / "monthly_revenue_health.csv", index=False)
-    revenue_decomposition.to_csv(OUTPUT_TABLES_DIR / "revenue_decomposition_effects.csv", index=False)
+    revenue_decomposition.to_csv(
+        OUTPUT_TABLES_DIR / "revenue_decomposition_effects.csv", index=False
+    )
     cohort_retention_summary.to_csv(OUTPUT_TABLES_DIR / "cohort_retention_summary.csv", index=False)
     unit_econ_diagnostics.to_csv(
         OUTPUT_TABLES_DIR / "unit_economics_channel_diagnostics.csv", index=False

@@ -9,6 +9,8 @@ fails.
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import duckdb
 import pandas as pd
 import pytest
@@ -20,7 +22,7 @@ PROCESSED = PROJECT_ROOT / "data" / "processed"
 
 
 @pytest.fixture()
-def con() -> duckdb.DuckDBPyConnection:
+def con() -> Iterator[duckdb.DuckDBPyConnection]:
     connection = duckdb.connect()
     for name in ("customers", "transactions", "marketing_spend"):
         connection.execute(
@@ -30,7 +32,8 @@ def con() -> duckdb.DuckDBPyConnection:
         "CREATE VIEW customer_metrics AS SELECT * FROM "
         f"read_csv_auto('{PROCESSED / 'customer_metrics.csv'}')"
     )
-    return connection
+    yield connection
+    connection.close()
 
 
 def test_customer_metrics_sql_matches_pipeline(con: duckdb.DuckDBPyConnection) -> None:
@@ -44,13 +47,13 @@ def test_customer_metrics_sql_matches_pipeline(con: duckdb.DuckDBPyConnection) -
     for col in ("segment", "region", "acquisition_channel", "transaction_count"):
         assert got[col].tolist() == expected[col].tolist(), col
     for col in (
-        "lifetime_days",
+        "transaction_span_days",
         "total_revenue",
         "total_cost",
         "contribution_margin",
         "contribution_margin_pct",
         "avg_revenue_per_transaction",
-        "revenue_per_day",
+        "revenue_per_transaction_span_day",
     ):
         pd.testing.assert_series_equal(
             got[col].astype(float),
@@ -71,13 +74,31 @@ def test_unit_economics_sql_matches_pipeline(con: duckdb.DuckDBPyConnection) -> 
     assert got["acquisition_channel"].tolist() == expected["acquisition_channel"].tolist()
     assert got["customers_acquired"].tolist() == expected["customers_acquired"].tolist()
     for col in (
+        "payback_status",
+        "payback_is_censored",
+        "payback_horizon_months",
+        "payback_mature_customers",
+    ):
+        assert got[col].tolist() == expected[col].tolist(), col
+    for col in ("payback_acquisition_start", "payback_acquisition_end"):
+        pd.testing.assert_series_equal(
+            pd.to_datetime(got[col]),
+            pd.to_datetime(expected[col]),
+            check_names=False,
+            check_dtype=False,
+        )
+    for col in (
         "total_spend",
         "CAC",
         "average_LTV",
         "median_LTV",
         "total_channel_contribution_margin",
         "LTV_to_CAC",
+        "payback_cac",
+        "payback_aligned_spend",
         "approximate_payback_period",
+        "payback_mature_customer_share",
+        "payback_horizon_contribution_per_customer",
     ):
         pd.testing.assert_series_equal(
             got[col].astype(float),

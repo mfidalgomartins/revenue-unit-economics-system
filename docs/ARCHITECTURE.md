@@ -1,186 +1,152 @@
 # Architecture
 
-This document explains how the system is put together: the pipeline shape, the
-contract between stages, and the design decisions that keep it reproducible. For
-*what* it analyzes and how to run it, see the [README](../README.md).
+The repository implements two compatible operating modes:
 
-## Design in one sentence
+- a deterministic synthetic case that rebuilds every committed analytical artifact without credentials;
+- a production ingestion and serving path with versioned vendor adapters, incremental dbt models, persisted orchestration state, and an authenticated aggregate API.
 
-A linear, deterministic batch pipeline of independent stages that communicate
-only through files on disk, with all analytical policy centralized in one metric
-registry.
+Both modes converge on the same normalized commercial contracts and governed metric definitions.
 
-## Stage pipeline
-
-`src/run_pipeline.py` runs twelve stages in a fixed order. Each stage is a
-self-contained module with a `main()` entry point; the orchestrator invokes them
-as subprocesses (`python -m src.<stage>`) so a failure in one stage stops the
-run with a clear boundary.
+## System flow
 
 ```mermaid
 flowchart LR
-    G["data generation<br/><small>data/raw/*.csv</small>"] --> V["raw validation"]
-    V --> P["profiling<br/><small>quality issues</small>"]
-    P --> F["feature engineering<br/><small>data/processed/*.csv</small>"]
-    F --> A["core analysis<br/><small>outputs/tables/*.csv</small>"]
-    A --> S["scenario engine +<br/>seed sensitivity"]
-    S --> C["chart pack<br/><small>19 PNGs</small>"]
-    S --> D["dashboard<br/><small>self-contained HTML</small>"]
-    S --> R["PDF report +<br/>governance docs"]
-    C --> QA["final QA gate"]
-    D --> QA
-    R --> QA
+    S["Synthetic six-table generator"] --> Q["Fail-closed validation"]
+    H["HubSpot CRM v3"] --> A["Versioned adapters"]
+    B["Stripe invoices"] --> A
+    G["Google Ads v24"] --> A
+    X["Governed experiment exports"] --> A
+    A --> C["Normalized contracts v1"]
+    C --> V["Immutable six-table bundle<br/>atomic active pointer"]
+    V --> R["Transactional PostgreSQL raw load"]
+    V --> Q["Fail-closed validation"]
+    R --> W
+    Q --> W["dbt warehouse<br/>incremental facts + tested marts"]
+    Q --> P["pandas feature layer"]
+    P --> M["Unit economics + cohorts"]
+    P --> E["Incrementality + attribution + elasticity"]
+    M --> D["Scenarios and decision outputs"]
+    E --> D
+    W --> API["Authenticated aggregate API"]
+    D --> API
+    D --> PUB["Static dashboard, charts, reports, PDF"]
+    API --> LIVE["API-backed dashboard<br/>same visual surface"]
+    W --> L["Lineage + SLAs"]
+    PUB --> QA["Final QA gate"]
+    API --> QA
+    L --> QA
 ```
 
-| Stage | Module | Writes |
-|-------|--------|--------|
-| data generation | `src/data_generation/` | `data/raw/*.csv` |
-| raw validation | `src/validation/` | `outputs/tables/raw_validation_summary.csv` |
-| profiling | `src/data_profiling/` | `outputs/tables/data_profile_summary.csv`, `data_quality_issues.csv` |
-| feature engineering | `src/feature_engineering/` | `data/processed/{customer_metrics,cohort_table,unit_economics}.csv` |
-| core analysis | `src/analysis/` | `outputs/tables/*.csv` (monthly health, decomposition, cohorts, …) |
-| scenario engine + seeds | `src/scenario_engine/` | `outputs/tables/scenario_*.csv` |
-| chart pack | `src/visualization/` | `outputs/charts/*.png` |
-| dashboard | `src/dashboard_builder/` | `outputs/dashboard/growth-quality-dashboard.html` |
-| governance docs + PDF | `src/governance/` | `outputs/reports/*` , `outputs/tables/data_catalog.csv` |
-| final QA gate | `src/validation/` | `outputs/reports/qa_report.md`, `outputs/tables/qa_checks.csv` |
+`src/run_pipeline.py` and `src/operations/orchestrator.py` consume the same validated graph. The synthetic profile has fifteen stages; the external profile skips generation and starts from an explicit normalized source directory. The orchestrator adds attempt persistence, bounded retries, stage SLAs, and structured alerts.
 
-## The on-disk contract
+## Stage contracts
 
-Stages never import each other's runtime state; they read and write CSV/HTML/PDF
-artifacts at well-known paths. This is deliberate:
+| Stage | Module | Durable output |
+|---|---|---|
+| synthetic generation | `src/data_generation/` | six `data/raw/*.csv` tables |
+| real-source ingestion | `src/ingestion/` | immutable six-table bundle, active pointer, manifest, and optional PostgreSQL raw schema |
+| raw validation | `src/validation/validate_raw_data.py` | contract-gate evidence |
+| warehouse | `src/warehouse/`, `warehouse/` | tested DuckDB/Postgres models and dbt lineage |
+| feature engineering | `src/feature_engineering/` | customer, cohort, and unit-economics tables |
+| core analysis | `src/analysis/` | monthly, cohort, dimensional, and channel diagnostics |
+| causal measurement | `src/causal/` | incrementality, attribution, elasticity, and pricing decisions |
+| scenario engine | `src/scenario_engine/` | bounded allocation, stress, and seed-sensitivity outputs |
+| operational governance | `src/operations/` | deterministic pipeline lineage and SLA catalog |
+| publications | dashboard, visualization, governance packages | HTML, PNG, Markdown, CSV, and PDF artifacts |
+| final QA | `src/validation/validate_final_outputs.py` | machine-readable checks, issues, and report |
 
-- **Inspectable** — every intermediate result is a file you can open and diff.
-- **Resumable / debuggable** — a stage can be rerun in isolation against the
-  artifacts already on disk.
-- **Decoupled** — a stage only needs to know the *schema* of the files it reads,
-  not the internals of the stage that produced them.
+## Source boundary
 
-Directory roles:
+`src/ingestion/contracts.py` defines contract version `1.0.0` for all six pipeline inputs. Publication requires the complete bundle, exact columns, non-empty initial tables, unique keys, allowed domains, finite economics, non-negative counts/prices/revenue/spend, and cross-source customer integrity. Contribution outcomes and margins remain signed because losses are valid observations.
 
-| Path | Role | Producer |
-|------|------|----------|
-| `data/raw/` | synthetic source tables | data generation |
-| `data/processed/` | customer-level feature tables | feature engineering |
-| `outputs/tables/` | analytical result tables | analysis, scenarios, profiling, QA |
-| `outputs/charts/` | publication PNG chart pack | visualization |
-| `outputs/dashboard/` | self-contained interactive HTML | dashboard builder |
-| `outputs/reports/` | decision brief, metric registry, QA report, PDF | governance, validation |
+The adapters minimize data before persistence:
 
-The data catalog (`src/governance/data_catalog.py`) documents the columns of these
-tables and is itself published as `outputs/tables/data_catalog.csv`.
+- CRM: pseudonymous ID, signup date, segment, region, channel;
+- billing: invoice ID, governed CRM ID, paid date, revenue, direct cost, product;
+- advertising: date, mapped channel, spend;
+- governed exports: pseudonymous touchpoint, holdout, and pricing-cell fields required by the estimators.
 
-## Single source of truth: the metric registry
+Incremental deltas merge by contract key with prior normalized data. A SHA-256 manifest records rows, source system, source API version, extraction time, and published file digest. Each content-addressed snapshot is immutable; merge and atomic pointer activation hold an exclusive directory lock. Vendor payloads and secrets are not written.
 
-`src/governance/metric_registry.py` holds every unit-economics threshold and
-risk-scoring default (LTV/CAC targets, payback bounds, margin floor, scoring
-weights) plus the canonical `classify_channel_efficiency` and
-`channel_priority_score` functions. Analysis, the dashboard, and validation all
-import from it — a threshold is defined once and consumed everywhere, so the
-published numbers, the dashboard's color coding, and the QA checks cannot drift
-apart. Changing policy means editing this one module (and its tests).
+## Warehouse
+
+The dbt project supports DuckDB development/CI and PostgreSQL production profiles. The production loader verifies the active bundle, copies all six inputs to candidate tables, validates row counts, and replaces stable raw-table contents in one advisory-locked transaction. `fct_transactions` and `fct_marketing_spend` use idempotent `delete+insert` incremental materialization with a 30-day correction window. `dim_customers` rebuilds from the current normalized snapshot. Tested marts provide monthly performance and channel unit economics.
+
+The dbt manifest is reduced to a deterministic node-edge graph. Volatile invocation metadata, compiled SQL, and runtime paths are excluded from the published lineage artifact.
+
+Python remains responsible for the richer empirical payback, completed cohort grids, randomized estimators, reports, and visual publication. Final QA reconciles warehouse counts and core channel metrics to the Python outputs; SQL/Python parity is a gate, not an informal expectation.
+
+## Analytical claim boundaries
+
+The metric registry governs LTV/CAC, empirical payback, margin thresholds, and risk rules. Three acquisition measures remain distinct:
+
+1. period CAC and observed contribution LTV describe channel economics;
+2. randomized customer holdouts identify marketing incrementality;
+3. position-based multi-touch attribution allocates observed contribution but is non-causal.
+
+Price elasticity is identified from randomized product-region-week assignments. Fixed effects absorb stable product, region, and seasonal differences; finite-sample-corrected CR1 standard errors cluster assignment cells by week. The output publishes cluster count, residual degrees of freedom, HC1 sensitivity, and design-matrix condition number. Pricing recommendations remain inside the experimental support.
+
+Randomized marketing outputs publish sample-ratio-mismatch and pre-period balance diagnostics. A failed diagnostic marks the estimate for review instead of silently presenting it as decision-ready.
+
+## Dashboard and API
+
+The dashboard template has one visual implementation and two data modes:
+
+- static mode embeds deterministic synthetic columnar records for public GitHub Pages;
+- API mode embeds only safe configuration, sends filters to `/v1/dashboard/snapshot`, and renders server-side aggregates.
+
+The API uses one repository interface for read-only DuckDB or PostgreSQL queries, applies governed domain filters, suppresses slices and rows below 10 customers, and returns only aggregate series, tables, cohort summaries, and quantile bins. Causal arms and pricing models must also meet the same publication threshold. Full-coverage channel economics are omitted from date, segment, region, or product slices where they would otherwise be mistaken for filtered metrics. Generated unit-economics and causal products pass schema checks and use a file-signature-aware cache. The API does not return customer, transaction, touchpoint, invoice, or campaign identifiers.
+
+Programmatic clients use SHA-256-configured API keys and explicit scopes. Browser access uses same-origin Basic authentication. Responses are non-cacheable and include correlation, content, framing, referrer, permissions, and CSP controls. The process-local rate limiter is a final defense for single-process use; multi-replica deployments enforce shared limits at the gateway.
+
+## Operations
+
+`src/operations/pipeline_spec.py` is the canonical dependency, retry, and stage-SLA graph. Runtime attempts are stored transactionally in SQLite with run ID, stage, attempt, timing, status, and error type. Analytical rows, credentials, and exception messages are excluded.
+
+Alerts always emit canonical JSON to standard output. Optional HTTPS webhook delivery is HMAC-SHA-256 signed and uses bounded retries. Sink failures are isolated and cannot mask the recorded pipeline result. `config/operational_slas.json` governs schedule, completion, freshness, API availability/latency, and privacy thresholds. The deployable UTC schedule calls a wrapper that rejects overlapping runs with `flock`.
+
+Runtime state is deliberately ignored:
+
+| Path | Lifecycle |
+|---|---|
+| `data/raw/`, `data/processed/`, publication outputs | deterministic case artifacts |
+| `data/staging/` | environment-specific normalized source state |
+| `outputs/warehouse/` | local dbt database; production uses PostgreSQL |
+| `outputs/operations/` | mutable run history |
+| `outputs/governance/` | deterministic lineage and SLA artifacts |
 
 ## Determinism
 
-The pipeline is reproducible by construction:
+- Synthetic sources use isolated NumPy generators and a fixed default seed.
+- Alternate seed evaluation remains in memory and cannot overwrite canonical raw, processed, or scenario files.
+- CSV, Markdown, HTML, lineage, SLA, chart, and PDF publication is stable for fixed code, inputs, runtime, and dependency lock.
+- The PDF blocks network access, renders in memory, normalizes metadata, and publishes semantic tags, bookmarks, and language metadata.
+- dbt runtime logs, DuckDB storage bytes, run timestamps, and SQLite operational history are mutable runtime state and are excluded from artifact byte-comparison claims.
 
-- Synthetic generation is seeded (`SYNTHETIC_SEED`, default 42); the same seed
-  yields byte-identical raw data.
-- Every downstream stage is a pure function of its input files.
-- Seed sensitivity reruns the *same* generating process across five deterministic
-  seeds to measure scenario-direction stability — it tests robustness, not
-  external validity.
+## Quality strategy
 
-The only intentional non-determinism is the PDF's byte size (the headless-browser
-PDF encoder is not byte-stable); all *content* is deterministic, and the final QA
-gate asserts the substantive invariants rather than file bytes.
+The enforced gate covers:
 
-## Testing and coverage strategy
+- raw schema, grain, types, ranges, domains, dates, and referential integrity;
+- dbt model and relationship tests plus warehouse/Python parity;
+- unit economics, cohort denominators, empirical payback, scenario budgets, and seed immutability;
+- randomized estimator intervals, attribution reconciliation, negative elasticity, and bounded pricing recommendations;
+- authenticated API scope failures, privacy suppression, safe bootstrap data, and security headers;
+- orchestrator state, retries, SLA alerts, HMAC delivery, lineage, and SLA contracts;
+- chart manifest, dashboard semantics, PDF structure, metadata, and published documentation;
+- ruff, mypy, exact dependency integrity, vulnerability audit, CodeQL, pytest, and branch coverage of at least 90%.
 
-- **Pure logic** (metric registry, feature math, analysis section builders, data
-  generation invariants) is unit-tested directly.
-- **Stage `run()` entry points** are exercised against the committed data with
-  their output directory redirected to a temp path, so orchestration and writers
-  are covered without mutating tracked artifacts.
-- **Output renderers** (chart pack, PDF report, final QA) are excluded from
-  coverage (`tool.coverage.run.omit` in `pyproject.toml`) because their value is
-  the produced artifact, validated end to end by the pipeline run in CI rather
-  than by branch-level unit tests. The dashboard builder is regular tested code.
-- **Cross-representation parity** pins every place a definition exists twice:
-  the reference SQL must reproduce the pandas feature tables (DuckDB), the
-  dashboard's CSS custom properties must equal the design tokens, a Python
-  mirror of the dashboard's KPI math must match on the committed data, and the
-  embedded what-if plan must land on the stress engine's numbers.
-- **Policy shape** is property-tested with Hypothesis: channel classification
-  is total and monotone in both LTV/CAC and payback, and the risk score stays
-  inside the registry's weight bounds for any finite input.
+Chart and PDF renderers are exercised end to end and checked semantically but omitted from percentage coverage because their stable contract is the rendered artifact rather than internal branch structure.
 
-The enforced branch-coverage gate is 90% (currently ~96%).
+## Deployment boundaries
 
-## Quality gates
+Repository code cannot configure infrastructure policy. A production deployment still supplies and governs:
 
-Configured in `pyproject.toml` and enforced in CI (`.github/workflows/`):
-ruff (lint), mypy (typed, with a strict subset — `disallow_untyped_defs`,
-`disallow_any_generics`, `warn_return_any`; matplotlib's untyped call API is
-intentionally not fought), pytest + branch coverage, and `pip-audit`. CodeQL and
-Dependabot run on schedule.
+- secret-manager values and rotation;
+- TLS termination, network policy, and shared gateway rate limiting;
+- PostgreSQL sizing, backups, recovery, and least-privilege roles;
+- log aggregation, alert routing, dashboard SLO monitoring, and incident ownership;
+- privacy retention, deletion, access review, lawful basis, and jurisdiction-specific controls;
+- experiment power, exposure integrity, interference, and business approval.
 
-## Design tokens
-
-`src/design/tokens.py` is the palette's single source of truth. The chart pack
-and the PDF report import it directly (the report's stylesheet,
-`src/governance/assets/report.css`, is `$TOKEN`-templated and substituted at
-build time); the dashboard declares the same values as CSS custom properties in
-its template, and `tests/test_design_tokens.py` pins the two representations
-together. A color change either propagates to every surface or fails CI.
-
-## From synthetic to production
-
-The generator stage is deliberately the only thing that would change against
-real data. The swap path:
-
-1. **Replace `src/data_generation/` with a warehouse extract** producing the
-   same three contracts (`customers.csv`, `transactions.csv`,
-   `marketing_spend.csv` — or their Parquet equivalents). The reference SQL in
-   `sql/` already expresses the two core feature tables in warehouse terms, and
-   a parity test executes it with DuckDB against the pipeline's own outputs.
-2. **Raw validation and profiling run unchanged** — their checks (grain, keys,
-   referential integrity, domains, ranges) are exactly the checks real
-   extracts fail.
-3. **Volume**: the analytical stages are pandas over columnar files and scale
-   comfortably to low tens of millions of rows on one machine; past that, the
-   feature-engineering SQL moves into the warehouse (dbt model per stage
-   contract) and the pipeline consumes the modeled tables. The dashboard
-   already ships a compact columnar payload, so its size grows with the number
-   of *aggregate cells*, not raw rows, once the embed is switched from
-   transaction grain to a month × dimension cube.
-4. **What would need genuinely new work**: multi-touch attribution (CAC here is
-   single-touch by design and says so), incremental loads, and PII handling —
-   none of which change the metric contracts or the publication surfaces.
-
-## Extending the system
-
-- **New analytical question** → add a `compute_*` function in `src/analysis/`,
-  write it to a new `outputs/tables/` CSV, add a chart in `src/visualization/`,
-  and surface it in the dashboard/report. Add a unit test for the new function.
-- **New policy threshold** → add it to the metric registry, update dependent
-  tests and any recommendation guardrails, then rerun `make qa`.
-- **New pipeline stage** → add a module with a `main()`, insert it into the
-  `STEPS` list in `src/run_pipeline.py` at the right point in the dependency order.
-
-## Frontend (dashboard)
-
-The dashboard is a single self-contained HTML file. The template lives in
-`src/dashboard_builder/assets/dashboard.html` (vanilla JS filtering,
-hand-rolled SVG charts, light/dark CSS design system, print stylesheet,
-reduced-motion support); the builder injects a **columnar payload** — parallel
-arrays of integer day offsets, dimension indexes, and customer row indexes —
-which a small `decodePayload()` shim expands back into record objects in the
-browser. That encoding keeps the shipped file roughly a third of the row-wise
-size at identical fidelity. Charts render through a `viewBox` so they scale
-responsively without horizontal overflow on small screens.
-
-The reallocation stress lab embeds the per-channel policy outputs and applies
-the pipeline's own stress formula client-side; its Best / Base / Worst presets
-reproduce the report's stress table, and a parity test pins the embedded plan
-to the scenario engine's numbers.
+These are deployment controls around an implemented application path, not missing analytical components.

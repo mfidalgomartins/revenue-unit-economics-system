@@ -1,0 +1,5 @@
+product_type,estimated_elasticity,tested_price_index_min,tested_price_index_max,recommended_price_index,recommended_price,predicted_weekly_units,predicted_weekly_contribution,predicted_weekly_contribution_uplift,decision_rule
+Add-on,-1.576391,0.9,1.1,1.05,96.6,126.520656,7631.700736,18.389075,maximize contribution within randomized test range
+Core,-1.232601,0.9,1.1,1.05,173.25,191.173396,18742.778205,513.189048,maximize contribution within randomized test range
+Premium,-0.802668,0.9,1.1,1.05,320.25,70.791976,9338.361371,749.727958,maximize contribution within randomized test range
+Services,-0.591813,0.9,1.1,1.05,407.4,45.328563,6409.253025,717.373172,maximize contribution within randomized test range

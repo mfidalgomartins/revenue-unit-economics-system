@@ -21,7 +21,7 @@ base AS (
     CASE WHEN COALESCE(t.transaction_count, 0) > 0
       THEN DATE_DIFF('day', t.first_transaction_date, t.last_transaction_date) + 1
       ELSE 0
-    END AS lifetime_days,
+    END AS transaction_span_days,
     COALESCE(t.total_revenue, 0) AS total_revenue,
     COALESCE(t.total_cost, 0) AS total_cost,
     COALESCE(t.total_revenue, 0) - COALESCE(t.total_cost, 0) AS contribution_margin,
@@ -37,7 +37,7 @@ base AS (
     CASE WHEN COALESCE(t.transaction_count, 0) > 0
       THEN COALESCE(t.total_revenue, 0) / (DATE_DIFF('day', t.first_transaction_date, t.last_transaction_date) + 1)
       ELSE 0
-    END AS revenue_per_day
+    END AS revenue_per_transaction_span_day
   FROM customers c
   LEFT JOIN tx t ON c.customer_id = t.customer_id
 )

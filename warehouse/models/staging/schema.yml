@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: stg_marketing_touchpoints
+    description: Typed, privacy-minimal pre-signup journey events.
+    columns:
+      - name: touchpoint_id
+        data_tests: [not_null, unique]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: touchpoint_date
+        data_tests: [not_null]
+      - name: acquisition_channel
+        data_tests: [not_null]
+      - name: touchpoint_order
+        data_tests: [not_null]
+      - name: is_conversion_touch
+        data_tests: [not_null]
+
+  - name: stg_marketing_experiments
+    description: Typed randomized customer holdout assignments and outcomes.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "experiment_id || '|' || customer_id"
+    columns:
+      - name: experiment_id
+        data_tests: [not_null]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: assignment
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [control, treatment]
+
+  - name: stg_pricing_interventions
+    description: Typed randomized weekly product-region price cells.
+    columns:
+      - name: intervention_id
+        data_tests: [not_null, unique]
+      - name: week_start
+        data_tests: [not_null]
+      - name: assignment
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [price_down_10, control, price_up_10]

@@ -2,6 +2,70 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Explicit synthetic and external pipeline profiles backed by one canonical
+  dependency graph, with production runs unable to invoke the generator.
+- Complete six-table ingestion, content-addressed immutable bundles, serialized
+  atomic activation, manifest verification, and a transactional PostgreSQL raw
+  loader with advisory locking and publication audit history.
+- DuckDB/PostgreSQL API repository backends, query-backed readiness, and a
+  schema-checked analytical-product cache.
+- Week-clustered CR1 elasticity inference, assignment-balance diagnostics, and
+  acquisition-window-aligned CAC for empirical payback.
+- A non-overlapping scheduled-run wrapper, PostgreSQL CI smoke test, and tagged
+  PDF output with semantic structure validation.
+- Canonical raw-data contracts, fail-closed validation, domain and foreign-key
+  checks, stronger final-output mutation tests, parseable PDF validation, and
+  deterministic artifact-drift gates.
+- Empirical 24-month payback evidence with recovered, right-censored, and
+  insufficient-maturity states, including mature zero-transaction customers.
+- Versioned HubSpot, Stripe, and Google Ads adapters with normalized contracts,
+  bounded retries, incremental key merges, and source-version manifests.
+- Tested dbt DuckDB/PostgreSQL warehouse with incremental facts, relationship
+  checks, marts, dashboard exposure, and deterministic lineage publication.
+- Randomized marketing incrementality, descriptive multi-touch attribution,
+  randomized price elasticity, and bounded elasticity-based pricing decisions.
+- Dependency-aware orchestration with SQLite attempt state, retries, stage SLAs,
+  structured alerts, signed HTTPS webhooks, and a deployable UTC schedule.
+- Authenticated FastAPI aggregate service with scoped API keys, Basic dashboard
+  access, privacy suppression, security headers, request correlation, and an
+  API-backed mode for the existing dashboard design.
+
+### Changed
+
+- Alert delivery is isolated per sink, resources close on every outcome, and
+  transport failures cannot mask the persisted terminal pipeline state.
+- Incremental ingestion uses per-table, pre-request boundaries and Stripe paid
+  events so records cannot be skipped by cross-source timing or late payment.
+- Causal API products enforce arm and model-sample privacy thresholds; snapshots
+  suppress full-coverage channel economics for incompatible filtered slices.
+- Stage subprocesses have hard process-group timeouts, and published operational
+  lineage records the active source profile.
+- Causal contribution outcomes may be signed while counts, prices, revenue,
+  costs, and spend retain non-negative contracts.
+- The live dashboard bootstrap carries only governed metadata rather than raw
+  customer and transaction records; the visual implementation is unchanged.
+- Cohort reporting now separates month-0 activation, signup activity,
+  retained-from-month-0 activity, and revenue retention.
+- Seed sensitivity evaluates alternate deterministic draws entirely in memory,
+  leaving canonical raw and processed artifacts untouched.
+- Scenario allocation uses LTV/CAC once as its score, publishes explicit
+  allocation evidence, and enforces nonnegative bounded spend.
+- Dashboard payload serialization escapes script boundaries; keyboard sorting,
+  chart labels, and PDF navigation metadata are now validated.
+- Documentation now covers ingestion, warehouse operation, causal claim
+  boundaries, API deployment, privacy review, SLAs, and incident response.
+
+### Fixed
+
+- Removed the algebraic payback proxy, causal transaction-span language,
+  annualized scenario wording, signed-residual QA defect, dead chart branch, and
+  fail-open raw-validation exit behavior.
+- Updated Pillow to 12.3.0 after the 2026 security advisories affecting 12.2.0.
+
 ## [2.3.1] - 2026-07-11
 
 ### Added
@@ -70,18 +134,16 @@ All notable changes to this project are documented in this file.
   pack, the analytical PDF report, and the GitHub Pages landing now share the
   same Apple palette (warm ink, system green/red/amber) so the README hero,
   report, dashboard, and site read as one product.
-- Accessibility: audited WCAG contrast across the palette and nudged the positive
-  green to `#1a7f37` so KPI delta text clears AA (4.5:1) on white; every used
-  text/background pair now meets AA in both themes. Audited semantics (heading
-  hierarchy, `header`/`main` landmarks, labeled controls, chart text alternatives,
-  skip link) and gave the filter bar a labeled `region` landmark.
+- Accessibility: improved positive KPI contrast and added semantic landmarks,
+  labeled controls, chart alternatives, skip navigation, and reduced-motion
+  support. Full WCAG conformance is not claimed.
 - Dashboard now ships a favicon (inline SVG mark) and Open Graph / Twitter card
   metadata (hero chart as the share image) for a complete published-product feel.
 - Consolidated quality tooling in `pyproject.toml`: ruff, mypy, pytest, and
   branch-coverage configuration.
 - Unit and integration tests for synthetic data generation, the data catalog,
   raw profiling, the analytical section builders, metric-registry edge branches,
-  and every stage `run()` entry point; branch coverage raised to ~96% with an
+  and selected analytical and publication stage `run()` entry points; branch coverage raised to ~96% with an
   enforced 90% gate.
 - Stricter typing: `disallow_untyped_defs`, `disallow_incomplete_defs`,
   `disallow_any_generics`, and `warn_return_any` enabled; all internal helpers

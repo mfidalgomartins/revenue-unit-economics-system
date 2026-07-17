@@ -1,0 +1,73 @@
+version: 2
+
+models:
+  - name: dim_customers
+    description: Governed customer dimension rebuilt from the current source snapshot.
+    columns:
+      - name: customer_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+          - type: primary_key
+        data_tests: [not_null, unique]
+      - name: signup_date
+        data_type: date
+        data_tests: [not_null]
+      - name: segment
+        data_type: varchar
+        data_tests: [not_null]
+      - name: region
+        data_type: varchar
+        data_tests: [not_null]
+      - name: acquisition_channel
+        data_type: varchar
+        data_tests: [not_null]
+
+  - name: fct_transactions
+    description: Incremental transaction fact with a 30-day late-arrival lookback.
+    columns:
+      - name: transaction_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+          - type: primary_key
+        data_tests: [not_null, unique]
+      - name: customer_id
+        data_type: varchar
+        constraints:
+          - type: not_null
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+      - name: transaction_date
+        data_type: date
+        data_tests: [not_null]
+      - name: revenue
+        data_type: double precision
+        data_tests: [not_null]
+      - name: cost
+        data_type: double precision
+        data_tests: [not_null]
+      - name: product_type
+        data_type: varchar
+        data_tests: [not_null]
+
+  - name: fct_marketing_spend
+    description: Incremental daily channel spend fact with late-arrival reprocessing.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "cast(spend_date as varchar) || '|' || acquisition_channel"
+    columns:
+      - name: spend_date
+        data_type: date
+        data_tests: [not_null]
+      - name: acquisition_channel
+        data_type: varchar
+        data_tests: [not_null]
+      - name: spend
+        data_type: double precision
+        data_tests: [not_null]

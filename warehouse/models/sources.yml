@@ -1,0 +1,24 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Governed commercial and intervention inputs after source-contract validation.
+    schema: "{{ env_var('WAREHOUSE_RAW_SCHEMA', 'raw') }}"
+    loader: versioned_source_adapters
+    meta:
+      owner: analytics-engineering
+      contains_personal_data: false
+      external_location: "{{ env_var('RAW_DATA_DIR', '../data/raw') }}/{name}.csv"
+    tables:
+      - name: customers
+        description: Customer master at one row per customer.
+      - name: transactions
+        description: Paid transaction ledger at one row per transaction.
+      - name: marketing_spend
+        description: Daily acquisition spend by governed channel.
+      - name: marketing_touchpoints
+        description: Privacy-minimal pre-signup customer journey events.
+      - name: marketing_experiments
+        description: Randomized customer holdout assignments and outcomes.
+      - name: pricing_interventions
+        description: Randomized weekly product and region price interventions.

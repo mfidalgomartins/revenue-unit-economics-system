@@ -1,0 +1,6 @@
+product_scope,price_elasticity,robust_standard_error,clustered_standard_error,hc1_standard_error,standard_error_method,clusters,residual_dof,condition_number,ci_95_low,ci_95_high,p_value,r_squared,observations,price_variants,identification,valid_range
+All products,-1.054359,0.044198,0.044198,0.041251,CR1 clustered by week_start,105,1621,340.683943,-1.140986,-0.967732,0.0,0.955247,1680,3,randomized_weekly_price_assignment,observed price index 0.90-1.10
+Add-on,-1.576391,0.0746,0.0746,0.074452,CR1 clustered by week_start,105,364,276.938334,-1.722604,-1.430179,0.0,0.869349,420,3,randomized_weekly_price_assignment,observed price index 0.90-1.10
+Core,-1.232601,0.065464,0.065464,0.064626,CR1 clustered by week_start,105,364,350.95126,-1.360907,-1.104294,0.0,0.887148,420,3,randomized_weekly_price_assignment,observed price index 0.90-1.10
+Premium,-0.802668,0.107065,0.107065,0.097615,CR1 clustered by week_start,105,364,463.908302,-1.012512,-0.592824,0.0,0.801807,420,3,randomized_weekly_price_assignment,observed price index 0.90-1.10
+Services,-0.591813,0.099323,0.099323,0.092223,CR1 clustered by week_start,105,364,469.119276,-0.786484,-0.397143,0.0,0.759065,420,3,randomized_weekly_price_assignment,observed price index 0.90-1.10

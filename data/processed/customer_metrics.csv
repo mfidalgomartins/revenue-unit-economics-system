@@ -1,4 +1,4 @@
-customer_id,segment,region,acquisition_channel,first_transaction_date,last_transaction_date,lifetime_days,total_revenue,total_cost,contribution_margin,contribution_margin_pct,transaction_count,avg_revenue_per_transaction,revenue_per_day
+customer_id,segment,region,acquisition_channel,first_transaction_date,last_transaction_date,transaction_span_days,total_revenue,total_cost,contribution_margin,contribution_margin_pct,transaction_count,avg_revenue_per_transaction,revenue_per_transaction_span_day
 C0000015,Startup,LATAM,email,2024-10-21,2025-03-01,132,5568.06,4176.68,1391.38,0.249886,5,1113.61,42.18
 C0000022,Mid-Market,APAC,email,2024-08-04,2025-12-29,513,10963.29,6892.8,4070.49,0.371284,20,548.16,21.37
 C0000049,Mid-Market,APAC,email,2025-06-18,2025-10-05,110,6317.24,4435.59,1881.65,0.29786,4,1579.31,57.43

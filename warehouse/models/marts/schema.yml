@@ -1,0 +1,44 @@
+version: 2
+
+models:
+  - name: mart_monthly_performance
+    description: Monthly revenue, cost, margin, customer activity, and acquisition spend.
+    meta:
+      owner: revenue-analytics
+      sla_hours: 24
+      classification: internal_aggregate
+    columns:
+      - name: metric_month
+        data_tests: [not_null, unique]
+      - name: revenue
+        data_tests: [not_null]
+      - name: contribution_margin
+        data_tests: [not_null]
+
+  - name: mart_channel_unit_economics
+    description: Channel CAC and observed contribution LTV at governed acquisition grain.
+    meta:
+      owner: growth-analytics
+      sla_hours: 24
+      classification: internal_aggregate
+    columns:
+      - name: acquisition_channel
+        data_tests: [not_null, unique]
+      - name: customers_acquired
+        data_tests: [not_null]
+      - name: total_spend
+        data_tests: [not_null]
+
+exposures:
+  - name: growth_quality_dashboard
+    label: Growth Quality Dashboard
+    type: dashboard
+    maturity: high
+    description: Authenticated aggregate decision surface and static portfolio snapshot.
+    url: https://mfidalgomartins.github.io/revenue-unit-economics-system/
+    depends_on:
+      - ref('mart_monthly_performance')
+      - ref('mart_channel_unit_economics')
+    owner:
+      name: Miguel Fidalgo Martins
+      email: mfidalgomartins@gmail.com

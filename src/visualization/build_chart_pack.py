@@ -17,9 +17,9 @@ One chart per analytical question, in the narrative order of the report:
     13 product_margin            margin rate and revenue by product type
     14 revenue_concentration     Lorenz curve of customer revenue
     15 revenue_distribution      distribution of customer lifetime revenue
-    16 revenue_lifetime_corr     revenue against customer lifetime
+    16 revenue_lifetime_corr     revenue against transaction activity span
     17 reallocation_waterfall    contribution bridge of the reallocation policy
-    18 scenario_envelope         best / base / worst case contribution
+    18 scenario_envelope         contribution under three assumption sets
     19 scenario_seed_stability   uplift across deterministic seeds
 
 Palette stays in lock-step with the dashboard: ink for the primary series, a
@@ -40,7 +40,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 # Palette comes from the shared design tokens so the chart pack, dashboard,
-# and PDF report cannot drift apart.
+# and PDF report consume the same Python palette.
 from src.design.tokens import (
     HAIRLINE,
     INK,
@@ -65,7 +65,14 @@ OUT_DIR = PROJECT_ROOT / "outputs" / "charts"
 # Style
 # ---------------------------------------------------------------------------
 
-FONT_STACK = ["SF Pro Display", "SF Pro Text", "Helvetica Neue", "Helvetica", "Arial", "DejaVu Sans"]
+FONT_STACK = [
+    "SF Pro Display",
+    "SF Pro Text",
+    "Helvetica Neue",
+    "Helvetica",
+    "Arial",
+    "DejaVu Sans",
+]
 
 
 def _apply_style() -> None:
@@ -161,8 +168,15 @@ def _footer(fig: Figure, text: str) -> None:
     fig.text(0.045, 0.025, text, ha="left", fontsize=8, color=SUBTLE, style="italic")
 
 
-def _save(fig: Figure, name: str, *, top: float = 0.83, bottom: float = 0.14,
-          left: float = 0.08, right: float = 0.96) -> Path:
+def _save(
+    fig: Figure,
+    name: str,
+    *,
+    top: float = 0.83,
+    bottom: float = 0.14,
+    left: float = 0.08,
+    right: float = 0.96,
+) -> Path:
     out = OUT_DIR / f"{name}.png"
     fig.subplots_adjust(top=top, bottom=bottom, left=left, right=right)
     fig.savefig(out, dpi=144, facecolor="white")
@@ -184,8 +198,13 @@ def chart_growth_quality() -> Path:
     fig, ax = _new_fig(11, 5.8)
 
     ax.plot(df["month"], df["total_revenue"], color=INK, linewidth=1.8, label="Revenue")
-    ax.plot(df["month"], df["contribution_margin"], color=POSITIVE, linewidth=1.8,
-            label="Contribution margin")
+    ax.plot(
+        df["month"],
+        df["contribution_margin"],
+        color=POSITIVE,
+        linewidth=1.8,
+        label="Contribution margin",
+    )
     ax.fill_between(df["month"], df["contribution_margin"], color=POSITIVE, alpha=0.06)
 
     ax.set_ylim(bottom=0)
@@ -193,8 +212,11 @@ def chart_growth_quality() -> Path:
     ax.set_ylabel("USD per month")
     ax.legend(loc="upper left", bbox_to_anchor=(0, 1.0))
 
-    _suptitle(fig, "Is growth converting into margin?",
-              "Monthly revenue and contribution margin, full coverage window.")
+    _suptitle(
+        fig,
+        "Is growth converting into margin?",
+        "Monthly revenue and contribution margin, full coverage window.",
+    )
     _footer(fig, "Source: monthly_revenue_health.csv  ·  synthetic data")
     return _save(fig, "01_growth_quality")
 
@@ -210,16 +232,26 @@ def chart_margin_rate() -> Path:
 
     ax.plot(df["month"], df["contribution_margin_pct"], color=INK, linewidth=1.8)
     ax.axhline(MARGIN_QUALITY_FLOOR, color=POSITIVE, linewidth=1.0, linestyle=(0, (4, 4)))
-    ax.text(0.99, MARGIN_QUALITY_FLOOR + 0.005, f"{MARGIN_QUALITY_FLOOR:.0%} quality floor",
-            transform=ax.get_yaxis_transform(), ha="right", va="bottom",
-            color=POSITIVE, fontsize=9)
+    ax.text(
+        0.99,
+        MARGIN_QUALITY_FLOOR + 0.005,
+        f"{MARGIN_QUALITY_FLOOR:.0%} quality floor",
+        transform=ax.get_yaxis_transform(),
+        ha="right",
+        va="bottom",
+        color=POSITIVE,
+        fontsize=9,
+    )
 
     ax.set_ylim(0.20, 0.40)
     _pct(ax)
     ax.set_ylabel("Contribution margin / revenue")
 
-    _suptitle(fig, "Margin quality across the window",
-              f"Monthly contribution margin rate vs the {MARGIN_QUALITY_FLOOR:.0%} quality floor.")
+    _suptitle(
+        fig,
+        "Margin quality across the window",
+        f"Monthly contribution margin rate vs the {MARGIN_QUALITY_FLOOR:.0%} quality floor.",
+    )
     _footer(fig, "Source: monthly_revenue_health.csv  ·  synthetic data")
     return _save(fig, "02_margin_rate")
 
@@ -240,14 +272,25 @@ def chart_revenue_growth_mom() -> Path:
 
     mean_g = df["revenue_growth_mom"].mean()
     ax.axhline(mean_g, color=MUTED, linewidth=1.0, linestyle=(0, (4, 4)))
-    ax.text(0.99, mean_g + 0.004, f"mean {mean_g:.1%}", transform=ax.get_yaxis_transform(),
-            ha="right", va="bottom", color=MUTED, fontsize=9)
+    ax.text(
+        0.99,
+        mean_g + 0.004,
+        f"mean {mean_g:.1%}",
+        transform=ax.get_yaxis_transform(),
+        ha="right",
+        va="bottom",
+        color=MUTED,
+        fontsize=9,
+    )
 
     _pct(ax)
     ax.set_ylabel("Revenue growth, month on month")
 
-    _suptitle(fig, "How steady is the growth?",
-              "Month-on-month revenue change. Down months are the test of durability.")
+    _suptitle(
+        fig,
+        "How steady is the growth?",
+        "Month-on-month revenue change. Down months are the test of durability.",
+    )
     _footer(fig, "Source: monthly_revenue_health.csv  ·  synthetic data")
     return _save(fig, "03_revenue_growth_mom")
 
@@ -269,7 +312,9 @@ def chart_active_customers_arpu() -> Path:
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
 
     ax2 = ax.twinx()
-    ax2.plot(df["month"], df["arpac"], color=POSITIVE, linewidth=1.8, label="Revenue per active customer")
+    ax2.plot(
+        df["month"], df["arpac"], color=POSITIVE, linewidth=1.8, label="Revenue per active customer"
+    )
     ax2.set_ylabel("Revenue per active customer", color=POSITIVE)
     ax2.tick_params(axis="y", colors=POSITIVE)
     ax2.spines["right"].set_visible(True)
@@ -280,10 +325,15 @@ def chart_active_customers_arpu() -> Path:
     ax2.yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"${x:,.0f}"))
 
     lines = ax.get_lines() + ax2.get_lines()
-    ax.legend(lines, [str(ln.get_label()) for ln in lines], loc="upper left", bbox_to_anchor=(0, 1.0))
+    ax.legend(
+        lines, [str(ln.get_label()) for ln in lines], loc="upper left", bbox_to_anchor=(0, 1.0)
+    )
 
-    _suptitle(fig, "Is the base growing faster than monetization?",
-              "Active customers against revenue per active customer.")
+    _suptitle(
+        fig,
+        "Is the base growing faster than monetization?",
+        "Active customers against revenue per active customer.",
+    )
     _footer(fig, "Source: monthly_revenue_health.csv  ·  synthetic data")
     return _save(fig, "04_active_customers_arpu", right=0.90)
 
@@ -309,21 +359,51 @@ def chart_revenue_decomposition() -> Path:
     running = 0.0
     for i, d in enumerate(deltas):
         ax.bar(i, d, bottom=running, width=0.6, color=POSITIVE if d >= 0 else NEGATIVE)
-        ax.text(i, running + d + total * 0.012, f"+${d/1e6:.1f}M", ha="center", va="bottom",
-                fontsize=10, color=INK, weight=600)
-        ax.text(i, running + d / 2, f"{d/total:.0%}", ha="center", va="center",
-                fontsize=9, color="white", weight=600)
+        sign = "+" if d >= 0 else "−"
+        ax.text(
+            i,
+            running + d + total * 0.012,
+            f"{sign}${abs(d) / 1e6:.1f}M",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+            color=INK,
+            weight=600,
+        )
+        ax.text(
+            i,
+            running + d / 2,
+            f"{d / total:.0%}",
+            ha="center",
+            va="center",
+            fontsize=9,
+            color="white",
+            weight=600,
+        )
         running += d
 
     ax.bar(3, total, width=0.6, color=INK)
-    ax.text(3, total + total * 0.012, f"${total/1e6:.1f}M", ha="center", va="bottom",
-            fontsize=10, color=INK, weight=600)
+    ax.text(
+        3,
+        total + total * 0.012,
+        f"${total / 1e6:.1f}M",
+        ha="center",
+        va="bottom",
+        fontsize=10,
+        color=INK,
+        weight=600,
+    )
 
     # connector lines
     cum = np.cumsum([0, *deltas])
     for i in range(3):
-        ax.plot([i - 0.3, i + 0.3 + 1 - 0.4] if False else [i + 0.3, i + 0.7], [cum[i + 1], cum[i + 1]],
-                color=SUBTLE, linewidth=0.8, linestyle=(0, (3, 3)))
+        ax.plot(
+            [i + 0.3, i + 0.7],
+            [cum[i + 1], cum[i + 1]],
+            color=SUBTLE,
+            linewidth=0.8,
+            linestyle=(0, (3, 3)),
+        )
 
     ax.set_xticks(range(4))
     ax.set_xticklabels(labels)
@@ -331,8 +411,11 @@ def chart_revenue_decomposition() -> Path:
     _money(ax)
     ax.set_ylabel("Revenue change, early vs recent six months")
 
-    _suptitle(fig, "What is actually driving the growth?",
-              "Decomposition of the revenue change into volume, monetization, and mix.")
+    _suptitle(
+        fig,
+        "How the revenue change decomposes",
+        "Directional decomposition into customer volume, monetization, and segment mix.",
+    )
     _footer(fig, "Source: revenue_decomposition_effects.csv  ·  synthetic data")
     return _save(fig, "05_revenue_decomposition")
 
@@ -347,17 +430,38 @@ def chart_cohort_retention() -> Path:
     df = df.loc[df["months_since_cohort"] <= 24].sort_values("months_since_cohort")
     fig, ax = _new_fig(11, 5.2)
 
-    ax.plot(df["months_since_cohort"], df["median_activity_retention"], color=SUBTLE,
-            linewidth=1.6, label="Activity retention")
-    ax.plot(df["months_since_cohort"], df["median_revenue_retention"], color=INK,
-            linewidth=1.9, marker="o", markersize=3.3, markerfacecolor=INK,
-            markeredgecolor="white", markeredgewidth=0.6, label="Revenue retention")
+    ax.plot(
+        df["months_since_cohort"],
+        df["median_retained_from_month_0_rate"],
+        color=SUBTLE,
+        linewidth=1.6,
+        label="Retained from month 0",
+    )
+    ax.plot(
+        df["months_since_cohort"],
+        df["median_revenue_retention"],
+        color=INK,
+        linewidth=1.9,
+        marker="o",
+        markersize=3.3,
+        markerfacecolor=INK,
+        markeredgecolor="white",
+        markeredgewidth=0.6,
+        label="Revenue retention",
+    )
 
     for m in (6, 12):
         if m in df["months_since_cohort"].values:
             y = float(df.loc[df["months_since_cohort"] == m, "median_revenue_retention"].iloc[0])
-            ax.annotate(f"M{m}: {y:.0%}", xy=(m, y), xytext=(8, 9), textcoords="offset points",
-                        fontsize=9, color=INK_2, weight=500)
+            ax.annotate(
+                f"M{m}: {y:.0%}",
+                xy=(m, y),
+                xytext=(8, 9),
+                textcoords="offset points",
+                fontsize=9,
+                color=INK_2,
+                weight=500,
+            )
             ax.scatter([m], [y], s=28, color=NEGATIVE, zorder=3)
 
     ax.set_ylim(0, 1.05)
@@ -367,8 +471,11 @@ def chart_cohort_retention() -> Path:
     ax.set_ylabel("Median retention")
     ax.legend(loc="upper right")
 
-    _suptitle(fig, "How fast do cohorts decay?",
-              "Median activity and revenue retention through month 24.")
+    _suptitle(
+        fig,
+        "How do mature cohorts retain activity and revenue?",
+        "Month-0-indexed activity and revenue retention through month 24.",
+    )
     _footer(fig, "Source: cohort_retention_summary.csv  ·  synthetic data")
     return _save(fig, "06_cohort_retention")
 
@@ -379,14 +486,15 @@ def chart_cohort_retention() -> Path:
 
 
 def chart_cohort_heatmap() -> Path:
-    df = pd.read_csv(PROCESSED_DIR / "cohort_table.csv",
-                     parse_dates=["cohort_month", "activity_month"])
-    df["months_since"] = (
-        (df["activity_month"].dt.year - df["cohort_month"].dt.year) * 12
-        + (df["activity_month"].dt.month - df["cohort_month"].dt.month)
+    df = pd.read_csv(
+        PROCESSED_DIR / "cohort_table.csv", parse_dates=["cohort_month", "activity_month"]
+    )
+    df["months_since"] = (df["activity_month"].dt.year - df["cohort_month"].dt.year) * 12 + (
+        df["activity_month"].dt.month - df["cohort_month"].dt.month
     )
     base = df[df["months_since"] == 0][["cohort_month", "cohort_revenue"]].rename(
-        columns={"cohort_revenue": "base_rev"})
+        columns={"cohort_revenue": "base_rev"}
+    )
     df = df.merge(base, on="cohort_month")
     df["retention"] = df["cohort_revenue"] / df["base_rev"]
 
@@ -398,6 +506,7 @@ def chart_cohort_heatmap() -> Path:
 
     fig, ax = _new_fig(12, 7.0)
     from matplotlib.colors import LinearSegmentedColormap
+
     cmap = LinearSegmentedColormap.from_list("greens", ["#ffffff", POSITIVE_SOFT, POSITIVE])
     data = pivot.values.astype(float)
     im = ax.imshow(np.clip(data, 0, 1.2), aspect="auto", cmap=cmap, vmin=0, vmax=1.0)
@@ -419,8 +528,11 @@ def chart_cohort_heatmap() -> Path:
     cbar.ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1.0, decimals=0))
     cbar.set_label("Revenue retention vs month 0", fontsize=9, color=INK_2)
 
-    _suptitle(fig, "Every cohort tells the same story",
-              "Revenue retention by cohort (rows) and age in months (columns).")
+    _suptitle(
+        fig,
+        "Every cohort tells the same story",
+        "Revenue retention by cohort (rows) and age in months (columns).",
+    )
     _footer(fig, "Source: cohort_table.csv  ·  synthetic data")
     return _save(fig, "07_cohort_heatmap", top=0.86, bottom=0.10, left=0.11, right=0.93)
 
@@ -438,22 +550,51 @@ def chart_channel_economics() -> Path:
     df["_color"] = df["efficiency_status"].map(colors).fillna(MUTED)
     sizes = 80 + (df["total_spend"] / df["total_spend"].max()) * 520
 
-    ax.scatter(df["CAC"], df["average_LTV"], s=sizes, c=df["_color"], edgecolor="white",
-               linewidth=1.2, zorder=3, alpha=0.92)
+    ax.scatter(
+        df["CAC"],
+        df["average_LTV"],
+        s=sizes,
+        c=df["_color"],
+        edgecolor="white",
+        linewidth=1.2,
+        zorder=3,
+        alpha=0.92,
+    )
 
     for _, row in df.iterrows():
-        ax.annotate(row["acquisition_channel"], xy=(row["CAC"], row["average_LTV"]),
-                    xytext=(10, 8), textcoords="offset points", fontsize=9, color=INK_2,
-                    weight=500, bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.5})
+        ax.annotate(
+            row["acquisition_channel"],
+            xy=(row["CAC"], row["average_LTV"]),
+            xytext=(10, 8),
+            textcoords="offset points",
+            fontsize=9,
+            color=INK_2,
+            weight=500,
+            bbox={"facecolor": "white", "edgecolor": "none", "pad": 0.5},
+        )
 
     cac_max = max(df["CAC"].max() * 1.15, 1.0)
     xs = np.linspace(0, cac_max, 100)
     ax.plot(xs, 3 * xs, color=POSITIVE, linewidth=1.0, linestyle=(0, (4, 4)))
     ax.plot(xs, xs, color=NEGATIVE, linewidth=1.0, linestyle=(0, (4, 4)))
-    ax.text(cac_max * 0.98, 3 * cac_max * 0.98, "LTV / CAC = 3", ha="right", va="bottom",
-            color=POSITIVE, fontsize=9)
-    ax.text(cac_max * 0.98, cac_max * 0.98, "LTV / CAC = 1", ha="right", va="bottom",
-            color=NEGATIVE, fontsize=9)
+    ax.text(
+        cac_max * 0.98,
+        3 * cac_max * 0.98,
+        "LTV / CAC = 3",
+        ha="right",
+        va="bottom",
+        color=POSITIVE,
+        fontsize=9,
+    )
+    ax.text(
+        cac_max * 0.98,
+        cac_max * 0.98,
+        "LTV / CAC = 1",
+        ha="right",
+        va="bottom",
+        color=NEGATIVE,
+        fontsize=9,
+    )
 
     ax.set_xlim(0, cac_max)
     ax.set_ylim(0, max(df["average_LTV"].max() * 1.15, 1.0))
@@ -462,8 +603,11 @@ def chart_channel_economics() -> Path:
     ax.set_xlabel("Customer acquisition cost (CAC)")
     ax.set_ylabel("Average LTV per acquired customer")
 
-    _suptitle(fig, "Which acquisition channels deserve budget?",
-              "Channel LTV against CAC. Bubble size is total spend; lines mark 1x and 3x.")
+    _suptitle(
+        fig,
+        "Which acquisition channels deserve budget?",
+        "Channel LTV against CAC. Bubble size is total spend; lines mark 1x and 3x.",
+    )
     _footer(fig, "Source: unit_economics_channel_diagnostics.csv  ·  synthetic data")
     return _save(fig, "08_channel_economics")
 
@@ -497,8 +641,11 @@ def chart_channel_ltv_cac_ranking() -> Path:
     ax.set_xlabel("LTV to CAC ratio")
     ax.grid(axis="y", visible=False)
 
-    _suptitle(fig, "The efficiency gap is an order of magnitude",
-              "LTV/CAC ranked across channels against the 1x and 3x reference lines.")
+    _suptitle(
+        fig,
+        "The efficiency gap is an order of magnitude",
+        "LTV/CAC ranked across channels against the 1x and 3x reference lines.",
+    )
     _footer(fig, "Source: unit_economics_channel_diagnostics.csv  ·  synthetic data")
     return _save(fig, "09_channel_ltv_cac_ranking", left=0.14)
 
@@ -520,8 +667,7 @@ def chart_channel_allocation_gap() -> Path:
     y = np.arange(len(df))
     h = 0.36
     ax.barh(y + h / 2, df["spend_share"], height=h, color=MUTED, label="Share of spend")
-    ax.barh(y - h / 2, df["contrib_share"], height=h, color=POSITIVE,
-            label="Share of contribution")
+    ax.barh(y - h / 2, df["contrib_share"], height=h, color=POSITIVE, label="Share of contribution")
 
     ax.set_yticks(y)
     ax.set_yticklabels(df["acquisition_channel"])
@@ -532,10 +678,15 @@ def chart_channel_allocation_gap() -> Path:
 
     for yi, (s, c) in enumerate(zip(df["spend_share"], df["contrib_share"])):
         ax.text(s + 0.005, yi + h / 2, f"{s:.0%}", va="center", fontsize=8, color=MUTED)
-        ax.text(c + 0.005, yi - h / 2, f"{c:.0%}", va="center", fontsize=8, color=POSITIVE, weight=600)
+        ax.text(
+            c + 0.005, yi - h / 2, f"{c:.0%}", va="center", fontsize=8, color=POSITIVE, weight=600
+        )
 
-    _suptitle(fig, "Spend and contribution are pointed in opposite directions",
-              "Each channel's share of acquisition spend against its share of contribution margin.")
+    _suptitle(
+        fig,
+        "Spend and contribution are pointed in opposite directions",
+        "Each channel's share of acquisition spend against its share of contribution margin.",
+    )
     _footer(fig, "Source: unit_economics_channel_diagnostics.csv  ·  synthetic data")
     return _save(fig, "10_channel_allocation_gap", left=0.14)
 
@@ -552,35 +703,67 @@ def chart_segment_profitability() -> Path:
     df["dimension_value"] = pd.Categorical(df["dimension_value"], categories=order, ordered=True)
     df = df.sort_values("dimension_value").reset_index(drop=True)
 
-    fig, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(11, 5.4),
-                                            gridspec_kw={"wspace": 0.32})
+    fig, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(11, 5.4), gridspec_kw={"wspace": 0.32})
 
-    bars = ax_left.bar(df["dimension_value"].astype(str), df["contribution_margin"],
-                       color=INK, width=0.55)
+    bars = ax_left.bar(
+        df["dimension_value"].astype(str), df["contribution_margin"], color=INK, width=0.55
+    )
     _money(ax_left)
     ax_left.set_ylabel("Contribution margin (USD)")
     ax_left.set_title("Margin dollars by segment", loc="left", pad=10, fontsize=11, fontweight=600)
     for bar, value in zip(bars, df["contribution_margin"]):
-        ax_left.text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
-                     f"${value / 1e6:.1f}M", ha="center", va="bottom", fontsize=9,
-                     color=INK_2, weight=500)
+        ax_left.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height(),
+            f"${value / 1e6:.1f}M",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            color=INK_2,
+            weight=500,
+        )
 
-    colors = [POSITIVE if v >= MARGIN_QUALITY_FLOOR else (WARNING if v >= 0.20 else NEGATIVE)
-              for v in df["margin_pct"]]
-    bars = ax_right.bar(df["dimension_value"].astype(str), df["margin_pct"], color=colors, width=0.55)
+    colors = [
+        POSITIVE if v >= MARGIN_QUALITY_FLOOR else (WARNING if v >= 0.20 else NEGATIVE)
+        for v in df["margin_pct"]
+    ]
+    bars = ax_right.bar(
+        df["dimension_value"].astype(str), df["margin_pct"], color=colors, width=0.55
+    )
     ax_right.axhline(MARGIN_QUALITY_FLOOR, color=POSITIVE, linewidth=1.0, linestyle=(0, (4, 4)))
     ax_right.set_ylim(0, max(df["margin_pct"].max() * 1.2, 0.4))
     _pct(ax_right)
     ax_right.set_ylabel("Margin rate")
     ax_right.set_title("Margin rate by segment", loc="left", pad=10, fontsize=11, fontweight=600)
     for bar, value in zip(bars, df["margin_pct"]):
-        ax_right.text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
-                      f"{value:.0%}", ha="center", va="bottom", fontsize=9, color=INK_2, weight=500)
+        ax_right.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height(),
+            f"{value:.0%}",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            color=INK_2,
+            weight=500,
+        )
 
-    fig.text(0.045, 0.945, "Where does margin concentrate?", ha="left", fontsize=15,
-             fontweight=600, color=INK)
-    fig.text(0.045, 0.895, "Contribution margin dollars and margin rate by customer segment.",
-             ha="left", fontsize=10, color=MUTED)
+    fig.text(
+        0.045,
+        0.945,
+        "Where does margin concentrate?",
+        ha="left",
+        fontsize=15,
+        fontweight=600,
+        color=INK,
+    )
+    fig.text(
+        0.045,
+        0.895,
+        "Contribution margin dollars and margin rate by customer segment.",
+        ha="left",
+        fontsize=10,
+        color=MUTED,
+    )
     _footer(fig, "Source: segment_profitability.csv  ·  synthetic data")
 
     fig.subplots_adjust(top=0.81, bottom=0.14, left=0.07, right=0.97)
@@ -608,15 +791,24 @@ def chart_region_profitability() -> Path:
     ax.set_xlabel("Contribution margin (USD)")
     ax.grid(axis="y", visible=False)
 
-    for yi, (cm, mp, share) in enumerate(zip(df["contribution_margin"], df["margin_pct"],
-                                             df["revenue_share"])):
-        ax.text(cm + df["contribution_margin"].max() * 0.01, yi,
-                f"${cm/1e6:.1f}M   ·   {mp:.1%} margin   ·   {share:.0%} of revenue",
-                va="center", fontsize=9, color=INK_2)
+    for yi, (cm, mp, share) in enumerate(
+        zip(df["contribution_margin"], df["margin_pct"], df["revenue_share"])
+    ):
+        ax.text(
+            cm + df["contribution_margin"].max() * 0.01,
+            yi,
+            f"${cm / 1e6:.1f}M   ·   {mp:.1%} margin   ·   {share:.0%} of revenue",
+            va="center",
+            fontsize=9,
+            color=INK_2,
+        )
 
     ax.set_xlim(0, df["contribution_margin"].max() * 1.45)
-    _suptitle(fig, "Geography is not where the margin problem lives",
-              "Contribution margin by region, with margin rate and revenue share.")
+    _suptitle(
+        fig,
+        "Geography is not where the margin problem lives",
+        "Contribution margin by region, with margin rate and revenue share.",
+    )
     _footer(fig, "Source: region_profitability.csv  ·  synthetic data")
     return _save(fig, "12_region_profitability", left=0.16)
 
@@ -628,28 +820,42 @@ def chart_region_profitability() -> Path:
 
 def chart_product_margin() -> Path:
     df = _read("product_profitability.csv").sort_values("margin_pct", ascending=True)
-    colors = [POSITIVE if v >= MARGIN_QUALITY_FLOOR else (WARNING if v >= 0.20 else NEGATIVE)
-              for v in df["margin_pct"]]
+    colors = [
+        POSITIVE if v >= MARGIN_QUALITY_FLOOR else (WARNING if v >= 0.20 else NEGATIVE)
+        for v in df["margin_pct"]
+    ]
 
     fig, ax = _new_fig(11, 5.4)
     y = np.arange(len(df))
     ax.barh(y, df["margin_pct"], color=colors, height=0.6)
     ax.axvline(MARGIN_QUALITY_FLOOR, color=POSITIVE, linewidth=1.0, linestyle=(0, (4, 4)))
-    ax.text(MARGIN_QUALITY_FLOOR, len(df) - 0.35, "30% floor", color=POSITIVE, fontsize=9, ha="center")
+    ax.text(
+        MARGIN_QUALITY_FLOOR, len(df) - 0.35, "30% floor", color=POSITIVE, fontsize=9, ha="center"
+    )
 
     ax.set_yticks(y)
     ax.set_yticklabels(df["dimension_value"])
     _pct(ax, axis="x")
     ax.set_xlabel("Margin rate")
     ax.grid(axis="y", visible=False)
-    for yi, (mp, rev, share) in enumerate(zip(df["margin_pct"], df["total_revenue"],
-                                              df["revenue_share"])):
-        ax.text(mp + 0.008, yi, f"{mp:.1%}   ·   ${rev/1e6:.1f}M ({share:.0%})",
-                va="center", fontsize=9, color=INK_2)
+    for yi, (mp, rev, share) in enumerate(
+        zip(df["margin_pct"], df["total_revenue"], df["revenue_share"])
+    ):
+        ax.text(
+            mp + 0.008,
+            yi,
+            f"{mp:.1%}   ·   ${rev / 1e6:.1f}M ({share:.0%})",
+            va="center",
+            fontsize=9,
+            color=INK_2,
+        )
 
     ax.set_xlim(0, df["margin_pct"].max() * 1.5)
-    _suptitle(fig, "Services is the low-margin growth pocket",
-              "Margin rate by product type, with revenue and revenue share.")
+    _suptitle(
+        fig,
+        "Services is the low-margin growth pocket",
+        "Margin rate by product type, with revenue and revenue share.",
+    )
     _footer(fig, "Source: product_profitability.csv  ·  synthetic data")
     return _save(fig, "13_product_margin", left=0.14)
 
@@ -675,8 +881,9 @@ def chart_revenue_concentration() -> Path:
     top20 = cum_desc[int(n * 0.2) - 1]
 
     fig, ax = _new_fig(11, 5.8)
-    ax.plot([0, 1], [0, 1], color=SUBTLE, linewidth=1.0, linestyle=(0, (4, 4)),
-            label="Perfect equality")
+    ax.plot(
+        [0, 1], [0, 1], color=SUBTLE, linewidth=1.0, linestyle=(0, (4, 4)), label="Perfect equality"
+    )
     ax.plot(x, cum, color=INK, linewidth=2.0, label="Observed")
     ax.fill_between(x, cum, x, color=POSITIVE, alpha=0.06)
 
@@ -688,14 +895,22 @@ def chart_revenue_concentration() -> Path:
     ax.set_ylabel("Cumulative share of revenue")
     ax.legend(loc="upper left", bbox_to_anchor=(0.02, 0.99))
 
-    ax.text(0.30, 0.97,
-            f"Gini {gini:.2f}\nTop 10% of customers = {top10:.0%} of revenue\n"
-            f"Top 20% = {top20:.0%}",
-            transform=ax.transAxes, fontsize=9.5, color=INK_2, va="top",
-            bbox={"facecolor": SURFACE_2, "edgecolor": HAIRLINE, "pad": 6})
+    ax.text(
+        0.30,
+        0.97,
+        f"Gini {gini:.2f}\nTop 10% of customers = {top10:.0%} of revenue\nTop 20% = {top20:.0%}",
+        transform=ax.transAxes,
+        fontsize=9.5,
+        color=INK_2,
+        va="top",
+        bbox={"facecolor": SURFACE_2, "edgecolor": HAIRLINE, "pad": 6},
+    )
 
-    _suptitle(fig, "Revenue is highly concentrated",
-              "Lorenz curve of lifetime revenue across all 9,000 customers.")
+    _suptitle(
+        fig,
+        "Revenue is highly concentrated",
+        "Lorenz curve of lifetime revenue across all 9,000 customers.",
+    )
     _footer(fig, "Source: customer_metrics.csv  ·  synthetic data")
     return _save(fig, "14_revenue_concentration")
 
@@ -719,56 +934,100 @@ def chart_revenue_distribution() -> Path:
     mean = np.mean(rev)
     ax.axvline(median, color=POSITIVE, linewidth=1.2, linestyle=(0, (4, 4)))
     ax.axvline(mean, color=NEGATIVE, linewidth=1.2, linestyle=(0, (4, 4)))
-    ax.text(median, ax.get_ylim()[1] * 0.92, f" median ${median/1e3:.1f}K", color=POSITIVE,
-            fontsize=9, ha="left", va="top")
-    ax.text(mean, ax.get_ylim()[1] * 0.80, f" mean ${mean/1e3:.1f}K", color=NEGATIVE,
-            fontsize=9, ha="left", va="top")
+    ax.text(
+        median,
+        ax.get_ylim()[1] * 0.92,
+        f" median ${median / 1e3:.1f}K",
+        color=POSITIVE,
+        fontsize=9,
+        ha="left",
+        va="top",
+    )
+    ax.text(
+        mean,
+        ax.get_ylim()[1] * 0.80,
+        f" mean ${mean / 1e3:.1f}K",
+        color=NEGATIVE,
+        fontsize=9,
+        ha="left",
+        va="top",
+    )
 
-    ax.xaxis.set_major_formatter(mticker.FuncFormatter(
-        lambda x, _: f"${x/1e3:.0f}K" if x >= 1e3 else f"${x:.0f}"))
+    ax.xaxis.set_major_formatter(
+        mticker.FuncFormatter(lambda x, _: f"${x / 1e3:.0f}K" if x >= 1e3 else f"${x:.0f}")
+    )
     ax.set_xlabel("Lifetime revenue per customer (log scale)")
     ax.set_ylabel("Number of customers")
 
-    _suptitle(fig, "A long right tail of high-value customers",
-              "Distribution of lifetime revenue per customer. Mean sits far above median.")
+    _suptitle(
+        fig,
+        "A long right tail of high-value customers",
+        "Distribution of lifetime revenue per customer. Mean sits far above median.",
+    )
     _footer(fig, "Source: customer_metrics.csv  ·  synthetic data")
     return _save(fig, "15_revenue_distribution")
 
 
 # ---------------------------------------------------------------------------
-# 16 — Revenue vs lifetime correlation
+# 16 — Revenue vs transaction activity span
 # ---------------------------------------------------------------------------
 
 
 def chart_revenue_lifetime_corr() -> Path:
     cust = pd.read_csv(PROCESSED_DIR / "customer_metrics.csv")
     d = cust[cust["total_revenue"] > 0].copy()
-    r = d["lifetime_days"].corr(d["total_revenue"])
+    r = d["transaction_span_days"].corr(d["total_revenue"])
     sample = d.sample(min(2500, len(d)), random_state=42)
 
     fig, ax = _new_fig(11, 5.8)
-    ax.scatter(sample["lifetime_days"], sample["total_revenue"], s=10, color=INK, alpha=0.18,
-               edgecolor="none")
+    ax.scatter(
+        sample["transaction_span_days"],
+        sample["total_revenue"],
+        s=10,
+        color=INK,
+        alpha=0.18,
+        edgecolor="none",
+    )
 
     # binned median trend
-    bins = np.linspace(0, d["lifetime_days"].max(), 16)
-    d["_bin"] = pd.cut(d["lifetime_days"], bins)
-    trend = d.groupby("_bin", observed=True).agg(
-        x=("lifetime_days", "median"), y=("total_revenue", "median")).dropna()
-    ax.plot(trend["x"], trend["y"], color=POSITIVE, linewidth=2.0, label="Median revenue by tenure")
+    bins = np.linspace(0, d["transaction_span_days"].max(), 16)
+    d["_bin"] = pd.cut(d["transaction_span_days"], bins)
+    trend = (
+        d.groupby("_bin", observed=True)
+        .agg(x=("transaction_span_days", "median"), y=("total_revenue", "median"))
+        .dropna()
+    )
+    ax.plot(
+        trend["x"],
+        trend["y"],
+        color=POSITIVE,
+        linewidth=2.0,
+        label="Median revenue by activity span",
+    )
 
     ax.set_yscale("log")
-    ax.yaxis.set_major_formatter(mticker.FuncFormatter(
-        lambda x, _: f"${x/1e3:.0f}K" if x >= 1e3 else f"${x:.0f}"))
-    ax.set_xlabel("Customer lifetime (days)")
-    ax.set_ylabel("Lifetime revenue (log scale)")
+    ax.yaxis.set_major_formatter(
+        mticker.FuncFormatter(lambda x, _: f"${x / 1e3:.0f}K" if x >= 1e3 else f"${x:.0f}")
+    )
+    ax.set_xlabel("Observed transaction activity span (days)")
+    ax.set_ylabel("Observed customer revenue (log scale)")
     ax.legend(loc="lower right")
-    ax.text(0.02, 0.95, f"Pearson r = {r:.2f}", transform=ax.transAxes, fontsize=10,
-            color=INK_2, va="top",
-            bbox={"facecolor": SURFACE_2, "edgecolor": HAIRLINE, "pad": 6})
+    ax.text(
+        0.02,
+        0.95,
+        f"Pearson r = {r:.2f}",
+        transform=ax.transAxes,
+        fontsize=10,
+        color=INK_2,
+        va="top",
+        bbox={"facecolor": SURFACE_2, "edgecolor": HAIRLINE, "pad": 6},
+    )
 
-    _suptitle(fig, "Tenure drives revenue, which is why decay is costly",
-              "Lifetime revenue against customer tenure, with the median trend.")
+    _suptitle(
+        fig,
+        "Revenue and transaction activity span move together",
+        "Observed association; transaction span is not customer tenure or a causal estimate.",
+    )
     _footer(fig, "Source: customer_metrics.csv  ·  synthetic data")
     return _save(fig, "16_revenue_lifetime_corr")
 
@@ -786,14 +1045,23 @@ def chart_reallocation_waterfall() -> Path:
 
     plan = plan.sort_values("contribution_change_est", ascending=False)
     moves = plan[plan["contribution_change_est"].abs() > 1][
-        ["acquisition_channel", "contribution_change_est"]].values.tolist()
+        ["acquisition_channel", "contribution_change_est"]
+    ].values.tolist()
 
     labels = ["Baseline"] + [m[0] for m in moves] + ["Scenario"]
     fig, ax = _new_fig(12, 5.8)
 
     ax.bar(0, baseline, width=0.6, color=MUTED)
-    ax.text(0, baseline + scenario * 0.012, f"${baseline/1e6:.1f}M", ha="center", va="bottom",
-            fontsize=9, color=INK, weight=600)
+    ax.text(
+        0,
+        baseline + scenario * 0.012,
+        f"${baseline / 1e6:.1f}M",
+        ha="center",
+        va="bottom",
+        fontsize=9,
+        color=INK,
+        weight=600,
+    )
 
     running = baseline
     for i, (_name, delta) in enumerate(moves, start=1):
@@ -801,26 +1069,52 @@ def chart_reallocation_waterfall() -> Path:
         bottom = running if delta >= 0 else running + delta
         ax.bar(i, abs(delta), bottom=bottom, width=0.6, color=color)
         sign = "+" if delta >= 0 else "−"
-        ax.text(i, max(running, running + delta) + scenario * 0.012,
-                f"{sign}${abs(delta)/1e6:.1f}M", ha="center", va="bottom", fontsize=8.5,
-                color=color, weight=600)
-        ax.plot([i - 1 + 0.3, i + 0.3], [running, running], color=SUBTLE, linewidth=0.8,
-                linestyle=(0, (3, 3)))
+        ax.text(
+            i,
+            max(running, running + delta) + scenario * 0.012,
+            f"{sign}${abs(delta) / 1e6:.1f}M",
+            ha="center",
+            va="bottom",
+            fontsize=8.5,
+            color=color,
+            weight=600,
+        )
+        ax.plot(
+            [i - 1 + 0.3, i + 0.3],
+            [running, running],
+            color=SUBTLE,
+            linewidth=0.8,
+            linestyle=(0, (3, 3)),
+        )
         running += delta
 
     ax.bar(len(moves) + 1, scenario, width=0.6, color=INK)
-    ax.text(len(moves) + 1, scenario + scenario * 0.012, f"${scenario/1e6:.1f}M", ha="center",
-            va="bottom", fontsize=9, color=INK, weight=600)
+    ax.text(
+        len(moves) + 1,
+        scenario + scenario * 0.012,
+        f"${scenario / 1e6:.1f}M",
+        ha="center",
+        va="bottom",
+        fontsize=9,
+        color=INK,
+        weight=600,
+    )
 
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(labels, fontsize=9)
     ax.set_ylim(0, scenario * 1.15)
     _money(ax)
-    ax.set_ylabel("Estimated annual contribution")
+    ax.set_ylabel("Modeled observed-window contribution")
 
-    _suptitle(fig, "How the reallocation builds the uplift",
-              "Contribution bridge from baseline to the reallocation scenario, by channel move.")
-    _footer(fig, "Source: scenario_reallocation_plan.csv, scenario_outcomes_summary.csv  ·  synthetic data")
+    _suptitle(
+        fig,
+        "How the reallocation builds the uplift",
+        "Contribution bridge from baseline to the reallocation scenario, by channel move.",
+    )
+    _footer(
+        fig,
+        "Source: scenario_reallocation_plan.csv, scenario_outcomes_summary.csv  ·  synthetic data",
+    )
     return _save(fig, "17_reallocation_waterfall")
 
 
@@ -835,10 +1129,13 @@ def chart_scenario_envelope() -> Path:
     baseline_value = float(baseline["baseline_contribution_est"].iloc[0])
 
     stress["scenario_name"] = pd.Categorical(
-        stress["scenario_name"], categories=["worst_case", "base_case", "best_case"], ordered=True)
+        stress["scenario_name"], categories=["worst_case", "base_case", "best_case"], ordered=True
+    )
     stress = stress.sort_values("scenario_name").reset_index(drop=True)
 
-    labels = ["Baseline"] + [s.replace("_", " ").title() for s in stress["scenario_name"].astype(str)]
+    labels = ["Baseline"] + [
+        s.replace("_", " ").title() for s in stress["scenario_name"].astype(str)
+    ]
     values = [baseline_value, *stress["scenario_contribution_est"].tolist()]
     colors = [MUTED, NEGATIVE, INK, POSITIVE]
 
@@ -848,21 +1145,42 @@ def chart_scenario_envelope() -> Path:
 
     for bar, value in zip(bars, values):
         delta = value - baseline_value
-        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f"${value / 1e6:.1f}M",
-                ha="center", va="bottom", fontsize=10, color=INK, weight=600)
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height(),
+            f"${value / 1e6:.1f}M",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+            color=INK,
+            weight=600,
+        )
         if delta != 0:
             sign = "+" if delta > 0 else "−"
-            ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() * 0.5,
-                    f"{sign}${abs(delta) / 1e6:.1f}M", ha="center", va="center", fontsize=10,
-                    color="white", weight=600)
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() * 0.5,
+                f"{sign}${abs(delta) / 1e6:.1f}M",
+                ha="center",
+                va="center",
+                fontsize=10,
+                color="white",
+                weight=600,
+            )
 
     ax.set_ylim(0, max(values) * 1.18)
     _money(ax)
     ax.set_ylabel("Contribution margin (USD)")
 
-    _suptitle(fig, "Scenario envelope around the reallocation policy",
-              "Contribution under the reallocation, stress-tested by CAC and LTV elasticity.")
-    _footer(fig, "Source: scenario_outcomes_summary.csv, scenario_stress_test_summary.csv  ·  synthetic data")
+    _suptitle(
+        fig,
+        "Modeled contribution under three assumption sets",
+        "Illustrative CAC and LTV sensitivities around the reallocation policy.",
+    )
+    _footer(
+        fig,
+        "Source: scenario_outcomes_summary.csv, scenario_stress_test_summary.csv  ·  synthetic data",
+    )
     return _save(fig, "18_scenario_envelope")
 
 
@@ -883,11 +1201,18 @@ def chart_scenario_seed_stability() -> Path:
     ax.axhline(mean, color=INK, linewidth=1.1, linestyle=(0, (4, 4)))
     ax.axhspan(mean - std, mean + std, color=POSITIVE, alpha=0.06)
 
-    ax.text(-0.45, mean, f"mean ${mean/1e6:.2f}M", color=INK, fontsize=9,
-            va="bottom", ha="left")
+    ax.text(-0.45, mean, f"mean ${mean / 1e6:.2f}M", color=INK, fontsize=9, va="bottom", ha="left")
     for xi, v in zip(x, seed["estimated_contribution_uplift"]):
-        ax.text(float(xi), v + mean * 0.01, f"${v/1e6:.2f}M", ha="center", va="bottom", fontsize=9,
-                color=INK_2, weight=500)
+        ax.text(
+            float(xi),
+            v + mean * 0.01,
+            f"${v / 1e6:.2f}M",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+            color=INK_2,
+            weight=500,
+        )
 
     ax.set_xticks(x)
     ax.set_xticklabels([f"seed {s}" for s in seed["seed"]])
@@ -895,12 +1220,22 @@ def chart_scenario_seed_stability() -> Path:
     _money(ax)
     ax.set_ylabel("Estimated contribution uplift")
     cv = std / mean
-    ax.text(0.02, 0.95, f"Coefficient of variation {cv:.1%}\nPositive in {len(seed)}/{len(seed)} seeds",
-            transform=ax.transAxes, fontsize=9.5, color=INK_2, va="top",
-            bbox={"facecolor": SURFACE_2, "edgecolor": HAIRLINE, "pad": 6})
+    ax.text(
+        0.02,
+        0.95,
+        f"Coefficient of variation {cv:.1%}\nPositive in {len(seed)}/{len(seed)} seeds",
+        transform=ax.transAxes,
+        fontsize=9.5,
+        color=INK_2,
+        va="top",
+        bbox={"facecolor": SURFACE_2, "edgecolor": HAIRLINE, "pad": 6},
+    )
 
-    _suptitle(fig, "The uplift is a property of the policy, not the draw",
-              "Estimated contribution uplift across five deterministic seeds.")
+    _suptitle(
+        fig,
+        "Modeled uplift is stable across the sampled seeds",
+        "Five deterministic draws from the same synthetic data-generating process.",
+    )
     _footer(fig, "Source: scenario_seed_sensitivity.csv  ·  synthetic data")
     return _save(fig, "19_scenario_seed_stability")
 
@@ -936,7 +1271,7 @@ def write_chart_index(paths: list[Path]) -> None:
     lines = [
         "# Analytical Chart Pack",
         "",
-        "Nineteen publication-ready charts generated by `src/visualization/build_chart_pack.py`.",
+        "Nineteen analytical charts generated by `src/visualization/build_chart_pack.py`.",
         "",
     ]
     for path, (_, question) in zip(paths, CHART_METADATA, strict=True):
