@@ -5,17 +5,20 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-000000.svg?style=flat-square)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776ab.svg?style=flat-square)](https://www.python.org/)
 
+## Executive summary
+
 **One question drives the whole system: is growth sustainable, or just expensive?**
 
 Top-line revenue growth can hide weak acquisition efficiency, low activation, declining retained activity, or margin erosion. The system combines channel LTV/CAC and empirical payback, cohort activation and retention, randomized marketing lift, observed price elasticity, descriptive multi-touch attribution, and bounded decision scenarios. It publishes tested dbt marts, an interactive dashboard, an authenticated aggregate API, a chart pack, and an analytical PDF.
 
 > **Synthetic case study.** All analytical values and tables derive from a fixed synthetic seed. The results do not describe a real company or forecast a real market.
 
-**→ [Open the live dashboard](https://mfidalgomartins.github.io/revenue-unit-economics-system/)**  
-**→ [Read the full report (PDF)](https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/reports/revenue_unit_economics_report.pdf)**  
-Light and dark mode. No login or install required. Works on mobile.
-
 **Case result.** Paid search and social ads absorb 68% of acquisition spend while both return less than 1× CAC. Under the case assumptions, a budget-neutral reallocation increases modeled contribution by $7.9M (48%), with a $2.2M downside-case uplift. These are observed-window scenario results, not annual forecasts.
+
+- **Revenue analyzed:** $54.6M across 9,000 customers and 69,950 transactions, three years of history
+- **Margin position:** $16.6M contribution margin (30.3%), tracked monthly against a margin-rate floor
+- **Widest efficiency gap:** organic (20.33× LTV/CAC) vs. social ads (0.43×, unrecovered past 24 months)
+- **Decision layer:** every headline number traces to a governed metric definition, a passing QA gate (52/52 checks), and a reproducible pipeline run
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/dashboard-dark.jpg">
@@ -23,6 +26,38 @@ Light and dark mode. No login or install required. Works on mobile.
 </picture>
 
 ---
+
+## Dashboard
+
+**The primary interactive analytics experience.** A single-page, dependency-free dashboard (vanilla JS/SVG, no framework) that reads the same governed metric definitions as the PDF and the pandas/SQL analysis — filters and stress-test the case live, or serve it authenticated against a live warehouse without changing the visual surface.
+
+**→ [Open the live dashboard](https://mfidalgomartins.github.io/revenue-unit-economics-system/)**
+
+- **Filterable by channel, product, region, segment, and date range**, recomputing every KPI, chart, and the decision verdict in place
+- **Reallocation stress lab** — CAC/LTV response sliders with Best / Base / Worst presets, reproducing the report's stress table live in the browser
+- **Decision layer** surfaces a single verdict (sustainable / at-risk / expensive growth) backed by the same thresholds as `src/governance/metric_registry.py`, not a separate UI-only judgment
+- **Two publication modes, one surface:** a self-contained static snapshot for GitHub Pages, or FastAPI-served privacy-thresholded live aggregates — same HTML/CSS/JS either way
+- Light/dark theme, keyboard-navigable sections, reduced-motion support, verified on mobile — no login or install required
+
+## Report
+
+**The primary executive decision-support deliverable.** A tagged, navigable PDF built from the same pipeline outputs as the dashboard — meant to be read top to bottom by someone deciding where to move budget, not just skimmed.
+
+**→ [Read the full report (PDF)](https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/reports/revenue_unit_economics_report.pdf)**
+
+| Section | Covers |
+|---|---|
+| 1. Executive summary | Headline result and the decision it supports |
+| 2. Context and objectives | What question the case answers and why it matters |
+| 3. Data and methodology | Case scope, sample sizes, identification design |
+| 4. Analytical framework | How each metric in [Metric contracts](#metric-contracts) is computed |
+| 5. Findings | Channel economics, cohorts, causal lift, elasticity, attribution |
+| 6. Risks, limitations, and caveats | Where the estimates should and shouldn't be trusted |
+| 7. Recommendations and action priorities | The reallocation case, ranked |
+| 8. Decision controls and open questions | What a decision-maker still needs to confirm |
+| 9. Appendix | Supporting detail and evidence tables |
+
+34 pages, inline charts, semantic PDF structure validated in CI. A companion machine-readable summary — [`outputs/reports/decision_brief.md`](outputs/reports/decision_brief.md) — carries the same headline numbers for tooling that can't parse a PDF, and [`outputs/reports/qa_report.md`](outputs/reports/qa_report.md) publishes the 52-check analytical consistency gate the numbers had to pass first.
 
 ## What it diagnoses
 
@@ -96,17 +131,23 @@ The fixed baseline seed generates 9,000 customers, 69,950 transactions, 22,465 p
 
 ## Pipeline
 
-```
-synthetic generation or complete six-table source ingestion → atomic publication →
-contract validation →
-incremental dbt warehouse → features + causal measurement →
-analysis + scenarios → charts + static/API-backed dashboard →
-reports + lineage + SLAs → QA gate
+```mermaid
+flowchart LR
+    S["Synthetic generator<br/>or six-table source ingestion"] --> Q["Fail-closed<br/>contract validation"]
+    Q --> W["Incremental dbt warehouse<br/>DuckDB / Postgres"]
+    Q --> P["Feature layer<br/>unit economics + cohorts"]
+    W --> C["Causal measurement<br/>lift · elasticity · attribution"]
+    P --> C
+    C --> D["Scenarios + decision outputs"]
+    D --> PUB["Charts, dashboard, PDF report"]
+    W --> L["Lineage + SLAs"]
+    PUB --> QA["Final QA gate"]
+    L --> QA
 ```
 
 Each stage writes governed outputs under `outputs/` and `data/processed/`. The metric registry (`src/governance/metric_registry.py`) centralizes the payback horizon, unit-economics classification thresholds, margin floor, and risk defaults. Formula parity and final QA checks detect drift across pandas, SQL, dashboard, and published outputs.
 
-For the complete design, see [architecture](docs/ARCHITECTURE.md), [real-source ingestion](docs/INGESTION.md), [causal methods](docs/CAUSAL_METHODS.md), [API operations](docs/API.md), [privacy controls](docs/PRIVACY.md), and the [operations runbook](docs/OPERATIONS.md).
+For the full flow, including the production ingestion and API-serving path, see the [documentation index](docs/README.md): [architecture](docs/ARCHITECTURE.md), [real-source ingestion](docs/INGESTION.md), [causal methods](docs/CAUSAL_METHODS.md), [API operations](docs/API.md), [privacy controls](docs/PRIVACY.md), and the [operations runbook](docs/OPERATIONS.md).
 
 ## Metric contracts
 
@@ -134,7 +175,7 @@ warehouse/    dbt project with DuckDB development and Postgres production profil
 config/       versioned operational SLA policy
 ops/          deployable UTC schedule
 outputs/      analytical tables, graphs, reports, and the dashboard
-docs/         architecture, ingestion, API, privacy, causal, and operations guides
+docs/         documentation index plus architecture, ingestion, API, privacy, causal, and operations guides
 tests/        unit, contract, parity, and stage-integration tests
 ```
 
