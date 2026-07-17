@@ -28,7 +28,7 @@ DuckDB is the default local backend:
 
 ```text
 API_WAREHOUSE_BACKEND=duckdb
-API_DUCKDB_PATH=outputs/warehouse/revenue_analytics.duckdb
+API_DUCKDB_PATH=outputs/duckdb/revenue_analytics.duckdb
 API_WAREHOUSE_SCHEMA=analytics_core
 ```
 

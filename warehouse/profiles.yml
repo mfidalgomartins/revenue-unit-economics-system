@@ -3,7 +3,7 @@ revenue_analytics:
   outputs:
     dev:
       type: duckdb
-      path: "{{ env_var('DBT_DUCKDB_PATH', '../outputs/warehouse/revenue_analytics.duckdb') }}"
+      path: "{{ env_var('DBT_DUCKDB_PATH', '../outputs/duckdb/revenue_analytics.duckdb') }}"
       schema: analytics
       threads: 4
     prod:

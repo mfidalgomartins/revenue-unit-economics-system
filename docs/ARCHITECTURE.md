@@ -111,7 +111,7 @@ Runtime state is deliberately ignored:
 |---|---|
 | `data/raw/`, `data/processed/`, publication outputs | deterministic case artifacts |
 | `data/staging/` | environment-specific normalized source state |
-| `outputs/warehouse/` | local dbt database; production uses PostgreSQL |
+| `outputs/duckdb/` | local dbt database; production uses PostgreSQL |
 | `outputs/operations/` | mutable run history |
 | `outputs/governance/` | deterministic lineage and SLA artifacts |
 

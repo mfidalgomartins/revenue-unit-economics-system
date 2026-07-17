@@ -30,7 +30,7 @@ PROC_DIR = PROJECT_ROOT / "data" / "processed"
 OUT_TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 OUT_CHARTS_DIR = PROJECT_ROOT / "outputs" / "charts"
 REPORTS_DIR = PROJECT_ROOT / "outputs" / "reports"
-WAREHOUSE_PATH = PROJECT_ROOT / "outputs" / "warehouse" / "revenue_analytics.duckdb"
+WAREHOUSE_PATH = PROJECT_ROOT / "outputs" / "duckdb" / "revenue_analytics.duckdb"
 GOVERNANCE_DIR = PROJECT_ROOT / "outputs" / "governance"
 
 DASHBOARD_SIZE_WARN_MB = 7.0

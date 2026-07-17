@@ -2,7 +2,7 @@
 
 This dbt project is the persistent SQL layer for normalized commercial data.
 
-- `dev` uses DuckDB at `outputs/warehouse/revenue_analytics.duckdb`.
+- `dev` uses DuckDB at `outputs/duckdb/revenue_analytics.duckdb`.
 - `prod` uses PostgreSQL credentials supplied entirely through environment variables.
 - Raw sources default to `data/raw/`; external DuckDB runs set `RAW_DATA_DIR=data/staging`, which resolves the atomic active-bundle pointer.
 - Transactions and marketing spend use idempotent `delete+insert` incremental models with a 30-day late-arrival lookback.

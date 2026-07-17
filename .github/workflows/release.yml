@@ -71,7 +71,7 @@ jobs:
       - name: Package artifacts
         run: |
           tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
-            --exclude=outputs/warehouse --exclude=outputs/operations \
+            --exclude=outputs/duckdb --exclude=outputs/operations \
             -cf - outputs data/processed | gzip -n > revenue-analytics-artifacts.tgz
           sha256sum revenue-analytics-artifacts.tgz > revenue-analytics-artifacts.tgz.sha256
 

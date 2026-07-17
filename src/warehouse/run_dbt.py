@@ -39,9 +39,9 @@ def run_dbt_build(*, full_refresh: bool = False) -> None:
     environment.setdefault("RAW_DATA_DIR", str(RAW_DATA_DIR))
     environment.setdefault(
         "DBT_DUCKDB_PATH",
-        str(PROJECT_ROOT / "outputs" / "warehouse" / "revenue_analytics.duckdb"),
+        str(PROJECT_ROOT / "outputs" / "duckdb" / "revenue_analytics.duckdb"),
     )
-    (PROJECT_ROOT / "outputs" / "warehouse").mkdir(parents=True, exist_ok=True)
+    (PROJECT_ROOT / "outputs" / "duckdb").mkdir(parents=True, exist_ok=True)
     subprocess.run(command, cwd=PROJECT_ROOT, env=environment, check=True)
 
 

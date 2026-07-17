@@ -15,7 +15,7 @@ import pandas as pd
 from src.api.config import ApiSettings
 from src.paths import PROJECT_ROOT
 
-WAREHOUSE_PATH = PROJECT_ROOT / "outputs" / "warehouse" / "revenue_analytics.duckdb"
+WAREHOUSE_PATH = PROJECT_ROOT / "outputs" / "duckdb" / "revenue_analytics.duckdb"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 TABLES_DIR = PROJECT_ROOT / "outputs" / "tables"
 IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")

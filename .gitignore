@@ -35,7 +35,7 @@ htmlcov/
 # Runtime ingestion, warehouse, and orchestration state
 data/staging/
 outputs/operations/
-outputs/warehouse/
+outputs/duckdb/
 warehouse/target/
 warehouse/logs/
 warehouse/dbt_packages/

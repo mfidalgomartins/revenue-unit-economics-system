@@ -24,7 +24,7 @@ class ApiSettings:
     minimum_cell_size: int = 10
     requests_per_minute: int = 120
     warehouse_backend: str = "duckdb"
-    duckdb_path: str = str(PROJECT_ROOT / "outputs" / "warehouse" / "revenue_analytics.duckdb")
+    duckdb_path: str = str(PROJECT_ROOT / "outputs" / "duckdb" / "revenue_analytics.duckdb")
     postgres_dsn: str = ""
     warehouse_schema: str = "analytics_core"
 
@@ -90,7 +90,7 @@ class ApiSettings:
             warehouse_backend=os.getenv("API_WAREHOUSE_BACKEND", "duckdb").lower(),
             duckdb_path=os.getenv(
                 "API_DUCKDB_PATH",
-                str(PROJECT_ROOT / "outputs" / "warehouse" / "revenue_analytics.duckdb"),
+                str(PROJECT_ROOT / "outputs" / "duckdb" / "revenue_analytics.duckdb"),
             ),
             postgres_dsn=os.getenv("API_POSTGRES_DSN", ""),
             warehouse_schema=os.getenv("API_WAREHOUSE_SCHEMA", "analytics_core"),
