@@ -175,6 +175,12 @@ tests/        unit, contract, parity, and stage-integration tests
 - Synthetic randomized assignments demonstrate correct estimators; they do not establish external validity for a real business.
 - The included API limiter is process-local. Multi-replica deployment should place rate limiting at the gateway or a shared store.
 
+## Roadmap
+
+- **Tombstone contract for source deletions.** Incremental ingestion currently treats a record's absence from a delta response as "not yet seen," not "deleted"; a signed deletion contract from each source is needed before hard deletes can be trusted downstream.
+- **Gateway-level rate limiting.** The API's request limiter is process-local (see [Limitations](#limitations)); a multi-replica deployment should move it to the gateway or a shared store before scaling past one instance.
+- **Real-source elasticity and incrementality.** Price elasticity and marketing-lift estimators are validated against synthetic randomized assignments; the next production milestone is running them against a live experiment platform and holding out real budget.
+
 ## Stack
 
 Python 3.12 · pandas · NumPy · matplotlib · FastAPI · Pydantic · HTTPX · dbt Core · DuckDB · PostgreSQL · Playwright · vanilla JS/SVG · ruff · mypy · pytest + coverage · pip-audit · GitHub Actions
