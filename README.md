@@ -5,6 +5,16 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-000000.svg?style=flat-square)](LICENSE)
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-3776ab.svg?style=flat-square)](https://www.python.org/)
 
+<p align="center">
+  <a href="https://mfidalgomartins.github.io/revenue-unit-economics-system/">
+    <img alt="Open the Live Dashboard" src="https://img.shields.io/badge/Live_Dashboard-Open-0a84ff?style=for-the-badge&logo=googlechrome&logoColor=white">
+  </a>
+  <a href="https://mfidalgomartins.github.io/revenue-unit-economics-system/outputs/reports/revenue_unit_economics_report.pdf">
+    <img alt="Read the Analytical Report" src="https://img.shields.io/badge/Analytical_Report-Read_PDF-1a7f37?style=for-the-badge&logo=adobeacrobatreader&logoColor=white">
+  </a>
+</p>
+<p align="center"><sub>Both open directly in the browser — the report renders inline as a PDF, no download required. Light and dark mode. No login or install.</sub></p>
+
 ## Executive summary
 
 **One question drives the whole system: is growth sustainable, or just expensive?**
